@@ -479,3 +479,16 @@ if ('requestIdleCallback' in window) {
   tracksReady = true;
   tryBootPlayer();
 })();
+
+/* ── Study rooms studied-time badge ───────────────────────────── */
+
+(function showStudiedBadge() {
+  const seconds = Number(localStorage.getItem('pb_studied_seconds') || 0);
+  if (seconds <= 0) return;
+  const badge = document.getElementById('studiedBadge');
+  if (!badge) return;
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  badge.textContent = h > 0 ? `Studied ${h}h ${m}m` : m > 0 ? `Studied ${m}m` : 'Studied <1m';
+  badge.hidden = false;
+})();

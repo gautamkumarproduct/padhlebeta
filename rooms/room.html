@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Study Room — PadhleBeta</title>
+    <meta name="theme-color" content="#0a1430" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Yatra+One&display=swap"
+    />
+    <link rel="stylesheet" href="/rooms/rooms.css" />
+  </head>
+  <body>
+    <div class="shell room-shell">
+      <a class="back" href="/rooms/">← All rooms</a>
+
+      <div class="room-header">
+        <h1 id="roomTitle">Study Room</h1>
+        <span class="count"><span class="dot"></span><span id="roomCount">1 studying</span></span>
+      </div>
+
+      <div class="timer-card">
+        <div class="timer" id="timer">00:00</div>
+        <div class="timer-label">time in this room</div>
+        <button class="leave-btn" id="leaveBtn" type="button">Leave room</button>
+      </div>
+
+      <div class="present">
+        <div class="room-group">In this room</div>
+        <div class="present-list" id="presentList"></div>
+      </div>
+
+      <div class="chat-toggle">
+        <div class="room-group" style="margin: 0">Chat</div>
+        <button id="chatToggleBtn" type="button">Hide chat</button>
+      </div>
+
+      <div class="chat-panel" id="chatPanel">
+        <div class="chat-log" id="chatLog">
+          <p class="chat-empty">No messages yet — say hi 👋</p>
+        </div>
+        <form class="chat-form" id="chatForm">
+          <input id="chatInput" type="text" placeholder="Type a message…" maxlength="240" autocomplete="off" />
+          <button type="submit">Send</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="/rooms/config.js"></script>
+    <script type="module">
+      import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+      const params = new URLSearchParams(location.search);
+      const room = getRoomById(params.get('room'));
+      const name = getStudentName();
+
+      if (!room || !name) {
+        location.href = '/rooms/';
+        throw new Error('redirecting: missing room or name');
+      }
+
+      document.getElementById('roomTitle').textContent = room.title;
+
+      const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const myKey = `${name}-${Math.random().toString(36).slice(2, 8)}`;
+      const channel = supabase.channel(`room:${room.id}`, {
+        config: { presence: { key: myKey }, broadcast: { self: true } },
+      });
+
+      const presentList = document.getElementById('presentList');
+      const roomCount = document.getElementById('roomCount');
+
+      function renderPresence() {
+        const state = channel.presenceState();
+        const people = Object.values(state)
+          .flat()
+          .sort((a, b) => a.joined_at - b.joined_at);
+
+        roomCount.textContent = people.length === 1 ? '1 studying' : `${people.length} studying`;
+
+        presentList.innerHTML = '';
+        people.forEach((p) => {
+          const chip = document.createElement('span');
+          chip.className = 'present-chip' + (p.key === myKey ? ' is-you' : '');
+          chip.textContent = p.key === myKey ? `${p.name} (you)` : p.name;
+          presentList.append(chip);
+        });
+      }
+
+      channel.on('presence', { event: 'sync' }, renderPresence);
+
+      // Chat via broadcast — live-only, nothing persisted server-side.
+      const chatLog = document.getElementById('chatLog');
+      const chatForm = document.getElementById('chatForm');
+      const chatInput = document.getElementById('chatInput');
+      let chatStarted = false;
+
+      function appendMessage(who, body, isYou) {
+        if (!chatStarted) {
+          chatLog.innerHTML = '';
+          chatStarted = true;
+        }
+        const msg = document.createElement('div');
+        msg.className = 'chat-msg' + (isYou ? ' is-you' : '');
+        const whoEl = document.createElement('span');
+        whoEl.className = 'who';
+        whoEl.textContent = who + ': ';
+        const bodyEl = document.createElement('span');
+        bodyEl.className = 'body';
+        bodyEl.textContent = body;
+        msg.append(whoEl, bodyEl);
+        chatLog.append(msg);
+        chatLog.scrollTop = chatLog.scrollHeight;
+      }
+
+      channel.on('broadcast', { event: 'chat' }, ({ payload }) => {
+        appendMessage(payload.name, payload.body, payload.key === myKey);
+      });
+
+      chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const body = chatInput.value.trim();
+        if (!body) return;
+        channel.send({
+          type: 'broadcast',
+          event: 'chat',
+          payload: { key: myKey, name, body },
+        });
+        chatInput.value = '';
+      });
+
+      channel.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({ key: myKey, name, joined_at: Date.now() });
+        }
+      });
+
+      // Chat visibility toggle
+      const chatPanel = document.getElementById('chatPanel');
+      const chatToggleBtn = document.getElementById('chatToggleBtn');
+      let chatHidden = localStorage.getItem('pb_chat_hidden') === '1';
+      function applyChatVisibility() {
+        chatPanel.classList.toggle('is-hidden', chatHidden);
+        chatToggleBtn.textContent = chatHidden ? 'Show chat' : 'Hide chat';
+      }
+      applyChatVisibility();
+      chatToggleBtn.addEventListener('click', () => {
+        chatHidden = !chatHidden;
+        localStorage.setItem('pb_chat_hidden', chatHidden ? '1' : '0');
+        applyChatVisibility();
+      });
+
+      // Personal timer
+      const startedAt = Date.now();
+      const timerEl = document.getElementById('timer');
+      function tick() {
+        const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+        const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        const s = String(elapsed % 60).padStart(2, '0');
+        timerEl.textContent = `${m}:${s}`;
+      }
+      tick();
+      const timerInterval = setInterval(tick, 1000);
+
+      let studySaved = false;
+      function saveStudyTime() {
+        if (studySaved) return;
+        studySaved = true;
+        addStudiedSeconds((Date.now() - startedAt) / 1000);
+      }
+
+      function leave() {
+        saveStudyTime();
+        clearInterval(timerInterval);
+        channel.untrack();
+        supabase.removeChannel(channel);
+        location.href = '/rooms/';
+      }
+
+      document.getElementById('leaveBtn').addEventListener('click', leave);
+      window.addEventListener('pagehide', saveStudyTime);
+    </script>
+  </body>
+</html>
