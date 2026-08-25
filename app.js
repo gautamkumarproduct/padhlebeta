@@ -122,10 +122,19 @@ function rotateBackground(to) {
   bgLayers.forEach((layer, i) => layer.classList.toggle('is-active', i === bgIndex));
 }
 
+function track(name, params) {
+  if (typeof window.gtag === 'function') window.gtag('event', name, params || {});
+}
+
 function renderPlaying(on) {
+  const wasPlaying = state.playing;
   state.playing = on;
   el.player.classList.toggle('is-playing', on);
   el.play.setAttribute('aria-label', on ? 'Pause' : 'Play');
+  if (on && !wasPlaying) {
+    const t = currentTrack();
+    track('play_song', { song_title: t?.title, song_artist: t?.artist });
+  }
 }
 
 function go(newPos) {
@@ -133,6 +142,7 @@ function go(newPos) {
   state.pos = ((newPos % n) + n) % n;
   renderTrack();
   rotateBackground();
+  track('track_change', { song_title: currentTrack()?.title });
   if (!yt) return;
   state.started = true;
   yt.loadVideoById(currentTrack().id);
