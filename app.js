@@ -590,7 +590,10 @@ if ('requestIdleCallback' in window) {
 
 (async function init() {
   try {
-    const res = await fetch('/tracks.json');
+    // no-store rather than a versioned URL: the playlist can change at
+    // any time (as it just did), and it's small enough that always
+    // fetching fresh isn't worth trading for cache-bust discipline.
+    const res = await fetch('/tracks.json', { cache: 'no-store' });
     state.tracks = await res.json();
   } catch {
     el.title.textContent = 'Could not load the playlist';
