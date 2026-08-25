@@ -145,7 +145,11 @@ function go(newPos) {
   track('track_change', { song_title: currentTrack()?.title });
   if (!yt) return;
   state.started = true;
-  yt.loadVideoById(currentTrack().id);
+  // Hinting the quality on the load call itself (rather than waiting for
+  // preferAudio() after playback starts) skips straight to the smallest
+  // rendition instead of buffering a higher-res stream first — this is
+  // most of what "next track" latency was.
+  yt.loadVideoById({ videoId: currentTrack().id, suggestedQuality: 'tiny' });
 }
 
 function toggle() {
@@ -385,11 +389,18 @@ function preferAudio() {
   }
 }
 
-window.onYouTubeIframeAPIReady = () => {
+// The API script and tracks.json used to load one after the other, which
+// meant the API sat idle while the playlist fetch finished. Kick both off
+// immediately and only build the player once both are in.
+let ytApiReady = false;
+let tracksReady = false;
+
+function tryBootPlayer() {
+  if (!ytApiReady || !tracksReady || yt) return;
+
   yt = new YT.Player('yt-player', {
     height: '1',
     width: '1',
-    videoId: currentTrack().id,
     playerVars: {
       playsinline: 1,
       controls: 0,
@@ -401,7 +412,9 @@ window.onYouTubeIframeAPIReady = () => {
       onReady: () => {
         state.ready = true;
         el.play.disabled = false;
-        preferAudio();
+        // Cue (don't load) at the lowest rendition — nothing has to
+        // re-buffer at a higher quality before the first play.
+        yt.cueVideoById({ videoId: currentTrack().id, suggestedQuality: 'tiny' });
       },
       onStateChange: (e) => {
         const S = YT.PlayerState;
@@ -420,7 +433,16 @@ window.onYouTubeIframeAPIReady = () => {
 
   setInterval(samplePlayer, 250);
   requestAnimationFrame(paintProgress);
+}
+
+window.onYouTubeIframeAPIReady = () => {
+  ytApiReady = true;
+  tryBootPlayer();
 };
+
+const ytScript = document.createElement('script');
+ytScript.src = 'https://www.youtube.com/iframe_api';
+document.head.append(ytScript);
 
 (async function init() {
   try {
@@ -443,7 +465,6 @@ window.onYouTubeIframeAPIReady = () => {
   renderTrack();
   rotateBackground(0);
 
-  const s = document.createElement('script');
-  s.src = 'https://www.youtube.com/iframe_api';
-  document.head.append(s);
+  tracksReady = true;
+  tryBootPlayer();
 })();
