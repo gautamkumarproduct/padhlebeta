@@ -485,8 +485,16 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  height: calc(var(--dock-height, 13rem) + 3rem);
-  background: linear-gradient(to bottom, transparent 0%, #08080d 55%, #08080d 100%);
+  height: calc(var(--dock-height, 13rem) + 4rem);
+  /* Fully opaque well before the bumper line starts — at 55% the text
+     still had scrolling avatar names showing through behind it. */
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(8, 8, 13, 0.75) 12%,
+    #08080d 24%,
+    #08080d 100%
+  );
   z-index: -1;
   pointer-events: none;
 }

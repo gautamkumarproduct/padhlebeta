@@ -419,22 +419,48 @@ function tickTimer() {
     elapsed < 60 ? 'just joined' : mins === 1 ? '1 min in' : `${mins} mins in`;
 }
 
+// Closing the session has to survive the page being torn down: most
+// people leave by closing the tab, not by clicking "Leave room". A normal
+// fetch started from `pagehide` gets cancelled mid-flight as the document
+// dies, so supabase-js calls here were silently dropped and sessions were
+// left with left_at/duration_seconds null forever. `keepalive: true` tells
+// the browser to let the request outlive the page (same mechanism as
+// sendBeacon, but works with PATCH, which sendBeacon can't do).
+function beacon(path, method, body) {
+  try {
+    return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+      method,
+      keepalive: true,
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    }).catch(() => {});
+  } catch {
+    /* page may already be gone */
+  }
+}
+
 function saveStudyTime() {
   if (studySaved) return;
   studySaved = true;
   const elapsedSeconds = (Date.now() - startedAt) / 1000;
   addStudiedSeconds(elapsedSeconds);
-  supabase.from('pb_room_sessions').update({
+
+  beacon(`pb_room_sessions?id=eq.${sessionId}`, 'PATCH', {
     left_at: new Date().toISOString(),
     duration_seconds: Math.round(elapsedSeconds),
-  }).eq('id', sessionId).then(() => {}, () => {});
-  supabase.from('pb_events').insert({
+  });
+
+  beacon('pb_events', 'POST', {
     user_id: deviceId,
     device_session_id: getDeviceSessionId(),
     event_name: 'room_leave',
     room_id: room.id,
     properties: { duration_seconds: Math.round(elapsedSeconds) },
-  }).then(() => {}, () => {});
+  });
 }
 
 window.addEventListener('pagehide', saveStudyTime);

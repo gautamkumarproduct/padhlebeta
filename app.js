@@ -67,25 +67,26 @@ function shuffleArr(arr) {
   return arr;
 }
 
-function buildOrder() {
-  const seq = Array.from({ length: state.tracks.length }, (_, i) => i);
-  return state.shuffle ? shuffleArr(seq) : seq;
+// Slots 1 and 2 are reserved for the focus ambience, in this order —
+// songs start from 3. Applied inside buildOrder so it survives a shuffle
+// toggle too, rather than only holding on first load.
+const PINNED_TRACK_IDS = [
+  '13EL6Mgeocc', // Rain
+  'W5FI97ovWog', // Lofi
+];
+
+function pinAmbientTracks(order) {
+  const pinned = PINNED_TRACK_IDS
+    .map((id) => state.tracks.findIndex((t) => t.id === id))
+    .filter((i) => i !== -1);
+  if (!pinned.length) return order;
+  const rest = order.filter((i) => !pinned.includes(i));
+  return [...pinned, ...rest];
 }
 
-// Whatever a visitor hears first should be consistent — the rain ambience
-// track always leads, regardless of shuffle. Only applied once at initial
-// load, not on every shuffle toggle, so re-shuffling mid-listen doesn't
-// unexpectedly yank someone back to it.
-const RAIN_TRACK_ID = '13EL6Mgeocc';
-function leadWithRain(order) {
-  const rainIdx = state.tracks.findIndex((t) => t.id === RAIN_TRACK_ID);
-  if (rainIdx === -1) return order;
-  const pos = order.indexOf(rainIdx);
-  if (pos > 0) {
-    order.splice(pos, 1);
-    order.unshift(rainIdx);
-  }
-  return order;
+function buildOrder() {
+  const seq = Array.from({ length: state.tracks.length }, (_, i) => i);
+  return pinAmbientTracks(state.shuffle ? shuffleArr(seq) : seq);
 }
 
 const currentTrack = () => state.tracks[state.order[state.pos]];
@@ -612,7 +613,7 @@ if ('requestIdleCallback' in window) {
     return;
   }
 
-  state.order = leadWithRain(buildOrder());
+  state.order = buildOrder();
   renderList();
   renderTrack();
   rotateBackground(0);
