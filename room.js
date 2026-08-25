@@ -115,6 +115,10 @@ const pomodoroLabelEl = document.getElementById('pomodoroLabel');
 const pomodoroCard = document.getElementById('pomodoroCard');
 const ringFill = document.getElementById('pomodoroRingFill');
 const timerEl = document.getElementById('timer');
+const roomFocusTimeEl = document.getElementById('roomFocusTime');
+const focusRoomLabelEl = document.getElementById('focusRoomLabel');
+const focusRoomCountEl = document.getElementById('focusRoomCount');
+const focusYouSubEl = document.getElementById('focusYouSub');
 const leaveBtn = document.getElementById('leaveBtn');
 
 const RING_CIRCUMFERENCE = 2 * Math.PI * 52;
@@ -391,6 +395,12 @@ function tickPomodoro() {
   const fraction = elapsedInPhase / phaseTotal;
   ringFill.style.strokeDashoffset = String(RING_CIRCUMFERENCE * (1 - fraction));
 
+  // How long this room has been heads-down together in the current
+  // phase. Derived from the same wall-clock cycle everyone shares, so
+  // every person in the room sees the identical number.
+  roomFocusTimeEl.textContent = fmtClock(elapsedInPhase);
+  focusRoomLabelEl.textContent = cycleState.isBreak ? 'Room on break' : 'Room focusing';
+
   if (cycleState.isBreak !== lastIsBreak) {
     if (cycleState.isBreak) enterBreak();
     else enterFocus(lastCycleKey);
@@ -402,6 +412,11 @@ function tickPomodoro() {
 function tickTimer() {
   const elapsed = Math.floor((Date.now() - startedAt) / 1000);
   timerEl.textContent = fmtClock(elapsed);
+
+  // Completes the comparison: how your stint sits against the room's.
+  const mins = Math.floor(elapsed / 60);
+  focusYouSubEl.textContent =
+    elapsed < 60 ? 'just joined' : mins === 1 ? '1 min in' : `${mins} mins in`;
 }
 
 function saveStudyTime() {
@@ -498,6 +513,7 @@ function renderPresence() {
 
   const totalCount = people.length + activeBots.size;
   roomCount.textContent = totalCount === 1 ? '1 studying' : `${totalCount} studying`;
+  focusRoomCountEl.textContent = totalCount === 1 ? 'just you' : `${totalCount} together`;
 
   const desired = new Map();
   people.forEach((p) => desired.set('u:' + p.key, { name: p.name, isYou: p.key === myKey }));

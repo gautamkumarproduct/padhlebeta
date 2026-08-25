@@ -201,12 +201,14 @@
     "id": "W5FI97ovWog",
     "title": "Lofi",
     "artist": "Lofi Girl",
-    "cover": "https://i.ytimg.com/vi/W5FI97ovWog/hqdefault.jpg"
+    "cover": "https://i.ytimg.com/vi/W5FI97ovWog/hqdefault.jpg",
+    "kind": "ambient"
   },
   {
     "id": "13EL6Mgeocc",
     "title": "Rain",
     "artist": "Ambient sound",
-    "cover": "https://i.ytimg.com/vi/13EL6Mgeocc/hqdefault.jpg"
+    "cover": "https://i.ytimg.com/vi/13EL6Mgeocc/hqdefault.jpg",
+    "kind": "ambient"
   }
 ]

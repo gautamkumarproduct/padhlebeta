@@ -126,6 +126,11 @@ function renderList() {
     const btn = document.createElement('button');
     btn.type = 'button';
 
+    // Rain/Lofi are focus ambience rather than songs — flagged in
+    // tracks.json so the styling follows the track wherever shuffle
+    // puts it, instead of being pinned to a list position.
+    if (t.kind === 'ambient') li.classList.add('is-ambient');
+
     const title = document.createElement('span');
     title.className = 't-title';
     title.textContent = t.title;

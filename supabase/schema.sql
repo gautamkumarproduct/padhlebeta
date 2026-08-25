@@ -9,12 +9,12 @@ create table if not exists pb_rooms (
   created_at timestamptz not null default now()
 );
 
+-- Must stay in sync with ROOMS in rooms/config.js — every other table
+-- foreign-keys room_id back to here, so a missing row means every session,
+-- chat message, poll vote and event for that room is silently rejected.
 insert into pb_rooms (id, title) values
-  ('iitjee', 'IIT-JEE'),
-  ('neet', 'NEET'),
-  ('board10', 'Boards · Class 10'),
-  ('board12', 'Boards · Class 12'),
-  ('lakshya', 'Lakshya · Open Focus')
+  ('day', 'Study Room 1'),
+  ('night', 'Study Room 2')
 on conflict (id) do update set title = excluded.title;
 
 -- ── Users (anonymous, device-scoped — no login) ─────────────────────────

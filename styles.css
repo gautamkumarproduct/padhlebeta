@@ -743,10 +743,13 @@ body {
   overscroll-behavior: contain;
   border-radius: 1.35rem;
   border: 1px solid var(--glass-line);
-  background: rgba(10, 18, 40, 0.65);
-  backdrop-filter: blur(14px) saturate(130%);
-  -webkit-backdrop-filter: blur(14px) saturate(130%);
-  box-shadow: var(--shadow-glass);
+  /* Near-opaque: at 0.65 the wordmark and the room CTA behind this
+     panel read straight through the track rows and made the whole
+     thing look broken rather than layered. */
+  background: #0d0e18;
+  backdrop-filter: blur(20px) saturate(130%);
+  -webkit-backdrop-filter: blur(20px) saturate(130%);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 
   opacity: 0;
   visibility: hidden;
@@ -836,6 +839,35 @@ body {
   background: rgba(255, 207, 77, 0.22);
   color: #fff;
   font-weight: 800;
+}
+
+/* Focus ambience (Rain, Lofi) — set apart from the motivational songs
+   so the two kinds of listening are visibly different things. */
+.list li.is-ambient button {
+  background: linear-gradient(90deg, rgba(34, 211, 238, 0.16), rgba(34, 211, 238, 0.02));
+  box-shadow: inset 2px 0 0 #22d3ee;
+}
+
+.list li.is-ambient .t-title {
+  color: #7fe4f5;
+  font-weight: 800;
+}
+
+.list li.is-ambient .t-title::after {
+  content: "AMBIENT";
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.3rem;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  vertical-align: 0.1em;
+  color: #0a0a12;
+  background: #22d3ee;
+}
+
+.list li.is-ambient.is-current button {
+  background: linear-gradient(90deg, rgba(34, 211, 238, 0.3), rgba(255, 207, 77, 0.14));
 }
 
 .list .t-title {
@@ -966,17 +998,81 @@ body {
   }
 }
 
-/* ── Room hero: personal time, folded into the pomodoro card ──── */
+/* ── Room hero: the focus story, folded into the pomodoro card ───
+   Two stats side by side — how long this room has been heads-down
+   together, and how long you've been part of it. The comparison is
+   the message; no sentence needed. ───────────────────────────── */
 
-.pomodoro-mytime {
-  margin-top: 0.7rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.55);
+.focus-story {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0.9rem;
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  width: 100%;
 }
-.pomodoro-mytime strong {
-  color: #fff;
+
+.focus-stat {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.focus-stat__divider {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.focus-stat__label {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.focus-stat__value {
+  font-size: 1.35rem;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  color: #fff;
+}
+
+.focus-stat--room .focus-stat__value {
+  color: var(--green);
+}
+.pomodoro-card.is-break .focus-stat--room .focus-stat__value {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.focus-stat--you .focus-stat__value {
+  color: var(--accent);
+}
+
+.focus-stat__sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.focus-stat__sub .dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
 }
 
 /* ── Name gate modal ────────────────────────────────────────── */

@@ -62,8 +62,8 @@
     </noscript>
 
     <link rel="stylesheet" href="/ambient.css" />
-    <link rel="stylesheet" href="/styles.css" />
-    <link rel="stylesheet" href="/rooms/rooms.css" />
+    <link rel="stylesheet" href="/styles.css?v=6" />
+    <link rel="stylesheet" href="/rooms/rooms.css?v=6" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-CFKL02YN12"></script>
@@ -152,7 +152,23 @@
             </div>
           </div>
           <div class="pomodoro-label" id="pomodoroLabel">until break</div>
-          <div class="pomodoro-mytime">Your time here: <strong id="timer">00:00</strong></div>
+
+          <!-- The story: this room has been heads-down together for X,
+               and you joined Y ago. Two stats side by side so the
+               comparison reads instantly, without a sentence. -->
+          <div class="focus-story">
+            <div class="focus-stat focus-stat--room">
+              <span class="focus-stat__label" id="focusRoomLabel">Room focusing</span>
+              <span class="focus-stat__value" id="roomFocusTime">00:00</span>
+              <span class="focus-stat__sub"><span class="dot"></span><span id="focusRoomCount">1 together</span></span>
+            </div>
+            <div class="focus-stat__divider"></div>
+            <div class="focus-stat focus-stat--you">
+              <span class="focus-stat__label">You here</span>
+              <span class="focus-stat__value" id="timer">00:00</span>
+              <span class="focus-stat__sub" id="focusYouSub">just joined</span>
+            </div>
+          </div>
         </div>
 
         <div class="poll-card is-hidden" id="pollCard">
@@ -257,8 +273,8 @@
       </div>
     </div>
 
-    <script src="/rooms/config.js"></script>
-    <script src="/app.js?v=5"></script>
-    <script type="module" src="/room.js"></script>
+    <script src="/rooms/config.js?v=6"></script>
+    <script src="/app.js?v=6"></script>
+    <script type="module" src="/room.js?v=6"></script>
   </body>
 </html>
