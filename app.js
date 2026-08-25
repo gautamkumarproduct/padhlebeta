@@ -39,7 +39,20 @@ const state = {
   scrubbing: false,
 };
 
+// Two YouTube players are kept alive: `players[activeSlot]` is the one
+// that's actually audible, and the other one sits silently cued to
+// whatever track is coming up next. Hitting "next" then just swaps which
+// slot is active instead of loading a fresh video and waiting for it to
+// buffer — that wait was most of the perceived "music takes a while"
+// complaint. `yt` stays as an alias for the active player so the rest of
+// this file (seek, toggle, samplePlayer, …) doesn't need to change.
+const players = [null, null];
+const playerCuedPos = [null, null];
+let activeSlot = 0;
 let yt = null;
+function syncActivePlayerAlias() {
+  yt = players[activeSlot];
+}
 
 const fmt = (s) => {
   if (!Number.isFinite(s) || s < 0) s = 0;
@@ -137,19 +150,51 @@ function renderPlaying(on) {
   }
 }
 
+function nextPos(fromPos = state.pos) {
+  const n = state.order.length;
+  return ((fromPos + 1) % n + n) % n;
+}
+
+// Cue the upcoming track into whichever player isn't currently live, so
+// it's already buffered by the time "next" is pressed.
+function preloadUpcoming() {
+  const idle = activeSlot === 0 ? 1 : 0;
+  const p = players[idle];
+  if (!p || typeof p.cueVideoById !== 'function') return;
+  const targetPos = nextPos();
+  if (playerCuedPos[idle] === targetPos) return;
+  const track = state.tracks[state.order[targetPos]];
+  if (!track) return;
+  p.cueVideoById({ videoId: track.id, suggestedQuality: 'tiny' });
+  playerCuedPos[idle] = targetPos;
+}
+
 function go(newPos) {
   const n = state.order.length;
-  state.pos = ((newPos % n) + n) % n;
+  const targetPos = ((newPos % n) + n) % n;
+  const wasPlaying = state.playing;
+  const idle = activeSlot === 0 ? 1 : 0;
+  const canSwapToPreloaded = targetPos === nextPos(state.pos) && playerCuedPos[idle] === targetPos && players[idle];
+
+  state.pos = targetPos;
   renderTrack();
   rotateBackground();
   track('track_change', { song_title: currentTrack()?.title });
-  if (!yt) return;
   state.started = true;
-  // Hinting the quality on the load call itself (rather than waiting for
-  // preferAudio() after playback starts) skips straight to the smallest
-  // rendition instead of buffering a higher-res stream first — this is
-  // most of what "next track" latency was.
-  yt.loadVideoById({ videoId: currentTrack().id, suggestedQuality: 'tiny' });
+
+  if (canSwapToPreloaded) {
+    activeSlot = idle;
+    syncActivePlayerAlias();
+    if (wasPlaying) yt.playVideo();
+    preloadUpcoming();
+  } else if (players[activeSlot]) {
+    // Hinting the quality on the load call itself (rather than waiting for
+    // preferAudio() after playback starts) skips straight to the smallest
+    // rendition instead of buffering a higher-res stream first.
+    players[activeSlot].loadVideoById({ videoId: currentTrack().id, suggestedQuality: 'tiny' });
+    playerCuedPos[activeSlot] = targetPos;
+    preloadUpcoming();
+  }
 }
 
 function toggle() {
@@ -257,6 +302,10 @@ el.shuffle.addEventListener('click', () => {
   state.pos = Math.max(0, state.order.indexOf(state.tracks.indexOf(keep)));
   renderList();
   renderTrack();
+  // The "next" track just changed, so whatever the idle player had cued
+  // is no longer necessarily correct.
+  playerCuedPos[activeSlot === 0 ? 1 : 0] = null;
+  preloadUpcoming();
 });
 
 el.listBtn.addEventListener('click', () => {
@@ -290,31 +339,26 @@ document.addEventListener('visibilitychange', () => {
    Motivational study couplets, in the spirit of a truck's back panel. */
 
 const BUMPER_LINES = [
-  'Read today, rule tomorrow',
-  'Hard work always pays off',
-  'If not now, then never',
-  "Don't put off today's work for tomorrow",
-  "Dreams aren't what you see while sleeping",
-  "Don't stop, don't tire, just keep going",
-  'Open the book, close the phone',
-  "The goal is far, but so is your grit",
-  'The more you study, the more you grow',
-  'Trust yourself',
-  "Today's effort is tomorrow's success",
-  "Don't give up, keep trying",
-  'There is no shortcut to success',
-  'You are your own destination',
-  'Victory lies beyond fear',
-  'Just one more chapter, one more revision',
-  'You can do it, just keep at it',
-  'Study at night, remember by morning',
-  'Fall, rise, and study again',
-  'The path is hard, not impossible',
-  'Study today, lead tomorrow',
-  'Stay focused, keep the phone aside',
-  'Keep the promise you made to yourself',
-  'Get a little better every day',
-  "Success doesn't sneak up, it's earned",
+  'Padh le, warna dost bhi mud ke nahi dekhenge',
+  'Padh le, warna achi wife nahi milegi',
+  'Padh le, warna rishta aaya toh puchega bhi nahi koi',
+  'Padh le, warna college ke baad achi job nahi lagegi',
+  'Padh le, warna ghoomne London nahi, Lonavala jaana padega',
+  'Padh le, warna Audi nahi, Alto mein ghoomna padega',
+  'Padh le, warna 4 BHK nahi, PG mein rehna padega',
+  'Padh le, warna IAS nahi, peon bankar reh jaayega',
+  'Padh le, warna degree bas bekar college ki hogi',
+  'Padh le, warna rishtedaar shaadi mein taane maarenge',
+  "Padh le, warna 'beta kya karta hai' sunke sharminda hoga",
+  'Padh le, warna crush bhi bolegi — just friends',
+  'Padh le, warna naukri dhundhna hi naukri ban jaayegi',
+  'Padh le, warna family function mein sabse peeche baithna padega',
+  "Padh le, warna LinkedIn pe sirf 'Open to Work' likhega",
+  'Padh le, warna papa ka sar sharam se jhuk jaayega',
+  'Padh le, warna reunion mein sabse chhota package tera hoga',
+  'Padh le, warna baaki sab aage nikal jaayenge',
+  'Abhi mehnat kar le, baad mein sirf araam karna padega',
+  'Jo aaj so raha hai, kal pachtaayega',
 ];
 
 let bumperOrder = [];
@@ -395,10 +439,8 @@ function preferAudio() {
 let ytApiReady = false;
 let tracksReady = false;
 
-function tryBootPlayer() {
-  if (!ytApiReady || !tracksReady || yt) return;
-
-  yt = new YT.Player('yt-player', {
+function createYtPlayer(slot, elementId) {
+  return new YT.Player(elementId, {
     height: '1',
     width: '1',
     playerVars: {
@@ -410,13 +452,19 @@ function tryBootPlayer() {
     },
     events: {
       onReady: () => {
-        state.ready = true;
-        el.play.disabled = false;
-        // Cue (don't load) at the lowest rendition — nothing has to
-        // re-buffer at a higher quality before the first play.
-        yt.cueVideoById({ videoId: currentTrack().id, suggestedQuality: 'tiny' });
+        if (slot === 0) {
+          state.ready = true;
+          el.play.disabled = false;
+          // Cue (don't load) at the lowest rendition — nothing has to
+          // re-buffer at a higher quality before the first play.
+          players[0].cueVideoById({ videoId: currentTrack().id, suggestedQuality: 'tiny' });
+          playerCuedPos[0] = state.pos;
+        } else {
+          preloadUpcoming();
+        }
       },
       onStateChange: (e) => {
+        if (slot !== activeSlot) return;
         const S = YT.PlayerState;
         if (e.data === S.PLAYING) {
           renderPlaying(true);
@@ -426,10 +474,29 @@ function tryBootPlayer() {
         } else if (e.data === S.ENDED) go(state.pos + 1);
       },
       onError: () => {
-        if (state.started) go(state.pos + 1);
+        if (slot === activeSlot && state.started) go(state.pos + 1);
       },
     },
   });
+}
+
+function tryBootPlayer() {
+  if (!ytApiReady || !tracksReady || players[0]) return;
+
+  players[0] = createYtPlayer(0, 'yt-player');
+  syncActivePlayerAlias();
+
+  // The second (preload) player is created once we're idle again, so it
+  // never competes with the primary player or the initial page paint for
+  // bandwidth — it just needs to be ready before "next" is likely pressed.
+  const bootSecondPlayer = () => {
+    players[1] = createYtPlayer(1, 'yt-player-2');
+  };
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(bootSecondPlayer, { timeout: 4000 });
+  } else {
+    setTimeout(bootSecondPlayer, 1500);
+  }
 
   setInterval(samplePlayer, 250);
   requestAnimationFrame(paintProgress);
@@ -478,17 +545,4 @@ if ('requestIdleCallback' in window) {
 
   tracksReady = true;
   tryBootPlayer();
-})();
-
-/* ── Study rooms studied-time badge ───────────────────────────── */
-
-(function showStudiedBadge() {
-  const seconds = Number(localStorage.getItem('pb_studied_seconds') || 0);
-  if (seconds <= 0) return;
-  const badge = document.getElementById('studiedBadge');
-  if (!badge) return;
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const amount = h > 0 ? `${h}h ${m}m` : m > 0 ? `${m}m` : '<1m';
-  badge.textContent = `You've studied ${amount} so far — keep going`;
 })();

@@ -2,14 +2,26 @@
 const SUPABASE_URL = 'https://aoljwsoczdyevvvtoxkb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ocDNtgEUb5k1GOSWUVnZ0Q_2daL54ZZ';
 
-// Starting with a single room while the study-rooms feature is new and
-// small — easy to split back into iitjee/neet/board10/board12/lakshya
-// later once there's enough traffic to need it (the room page and schema
-// already support any number of room ids).
-const ROOMS = [{ id: 'lakshya', title: 'Lakshya · Open Focus', icon: '🎯', accent: '#ffcf4d' }];
+// Two rooms on a day/night schedule (IST) instead of a single always-open
+// room — keeps whoever's actually online at the same time of day grouped
+// together. The site auto-joins whichever one is currently open; there's
+// no picker.
+const ROOMS = [
+  { id: 'day', title: 'Study Room 1', hours: '10 AM – 10 PM', icon: '☀️', accent: '#ffcf4d' },
+  { id: 'night', title: 'Study Room 2', hours: '10 PM – 10 AM', icon: '🌙', accent: '#8b5cf6' },
+];
 
 function getRoomById(id) {
   return ROOMS.find((r) => r.id === id) || null;
+}
+
+// Room 1 runs 10:00–22:00 IST, Room 2 the other half of the day — always
+// India Standard Time regardless of the visitor's own timezone, since the
+// schedule is written for Indian students.
+function getActiveRoom(now = new Date()) {
+  const istMs = now.getTime() + now.getTimezoneOffset() * 60000 + 5.5 * 60 * 60000;
+  const istHour = new Date(istMs).getHours();
+  return istHour >= 10 && istHour < 22 ? ROOMS[0] : ROOMS[1];
 }
 
 // ── Device identity (no login — a UUID that lives in this browser) ──────

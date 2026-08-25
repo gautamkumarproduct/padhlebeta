@@ -106,9 +106,91 @@
   50% { transform: translate(10vw, -6vh) scale(1.08); }
 }
 
+/* ── Decorative study motifs — book, pencil, grad cap, bulb, coffee ──
+   Faint line-art drifting slowly in the background, so the page reads as
+   "about studying" rather than an abstract colour field. */
+
+.ambient__deco {
+  position: absolute;
+  inset: 0;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.deco-icon {
+  position: absolute;
+  opacity: 0.16;
+  filter: drop-shadow(0 0 12px rgba(255, 207, 77, 0.15));
+}
+
+.deco-icon--1 {
+  width: 64px;
+  height: 64px;
+  top: 12%;
+  left: 8%;
+  color: #ffcf4d;
+  animation: deco-float-a 16s ease-in-out infinite;
+}
+
+.deco-icon--2 {
+  width: 46px;
+  height: 46px;
+  top: 68%;
+  left: 14%;
+  color: #8b5cf6;
+  animation: deco-float-b 13s ease-in-out infinite;
+}
+
+.deco-icon--3 {
+  width: 70px;
+  height: 70px;
+  top: 16%;
+  right: 10%;
+  color: #22d3ee;
+  animation: deco-float-c 18s ease-in-out infinite;
+}
+
+.deco-icon--4 {
+  width: 50px;
+  height: 50px;
+  bottom: 22%;
+  right: 12%;
+  color: #ffcf4d;
+  animation: deco-float-a 14s ease-in-out infinite reverse;
+}
+
+.deco-icon--5 {
+  width: 44px;
+  height: 44px;
+  bottom: 30%;
+  left: 46%;
+  color: #ff9f6b;
+  animation: deco-float-b 20s ease-in-out infinite;
+}
+
+@keyframes deco-float-a {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(10px, -18px) rotate(6deg); }
+}
+@keyframes deco-float-b {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-14px, 12px) rotate(-8deg); }
+}
+@keyframes deco-float-c {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-8px, -14px) rotate(4deg); }
+}
+
+@media (max-width: 640px) {
+  .deco-icon--3,
+  .deco-icon--5 {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ambient__blob,
-  .ambient__color {
+  .ambient__color,
+  .deco-icon {
     animation: none !important;
   }
   .ambient::before {

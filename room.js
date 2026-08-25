@@ -4,8 +4,14 @@
 // "room" anymore, just a CSS view swap.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const room = ROOMS[0];
+const room = getActiveRoom();
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+document.getElementById('roomTitle').textContent = `${room.icon} ${room.title}`;
+document.getElementById('roomsCtaTitle').textContent = `${room.title} is open`;
+const roomsCtaHoursEl = document.getElementById('roomsCtaHours');
+const baseHoursText = `${room.hours} IST`;
+roomsCtaHoursEl.textContent = baseHoursText;
 
 const viewHome = document.getElementById('viewHome');
 const viewRoom = document.getElementById('viewRoom');
@@ -393,10 +399,7 @@ channel.on('presence', { event: 'sync' }, () => {
   if (!joined) {
     const state = channel.presenceState();
     const n = Object.values(state).flat().length;
-    const badge = document.getElementById('studiedBadge');
-    if (badge && n > 0) {
-      badge.textContent = `Lakshya · Open Focus — ${n === 1 ? '1 person' : n + ' people'} studying now`;
-    }
+    roomsCtaHoursEl.textContent = n > 0 ? `${baseHoursText} · ${n === 1 ? '1 studying now' : n + ' studying now'}` : baseHoursText;
   }
 });
 
@@ -478,6 +481,7 @@ function refreshStudiedBadge() {
   const m = Math.floor((seconds % 3600) / 60);
   const amount = h > 0 ? `${h}h ${m}m` : m > 0 ? `${m}m` : '<1m';
   badge.textContent = `You've studied ${amount} so far — keep going`;
+  badge.hidden = false;
 }
 
 refreshStudiedBadge();
