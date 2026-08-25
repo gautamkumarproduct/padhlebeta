@@ -192,25 +192,47 @@ h1.page-title {
 }
 
 .room-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.5rem;
-  padding: 1rem;
-  border-radius: 1rem;
+  gap: 0.6rem;
+  padding: 1.15rem 1rem;
+  border-radius: 1.15rem;
   border: 1px solid var(--glass-line);
   background: var(--glass);
   text-decoration: none;
   cursor: pointer;
-  transition: background var(--swift), transform var(--swift), border-color var(--swift);
+  overflow: hidden;
+  transition: background var(--swift), transform var(--swift), border-color var(--swift), box-shadow var(--swift);
 }
+
+.room-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120px circle at 20% 0%, color-mix(in srgb, var(--accent-room, var(--accent)) 35%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--swift);
+  pointer-events: none;
+}
+
 .room-card:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 207, 77, 0.5);
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: color-mix(in srgb, var(--accent-room, var(--accent)) 55%, transparent);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+.room-card:hover::before {
+  opacity: 1;
 }
 .room-card:active {
   transform: scale(0.98);
+}
+
+.room-card__icon {
+  font-size: 1.5rem;
+  line-height: 1;
 }
 
 .room-card__label {
@@ -269,22 +291,65 @@ h1.page-title {
 /* ── Pomodoro card ─────────────────────────────────────────── */
 
 .pomodoro-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  border: 1px solid rgba(255, 207, 77, 0.35);
-  background: rgba(255, 207, 77, 0.08);
-  border-radius: 1.5rem;
-  padding: 1.1rem 1rem;
+  border: 1px solid var(--glass-line);
+  background: linear-gradient(160deg, rgba(255, 207, 77, 0.08), rgba(255, 255, 255, 0.03));
+  border-radius: 1.75rem;
+  padding: 1.4rem 1rem 1.2rem;
   margin-bottom: 1rem;
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  box-shadow: var(--shadow-glass);
   transition: background var(--swift), border-color var(--swift);
 }
 
 .pomodoro-card.is-break {
-  border-color: rgba(74, 222, 128, 0.4);
-  background: rgba(74, 222, 128, 0.08);
+  background: linear-gradient(160deg, rgba(74, 222, 128, 0.1), rgba(255, 255, 255, 0.03));
+}
+
+.pomodoro-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.pomodoro-ring svg {
+  transform: rotate(-90deg);
+}
+
+.pomodoro-ring__track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 8;
+}
+
+.pomodoro-ring__fill {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear, stroke var(--swift);
+}
+
+.pomodoro-card.is-break .pomodoro-ring__fill {
+  stroke: var(--green);
+}
+
+.pomodoro-ring__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .pomodoro-phase {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.14em;
   color: var(--accent);
@@ -294,11 +359,11 @@ h1.page-title {
 }
 
 .pomodoro-timer {
-  font-size: clamp(1.8rem, 7vw, 2.4rem);
+  font-size: clamp(1.5rem, 6vw, 1.9rem);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: #fff;
-  margin-top: 0.15rem;
+  margin-top: 0.1rem;
 }
 
 .pomodoro-label {
@@ -359,10 +424,53 @@ h1.page-title {
 }
 
 .poll-results {
-  margin-top: 0.75rem;
-  font-size: 0.8rem;
+  margin-top: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.poll-bar-row {
+  display: grid;
+  grid-template-columns: 4.4rem 1fr 1.4rem;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.76rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.6);
+}
+
+.poll-bar-label {
+  text-align: left;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+}
+
+.poll-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.poll-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s var(--glide);
+}
+
+.poll-bar-value {
+  text-align: right;
+  color: rgba(255, 255, 255, 0.55);
+  font-variant-numeric: tabular-nums;
+}
+
+.poll-empty,
+.poll-total {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.45);
+  text-align: center;
 }
 
 .timer-card {
@@ -498,8 +606,19 @@ h1.page-title {
 }
 
 .chat-msg {
-  font-size: 0.88rem;
+  align-self: flex-start;
+  max-width: 85%;
+  font-size: 0.85rem;
   line-height: 1.35;
+  padding: 0.5rem 0.75rem;
+  border-radius: 1rem 1rem 1rem 0.25rem;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.chat-msg.is-you {
+  align-self: flex-end;
+  border-radius: 1rem 1rem 0.25rem 1rem;
+  background: linear-gradient(135deg, rgba(255, 207, 77, 0.18), rgba(139, 92, 246, 0.14));
 }
 
 .chat-msg .who {

@@ -489,6 +489,6 @@ if ('requestIdleCallback' in window) {
   if (!badge) return;
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  badge.textContent = h > 0 ? `Studied ${h}h ${m}m` : m > 0 ? `Studied ${m}m` : 'Studied <1m';
-  badge.hidden = false;
+  const amount = h > 0 ? `${h}h ${m}m` : m > 0 ? `${m}m` : '<1m';
+  badge.textContent = `You've studied ${amount} so far — keep going`;
 })();

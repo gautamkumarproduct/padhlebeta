@@ -3,11 +3,11 @@ const SUPABASE_URL = 'https://aoljwsoczdyevvvtoxkb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ocDNtgEUb5k1GOSWUVnZ0Q_2daL54ZZ';
 
 const ROOMS = [
-  { id: 'iitjee', title: 'IIT-JEE' },
-  { id: 'neet', title: 'NEET' },
-  { id: 'board10', title: 'Boards · Class 10' },
-  { id: 'board12', title: 'Boards · Class 12' },
-  { id: 'lakshya', title: 'Lakshya · Open Focus' },
+  { id: 'iitjee', title: 'IIT-JEE', icon: '⚙️', accent: '#8b5cf6' },
+  { id: 'neet', title: 'NEET', icon: '🧬', accent: '#22d3ee' },
+  { id: 'board10', title: 'Boards · Class 10', icon: '📘', accent: '#4ade80' },
+  { id: 'board12', title: 'Boards · Class 12', icon: '📗', accent: '#60a5fa' },
+  { id: 'lakshya', title: 'Lakshya · Open Focus', icon: '🎯', accent: '#ffcf4d' },
 ];
 
 function getRoomById(id) {

@@ -4,8 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Study Rooms — PadhleBeta</title>
-    <meta name="theme-color" content="#0a1430" />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
+    <meta name="theme-color" content="#08080d" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,9 +13,16 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Yatra+One&display=swap"
     />
+    <link rel="stylesheet" href="/ambient.css" />
     <link rel="stylesheet" href="/rooms/rooms.css" />
   </head>
   <body>
+    <div class="ambient" aria-hidden="true">
+      <div class="ambient__blob ambient__blob--1"></div>
+      <div class="ambient__blob ambient__blob--2"></div>
+      <div class="ambient__blob ambient__blob--3"></div>
+      <div class="ambient__grain"></div>
+    </div>
     <div class="shell">
       <a class="back" href="/">← Back to PadhleBeta</a>
 
@@ -37,6 +44,7 @@
       <div class="room-grid" id="roomGrid"></div>
     </div>
 
+    <script src="/ambient.js"></script>
     <script src="/rooms/config.js"></script>
     <script type="module">
       import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -66,6 +74,7 @@
         const card = document.createElement('a');
         card.className = 'room-card';
         card.href = `/rooms/room.html?room=${room.id}`;
+        card.style.setProperty('--accent-room', room.accent);
         card.addEventListener('click', (e) => {
           if (!nameInput.value.trim()) {
             e.preventDefault();
@@ -76,6 +85,10 @@
           }
         });
 
+        const icon = document.createElement('span');
+        icon.className = 'room-card__icon';
+        icon.textContent = room.icon;
+
         const label = document.createElement('span');
         label.className = 'room-card__label';
         label.textContent = room.title;
@@ -84,7 +97,7 @@
         count.className = 'room-card__count';
         count.innerHTML = '<span class="dot"></span><span>—</span>';
 
-        card.append(label, count);
+        card.append(icon, label, count);
         grid.append(card);
         cardByRoom[room.id] = count.querySelector('span:last-child');
       });
