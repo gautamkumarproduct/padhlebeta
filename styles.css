@@ -118,13 +118,19 @@ body {
 }
 
 .bg__layer--1 {
-  background-image: url("/assets/bg-1.svg");
-  background-position: center 65%;
+  background:
+    radial-gradient(650px 480px at 82% 8%, rgba(255, 207, 77, 0.18), transparent 60%),
+    radial-gradient(600px 600px at 8% 96%, rgba(101, 156, 255, 0.14), transparent 60%),
+    radial-gradient(1000px 700px at 50% 120%, #123363 0%, transparent 60%),
+    linear-gradient(160deg, #0d1f47 0%, #0a1430 55%, #060c1f 100%);
 }
 
 .bg__layer--2 {
-  background-image: url("/assets/bg-2.svg");
-  background-position: center 55%;
+  background:
+    radial-gradient(700px 500px at 15% 4%, rgba(255, 207, 77, 0.16), transparent 60%),
+    radial-gradient(650px 650px at 92% 92%, rgba(101, 156, 255, 0.18), transparent 60%),
+    radial-gradient(1000px 700px at 50% 120%, #16264f 0%, transparent 60%),
+    linear-gradient(200deg, #10254c 0%, #0a1430 55%, #05091a 100%);
 }
 
 .bg__scrim {
