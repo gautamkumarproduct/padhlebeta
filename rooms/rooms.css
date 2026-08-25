@@ -713,9 +713,51 @@ h1.page-title {
   }
 }
 
+/* Someone joining / leaving the grid — pop in, shrink-fade out. */
+.avatar-grid {
+  /* So a tile animating out with position unaffected doesn't jump the
+     rest of the grid around mid-animation. */
+  align-items: start;
+}
+
+@keyframes avatar-tile-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes avatar-tile-out {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.4) translateY(10px);
+  }
+}
+
+.avatar-tile--enter {
+  animation: avatar-tile-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.avatar-tile--leave {
+  animation: avatar-tile-out 300ms ease both;
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .avatar-tile__circle::after {
     animation: none;
+  }
+  .avatar-tile--enter,
+  .avatar-tile--leave {
+    animation: none !important;
   }
 }
 

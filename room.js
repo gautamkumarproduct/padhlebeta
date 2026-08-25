@@ -415,9 +415,33 @@ function saveStudyTime() {
 
 window.addEventListener('pagehide', saveStudyTime);
 
-// Ambient placeholder profiles — display-only, see config.js. Computed
-// once per page load so they don't visibly reshuffle every presence sync.
-const ambientBots = getAmbientProfiles(11);
+// Ambient placeholder profiles — display-only, see config.js. Never
+// written to Supabase; the eligible pool is seeded per clock hour (same
+// set for everyone that hour), but which ones are actually "in the room"
+// drifts every so often below, so people visibly come and go instead of
+// sitting there as a static backdrop.
+const eligibleBots = getAmbientProfiles(16);
+const activeBots = new Set(eligibleBots.slice(0, 8 + Math.floor(Math.random() * 3)));
+
+function scheduleNextBotChurn() {
+  const delay = 9000 + Math.random() * 16000; // ~9–25s apart
+  setTimeout(() => {
+    const canJoin = activeBots.size < 12;
+    const canLeave = activeBots.size > 7;
+    const doJoin = canJoin && (!canLeave || Math.random() < 0.55);
+
+    if (doJoin) {
+      const candidates = eligibleBots.filter((n) => !activeBots.has(n));
+      if (candidates.length) activeBots.add(candidates[Math.floor(Math.random() * candidates.length)]);
+    } else if (canLeave) {
+      const arr = [...activeBots];
+      activeBots.delete(arr[Math.floor(Math.random() * arr.length)]);
+    }
+
+    renderPresence();
+    scheduleNextBotChurn();
+  }, delay);
+}
 
 function initialsFor(name) {
   const parts = name.trim().split(/\s+/);
@@ -432,7 +456,7 @@ function hueForName(name) {
 
 function buildAvatarTile(name, isYou) {
   const tile = document.createElement('div');
-  tile.className = 'avatar-tile' + (isYou ? ' is-you' : '');
+  tile.className = 'avatar-tile avatar-tile--enter' + (isYou ? ' is-you' : '');
 
   const circle = document.createElement('div');
   circle.className = 'avatar-tile__circle';
@@ -451,21 +475,42 @@ function buildAvatarTile(name, isYou) {
   return tile;
 }
 
+// Identity -> tile element, so a presence sync (which fires on ANY
+// change — someone else joining, a bot churning) only adds/removes the
+// actual delta instead of wiping and rebuilding the whole grid, which
+// would replay the entrance animation on tiles that were already there.
+const renderedTiles = new Map();
+
 function renderPresence() {
   const state = channel.presenceState();
   const people = Object.values(state)
     .flat()
     .sort((a, b) => a.joined_at - b.joined_at);
 
-  const totalCount = people.length + ambientBots.length;
+  const totalCount = people.length + activeBots.size;
   roomCount.textContent = totalCount === 1 ? '1 studying' : `${totalCount} studying`;
 
-  presentList.innerHTML = '';
-  people.forEach((p) => {
-    presentList.append(buildAvatarTile(p.name, p.key === myKey));
-  });
-  ambientBots.forEach((name) => {
-    presentList.append(buildAvatarTile(name, false));
+  const desired = new Map();
+  people.forEach((p) => desired.set('u:' + p.key, { name: p.name, isYou: p.key === myKey }));
+  activeBots.forEach((name) => desired.set('b:' + name, { name, isYou: false }));
+
+  for (const [id, el] of renderedTiles) {
+    if (!desired.has(id)) {
+      el.classList.remove('avatar-tile--enter');
+      el.classList.add('avatar-tile--leave');
+      setTimeout(() => el.remove(), 320);
+      renderedTiles.delete(id);
+    }
+  }
+
+  desired.forEach((info, id) => {
+    if (renderedTiles.has(id)) return;
+    const tile = buildAvatarTile(info.name, info.isYou);
+    presentList.append(tile);
+    renderedTiles.set(id, tile);
+    // Drop the enter class once the animation's played so a later
+    // re-append (shouldn't happen, but just in case) doesn't skip it.
+    tile.addEventListener('animationend', () => tile.classList.remove('avatar-tile--enter'), { once: true });
   });
 }
 
@@ -513,6 +558,7 @@ channel.subscribe();
 tickPomodoro();
 applyChatVisibility();
 pomodoroInterval = window.setInterval(tickPomodoro, 1000);
+scheduleNextBotChurn();
 
 function joinRoom() {
   switchView(viewHome, viewRoom);
