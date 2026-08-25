@@ -440,9 +440,20 @@ window.onYouTubeIframeAPIReady = () => {
   tryBootPlayer();
 };
 
-const ytScript = document.createElement('script');
-ytScript.src = 'https://www.youtube.com/iframe_api';
-document.head.append(ytScript);
+// Yield to the browser's idle slice rather than fighting the initial
+// paint (CSS, fonts, tracks.json) for bandwidth/main-thread time on
+// slower mobile connections. `timeout` caps how long we'll wait so it
+// still starts promptly even under sustained load.
+const loadYtApi = () => {
+  const ytScript = document.createElement('script');
+  ytScript.src = 'https://www.youtube.com/iframe_api';
+  document.head.append(ytScript);
+};
+if ('requestIdleCallback' in window) {
+  requestIdleCallback(loadYtApi, { timeout: 300 });
+} else {
+  setTimeout(loadYtApi, 50);
+}
 
 (async function init() {
   try {
