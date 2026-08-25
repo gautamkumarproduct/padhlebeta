@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Study Rooms — PadhleBeta</title>
+    <title>Study Room — PadhleBeta</title>
     <meta name="theme-color" content="#08080d" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
@@ -26,8 +26,8 @@
     <div class="shell">
       <a class="back" href="/">← Back to PadhleBeta</a>
 
-      <h1 class="page-title">Study Rooms</h1>
-      <p class="page-sub">Pick a room, join in, and study alongside others. No mic, no camera — just quiet company and chat during breaks.</p>
+      <h1 class="page-title">Study Room</h1>
+      <p class="page-sub">Join in and study alongside others, live. No mic, no camera — just quiet company and chat during breaks.</p>
 
       <div class="studied-badge" id="studiedBadge" hidden>
         📚 Studied so far: <strong id="studiedAmount">0m</strong>
@@ -41,7 +41,16 @@
         </div>
       </div>
 
-      <div class="room-grid" id="roomGrid"></div>
+      <a class="join-card" href="/rooms/room.html?room=lakshya" id="joinCard">
+        <span class="join-card__icon">🎯</span>
+        <span class="join-card__text">
+          <span class="join-card__title">Lakshya · Open Focus</span>
+          <span class="join-card__count"><span class="dot"></span><span id="liveCount">— studying now</span></span>
+        </span>
+        <span class="join-card__arrow">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M13 5l7 7-7 7"></path></svg>
+        </span>
+      </a>
     </div>
 
     <script src="/ambient.js"></script>
@@ -50,6 +59,7 @@
       import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
       const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const room = ROOMS[0];
 
       const nameInput = document.getElementById('nameInput');
       nameInput.value = getStudentName();
@@ -67,54 +77,28 @@
         document.getElementById('studiedAmount').textContent = formatDuration(studiedSeconds);
       }
 
-      const grid = document.getElementById('roomGrid');
-      const cardByRoom = {};
-
-      ROOMS.forEach((room) => {
-        const card = document.createElement('a');
-        card.className = 'room-card';
-        card.href = `/rooms/room.html?room=${room.id}`;
-        card.style.setProperty('--accent-room', room.accent);
-        card.addEventListener('click', (e) => {
-          if (!nameInput.value.trim()) {
-            e.preventDefault();
-            nameInput.focus();
-            nameInput.placeholder = 'Enter your name first';
-          } else {
-            setStudentName(nameInput.value, getStudentNameType());
-          }
-        });
-
-        const icon = document.createElement('span');
-        icon.className = 'room-card__icon';
-        icon.textContent = room.icon;
-
-        const label = document.createElement('span');
-        label.className = 'room-card__label';
-        label.textContent = room.title;
-
-        const count = document.createElement('span');
-        count.className = 'room-card__count';
-        count.innerHTML = '<span class="dot"></span><span>—</span>';
-
-        card.append(icon, label, count);
-        grid.append(card);
-        cardByRoom[room.id] = count.querySelector('span:last-child');
+      const joinCard = document.getElementById('joinCard');
+      joinCard.addEventListener('click', (e) => {
+        if (!nameInput.value.trim()) {
+          e.preventDefault();
+          nameInput.focus();
+          nameInput.placeholder = 'Enter your name first';
+        } else {
+          setStudentName(nameInput.value, getStudentNameType());
+        }
       });
 
-      // Best-effort live headcounts for the picker.
-      ROOMS.forEach((room) => {
-        const channel = supabase.channel(`room:${room.id}`, {
-          config: { presence: { key: `peek-${Math.random().toString(36).slice(2)}` } },
-        });
-        channel.on('presence', { event: 'sync' }, () => {
-          const state = channel.presenceState();
-          const n = Object.values(state).flat().length;
-          const el = cardByRoom[room.id];
-          if (el) el.textContent = n === 1 ? '1 studying' : `${n} studying`;
-        });
-        channel.subscribe();
+      // Best-effort live headcount.
+      const liveCount = document.getElementById('liveCount');
+      const channel = supabase.channel(`room:${room.id}`, {
+        config: { presence: { key: `peek-${Math.random().toString(36).slice(2)}` } },
       });
+      channel.on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        const n = Object.values(state).flat().length;
+        liveCount.textContent = n === 1 ? '1 studying now' : `${n} studying now`;
+      });
+      channel.subscribe();
 
       // Log a page view — fire-and-forget, never blocks the UI. user_id is
       // left out here since pb_users only gets a row once someone actually

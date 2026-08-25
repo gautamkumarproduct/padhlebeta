@@ -2,13 +2,11 @@
 const SUPABASE_URL = 'https://aoljwsoczdyevvvtoxkb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ocDNtgEUb5k1GOSWUVnZ0Q_2daL54ZZ';
 
-const ROOMS = [
-  { id: 'iitjee', title: 'IIT-JEE', icon: '⚙️', accent: '#8b5cf6' },
-  { id: 'neet', title: 'NEET', icon: '🧬', accent: '#22d3ee' },
-  { id: 'board10', title: 'Boards · Class 10', icon: '📘', accent: '#4ade80' },
-  { id: 'board12', title: 'Boards · Class 12', icon: '📗', accent: '#60a5fa' },
-  { id: 'lakshya', title: 'Lakshya · Open Focus', icon: '🎯', accent: '#ffcf4d' },
-];
+// Starting with a single room while the study-rooms feature is new and
+// small — easy to split back into iitjee/neet/board10/board12/lakshya
+// later once there's enough traffic to need it (the room page and schema
+// already support any number of room ids).
+const ROOMS = [{ id: 'lakshya', title: 'Lakshya · Open Focus', icon: '🎯', accent: '#ffcf4d' }];
 
 function getRoomById(id) {
   return ROOMS.find((r) => r.id === id) || null;
