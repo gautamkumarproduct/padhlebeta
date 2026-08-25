@@ -6,7 +6,7 @@
     <title>PadhleBeta — Study motivation, non-stop</title>
     <meta
       name="description"
-      content="Non-stop Hindi motivational songs to study, focus and grind with. Padhle beta, kar ke dikha. Press play."
+      content="Non-stop Hindi motivational songs to study, focus and grind with. Join a live study room, or just press play."
     />
     <meta name="theme-color" content="#08080d" />
 
@@ -54,6 +54,7 @@
 
     <link rel="stylesheet" href="/ambient.css" />
     <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/rooms/rooms.css" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-CFKL02YN12"></script>
@@ -68,110 +69,178 @@
   </head>
   <body>
     <div class="ambient" aria-hidden="true">
-      <div class="ambient__blob ambient__blob--1"></div>
-      <div class="ambient__blob ambient__blob--2"></div>
-      <div class="ambient__blob ambient__blob--3"></div>
+      <div class="ambient__color">
+        <div class="ambient__blob ambient__blob--1"></div>
+        <div class="ambient__blob ambient__blob--2"></div>
+        <div class="ambient__blob ambient__blob--3"></div>
+        <div class="ambient__blob ambient__blob--4"></div>
+      </div>
       <div class="ambient__grain"></div>
-    </div>
-    <div class="bg" aria-hidden="true">
-      <div class="bg__layer bg__layer--1 is-active"></div>
-      <div class="bg__layer bg__layer--2"></div>
-      <div class="bg__scrim"></div>
     </div>
 
     <div id="yt-player" class="yt-host"></div>
 
-    <main>
-      <div class="topbar">
-        <span class="clock" id="clock"></span>
-        <span class="presence">
-          <span class="presence__dot"></span>
-          <span class="presence__count" id="listeners">612</span>
-          <span class="presence__label">studying now</span>
-        </span>
-        <span class="links">
-          <a class="link" href="/rooms/" aria-label="Study Rooms">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-          </a>
-        </span>
+    <div id="app">
+      <!-- ── HOME VIEW ─────────────────────────────────────────────── -->
+      <section class="view" id="viewHome">
+        <div class="topbar">
+          <span class="clock" id="clock"></span>
+          <span class="presence">
+            <span class="presence__dot"></span>
+            <span class="presence__count" id="listeners">612</span>
+            <span class="presence__label">studying now</span>
+          </span>
+          <span class="links"></span>
+        </div>
+
+        <h1 class="logo">
+          <span class="logo__line">पढ़ले</span>
+          <span class="logo__line">बेटा</span>
+        </h1>
+
+        <button class="rooms-cta" id="roomsCtaBtn" type="button">
+          <span class="rooms-cta__ring">
+            <span class="rooms-cta__dot"></span>
+          </span>
+          <span class="rooms-cta__text">
+            <span class="rooms-cta__title">Study with others, live</span>
+            <span class="rooms-cta__sub" id="studiedBadge">Lakshya · Open Focus — join in now</span>
+          </span>
+          <span class="rooms-cta__arrow">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M13 5l7 7-7 7"></path></svg>
+          </span>
+        </button>
+      </section>
+
+      <!-- ── STUDY ROOM VIEW ───────────────────────────────────────── -->
+      <section class="view is-hidden" id="viewRoom">
+        <button class="back" id="leaveBtn" type="button">← Leave room</button>
+
+        <div class="room-header">
+          <h1 id="roomTitle">🎯 Lakshya · Open Focus</h1>
+          <span class="count"><span class="dot"></span><span id="roomCount">1 studying</span></span>
+        </div>
+
+        <div class="pomodoro-card" id="pomodoroCard">
+          <div class="pomodoro-ring">
+            <svg viewBox="0 0 120 120" width="152" height="152">
+              <circle class="pomodoro-ring__track" cx="60" cy="60" r="52"></circle>
+              <circle class="pomodoro-ring__fill" id="pomodoroRingFill" cx="60" cy="60" r="52"></circle>
+            </svg>
+            <div class="pomodoro-ring__center">
+              <div class="pomodoro-phase" id="pomodoroPhase">FOCUS</div>
+              <div class="pomodoro-timer" id="pomodoroTimer">30:00</div>
+            </div>
+          </div>
+          <div class="pomodoro-label" id="pomodoroLabel">until break</div>
+          <div class="pomodoro-mytime">Your time here: <strong id="timer">00:00</strong></div>
+        </div>
+
+        <div class="poll-card is-hidden" id="pollCard">
+          <div class="poll-question">Did you focus for the last 30 minutes — a serious study block?</div>
+          <div class="poll-options">
+            <button class="poll-btn" data-response="yes" type="button">💪 Yes</button>
+            <button class="poll-btn" data-response="partial" type="button">😐 Kinda</button>
+            <button class="poll-btn" data-response="no" type="button">😴 No</button>
+          </div>
+          <div class="poll-results" id="pollResults"></div>
+        </div>
+
+        <div class="present">
+          <div class="room-group">In this room</div>
+          <div class="present-list" id="presentList"></div>
+        </div>
+
+        <div class="chat-toggle">
+          <div class="room-group" style="margin: 0">Chat</div>
+          <button id="chatToggleBtn" type="button">Hide chat</button>
+        </div>
+
+        <div class="chat-panel" id="chatPanel">
+          <div class="chat-log" id="chatLog">
+            <p class="chat-empty" id="chatLockedMsg">🔒 Chat opens during the next break</p>
+          </div>
+          <form class="chat-form" id="chatForm">
+            <input id="chatInput" type="text" placeholder="Chat opens on break…" maxlength="240" autocomplete="off" disabled />
+            <button type="submit" id="chatSendBtn" disabled>Send</button>
+          </form>
+        </div>
+      </section>
+    </div>
+
+    <!-- ── Persistent mini player — visible on every view, so music and
+         motivational lines never disappear, even inside the study room ── -->
+    <div class="dock" id="dock">
+      <p class="bumper">
+        <span class="bumper__text" id="bumperText"></span>
+        <button class="bumper__next" id="bumperNext" type="button" aria-label="Next line">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+        </button>
+      </p>
+
+      <div class="list" id="list">
+        <ol id="listItems"></ol>
       </div>
 
-      <h1 class="logo">
-        <span class="logo__line">पढ़ले</span>
-        <span class="logo__line">बेटा</span>
-      </h1>
+      <div class="player" id="player">
+        <div class="disc">
+          <div class="disc__ring">
+            <img class="disc__art" id="cover" src="" alt="" />
+          </div>
+          <div class="disc__hub"></div>
+        </div>
 
-      <a class="rooms-cta" href="/rooms/" id="roomsCta">
-        <span class="rooms-cta__ring">
-          <span class="rooms-cta__dot"></span>
-        </span>
-        <span class="rooms-cta__text">
-          <span class="rooms-cta__title">Study with others, live</span>
-          <span class="rooms-cta__sub" id="studiedBadge">Lakshya · Open Focus — join in now</span>
-        </span>
-        <span class="rooms-cta__arrow">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M13 5l7 7-7 7"></path></svg>
-        </span>
-      </a>
+        <div class="meta">
+          <p class="meta__title" id="title">Loading playlist…</p>
+          <p class="meta__artist" id="artist">padhlebeta.live</p>
 
-      <div class="dock">
-        <p class="bumper">
-          <span class="bumper__text" id="bumperText"></span>
-          <button class="bumper__next" id="bumperNext" type="button" aria-label="Next line">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+          <div class="seek" id="seek" role="slider" tabindex="0" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="seek__rail">
+              <div class="seek__fill" id="seekFill"></div>
+            </div>
+            <div class="seek__knob" id="seekKnob"></div>
+          </div>
+          <div class="time">
+            <span id="tCur">0:00</span> / <span id="tDur">0:00</span>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button class="btn btn--toggle is-on" id="shuffle" type="button" aria-label="Shuffle" aria-pressed="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
           </button>
-        </p>
-
-        <div class="list" id="list">
-          <ol id="listItems"></ol>
-        </div>
-
-        <div class="player" id="player">
-          <div class="disc">
-            <div class="disc__ring">
-              <img class="disc__art" id="cover" src="" alt="" />
-            </div>
-            <div class="disc__hub"></div>
-          </div>
-
-          <div class="meta">
-            <p class="meta__title" id="title">Loading playlist…</p>
-            <p class="meta__artist" id="artist">padhlebeta.live</p>
-
-            <div class="seek" id="seek" role="slider" tabindex="0" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-              <div class="seek__rail">
-                <div class="seek__fill" id="seekFill"></div>
-              </div>
-              <div class="seek__knob" id="seekKnob"></div>
-            </div>
-            <div class="time">
-              <span id="tCur">0:00</span> / <span id="tDur">0:00</span>
-            </div>
-          </div>
-
-          <div class="controls">
-            <button class="btn btn--toggle is-on" id="shuffle" type="button" aria-label="Shuffle" aria-pressed="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
-            </button>
-            <button class="btn" id="prev" type="button" aria-label="Previous">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM20 18L9 12l11-6v12z"></path></svg>
-            </button>
-            <button class="btn btn--play" id="play" type="button" aria-label="Play" disabled>
-              <svg class="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
-              <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
-            </button>
-            <button class="btn" id="next" type="button" aria-label="Next">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 18h2V6h-2zM4 6l11 6L4 18V6z"></path></svg>
-            </button>
-            <button class="btn btn--toggle" id="listBtn" type="button" aria-label="Playlist" aria-expanded="false">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-            </button>
-          </div>
+          <button class="btn" id="prev" type="button" aria-label="Previous">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM20 18L9 12l11-6v12z"></path></svg>
+          </button>
+          <button class="btn btn--play" id="play" type="button" aria-label="Play" disabled>
+            <svg class="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+            <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
+          </button>
+          <button class="btn" id="next" type="button" aria-label="Next">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 18h2V6h-2zM4 6l11 6L4 18V6z"></path></svg>
+          </button>
+          <button class="btn btn--toggle" id="listBtn" type="button" aria-label="Playlist" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+          </button>
         </div>
       </div>
-    </main>
+    </div>
+
+    <!-- ── Name gate — shown once before the first room join ────────── -->
+    <div class="name-gate is-hidden" id="nameGate">
+      <div class="name-gate__card">
+        <button class="name-gate__close" id="nameGateClose" type="button" aria-label="Close">✕</button>
+        <h2>What should we call you?</h2>
+        <p>Shown to others in the room. No email, no signup.</p>
+        <input id="nameInput" type="text" placeholder="e.g. Aarav" maxlength="24" autocomplete="off" />
+        <button class="name-gate__random" id="randomNameBtn" type="button">🎲 Get a random name</button>
+        <button class="name-gate__enter" id="enterRoomBtn" type="button">Enter Study Room →</button>
+      </div>
+    </div>
 
     <script src="/ambient.js"></script>
+    <script src="/rooms/config.js"></script>
     <script src="/app.js"></script>
+    <script type="module" src="/room.js"></script>
   </body>
 </html>

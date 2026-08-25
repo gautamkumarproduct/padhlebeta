@@ -1,85 +1,114 @@
-/* Shared "premium" ambient backdrop — a near-black canvas with a few soft,
-   slowly drifting colour blobs, plus a spotlight that follows the pointer.
-   Used on every page so the whole site feels like one interactive surface
-   instead of a flat gradient. */
+/* Shared "premium" ambient backdrop — a near-black canvas with a few rich,
+   constantly drifting colour blobs (slow hue-cycling for a living, never-
+   static feel) plus a bold spotlight that follows the pointer. Used on
+   every page so the whole site feels like one interactive surface. */
 
 .ambient {
   position: fixed;
   inset: 0;
   z-index: -2;
   overflow: hidden;
-  background: #08080d;
+  background: #060609;
 }
 
 .ambient::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: -10%;
   background: radial-gradient(
-    560px circle at var(--mx, 50%) var(--my, 40%),
-    rgba(255, 255, 255, 0.06),
-    transparent 60%
+    900px circle at var(--mx, 50%) var(--my, 40%),
+    rgba(255, 207, 77, 0.22),
+    rgba(139, 92, 246, 0.14) 35%,
+    transparent 62%
   );
+  mix-blend-mode: screen;
   pointer-events: none;
+  transition: background 60ms linear;
+}
+
+.ambient__color {
+  position: absolute;
+  inset: 0;
+  animation: hue-cycle 36s linear infinite;
 }
 
 .ambient__blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(70px);
+  filter: blur(64px);
   will-change: transform;
+  mix-blend-mode: screen;
 }
 
 .ambient__blob--1 {
-  width: 46vw;
-  height: 46vw;
-  top: -14%;
-  left: -10%;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.55), transparent 70%);
-  animation: drift1 24s ease-in-out infinite;
+  width: 50vw;
+  height: 50vw;
+  top: -16%;
+  left: -12%;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.75), transparent 70%);
+  animation: drift1 22s ease-in-out infinite;
 }
 
 .ambient__blob--2 {
-  width: 40vw;
-  height: 40vw;
-  bottom: -16%;
-  right: -8%;
-  background: radial-gradient(circle, rgba(255, 207, 77, 0.4), transparent 70%);
-  animation: drift2 28s ease-in-out infinite;
+  width: 44vw;
+  height: 44vw;
+  bottom: -18%;
+  right: -10%;
+  background: radial-gradient(circle, rgba(255, 207, 77, 0.55), transparent 70%);
+  animation: drift2 26s ease-in-out infinite;
 }
 
 .ambient__blob--3 {
-  width: 32vw;
-  height: 32vw;
-  top: 28%;
-  right: 14%;
-  background: radial-gradient(circle, rgba(34, 211, 238, 0.32), transparent 70%);
-  animation: drift3 32s ease-in-out infinite;
+  width: 36vw;
+  height: 36vw;
+  top: 24%;
+  right: 12%;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.5), transparent 70%);
+  animation: drift3 30s ease-in-out infinite;
+}
+
+.ambient__blob--4 {
+  width: 30vw;
+  height: 30vw;
+  bottom: 8%;
+  left: 18%;
+  background: radial-gradient(circle, rgba(255, 99, 154, 0.4), transparent 70%);
+  animation: drift4 34s ease-in-out infinite;
 }
 
 .ambient__grain {
   position: absolute;
   inset: 0;
-  opacity: 0.025;
+  opacity: 0.03;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+@keyframes hue-cycle {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
 @keyframes drift1 {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(6vw, 8vh) scale(1.08); }
+  50% { transform: translate(8vw, 10vh) scale(1.12); }
 }
 @keyframes drift2 {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-7vw, -7vh) scale(1.06); }
+  50% { transform: translate(-9vw, -9vh) scale(1.1); }
 }
 @keyframes drift3 {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-5vw, 9vh) scale(0.94); }
+  50% { transform: translate(-7vw, 12vh) scale(0.9); }
+}
+@keyframes drift4 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(10vw, -6vh) scale(1.08); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ambient__blob {
+  .ambient__blob,
+  .ambient__color {
     animation: none !important;
   }
   .ambient::before {

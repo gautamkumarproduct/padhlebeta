@@ -154,17 +154,51 @@ body {
   pointer-events: none;
 }
 
-main {
+#app {
+  position: relative;
+}
+
+.view {
   position: relative;
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: max(var(--edge), env(safe-area-inset-top)) var(--edge)
+    calc(var(--dock-height, 7.5rem) + var(--edge));
+  transition: opacity 0.42s ease, transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.view.is-hidden {
+  display: none;
+}
+
+.view--leaving {
+  opacity: 0;
+  transform: translateY(-18px) scale(0.97);
+  pointer-events: none;
+}
+
+.view--entering {
+  opacity: 0;
+  transform: translateY(18px) scale(0.97);
+}
+
+#viewHome {
   justify-content: center;
   gap: clamp(2rem, 8vh, 5rem);
-  padding: max(var(--edge), env(safe-area-inset-top)) var(--edge)
-    max(var(--edge), env(safe-area-inset-bottom));
+}
+
+#viewRoom {
+  justify-content: flex-start;
+  overflow-y: auto;
+  gap: 0;
+}
+
+#viewRoom > * {
+  width: 100%;
+  max-width: 28rem;
 }
 
 /* ── Corner chrome ──────────────────────────────────────────── */
@@ -289,9 +323,13 @@ main {
 /* ── Study rooms CTA ────────────────────────────────────────── */
 
 .rooms-cta {
+  appearance: none;
+  outline: none;
+  cursor: pointer;
   position: relative;
   display: flex;
   align-items: center;
+  text-align: left;
   gap: 0.85rem;
   width: 100%;
   max-width: 26rem;
@@ -388,11 +426,18 @@ main {
   color: var(--accent);
 }
 
-/* ── Player dock ────────────────────────────────────────────── */
+/* ── Player dock ────────────────────────────────────────────────
+   Fixed at the bottom of the viewport on every view, so the music and
+   the bumper line are always reachable — including from inside the
+   study room — instead of living only on the home screen. ──────── */
 
 .dock {
-  position: relative;
-  width: 100%;
+  position: fixed;
+  left: 50%;
+  bottom: max(0.9rem, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 40;
+  width: calc(100% - 2 * var(--edge));
   max-width: 30rem;
 }
 
@@ -869,4 +914,151 @@ main {
   .player.is-playing .disc {
     transform: none;
   }
+}
+
+/* ── Room hero: personal time, folded into the pomodoro card ──── */
+
+.pomodoro-mytime {
+  margin-top: 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+}
+.pomodoro-mytime strong {
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Name gate modal ────────────────────────────────────────── */
+
+.name-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: var(--edge);
+  background: rgba(4, 4, 8, 0.6);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.26s ease;
+}
+
+.name-gate.is-hidden {
+  display: none;
+}
+
+.name-gate.is-open {
+  opacity: 1;
+}
+
+@media (min-width: 640px) {
+  .name-gate {
+    align-items: center;
+  }
+}
+
+.name-gate__card {
+  position: relative;
+  width: 100%;
+  max-width: 24rem;
+  border-radius: 1.6rem;
+  border: 1px solid var(--glass-line);
+  background: linear-gradient(160deg, rgba(30, 20, 50, 0.92), rgba(10, 10, 16, 0.96));
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  padding: 1.6rem 1.4rem 1.4rem;
+  transform: translateY(24px) scale(0.97);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.name-gate.is-open .name-gate__card {
+  transform: translateY(0) scale(1);
+}
+
+.name-gate__card h2 {
+  margin: 0 0 0.3rem;
+  font-family: "Yatra One", var(--body);
+  font-weight: 400;
+  font-size: 1.4rem;
+  color: var(--accent);
+}
+
+.name-gate__card p {
+  margin: 0 0 1.1rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.name-gate__card input {
+  width: 100%;
+  font-family: var(--body);
+  font-size: 1.05rem;
+  font-weight: 700;
+  padding: 0.8rem 1rem;
+  border-radius: 0.9rem;
+  border: 1px solid var(--glass-line);
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  outline: none;
+  margin-bottom: 0.7rem;
+}
+.name-gate__card input:focus {
+  border-color: var(--accent);
+}
+
+.name-gate__random {
+  width: 100%;
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 0.65rem;
+  border-radius: 0.85rem;
+  border: 1px solid var(--glass-line);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  cursor: pointer;
+  margin-bottom: 0.9rem;
+  transition: background var(--swift);
+}
+.name-gate__random:hover {
+  background: rgba(255, 207, 77, 0.16);
+}
+
+.name-gate__enter {
+  width: 100%;
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: 0.98rem;
+  padding: 0.85rem;
+  border-radius: 0.9rem;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), #ff8b4d);
+  color: #1a1200;
+  cursor: pointer;
+  transition: transform var(--swift);
+}
+.name-gate__enter:hover {
+  transform: translateY(-1px);
+}
+.name-gate__enter:active {
+  transform: scale(0.97);
+}
+
+.name-gate__close {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.name-gate__close:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
 }
