@@ -24,10 +24,26 @@
         <span class="count"><span class="dot"></span><span id="roomCount">1 studying</span></span>
       </div>
 
+      <div class="pomodoro-card" id="pomodoroCard">
+        <div class="pomodoro-phase" id="pomodoroPhase">FOCUS</div>
+        <div class="pomodoro-timer" id="pomodoroTimer">30:00</div>
+        <div class="pomodoro-label" id="pomodoroLabel">until break</div>
+      </div>
+
       <div class="timer-card">
         <div class="timer" id="timer">00:00</div>
-        <div class="timer-label">time in this room</div>
+        <div class="timer-label">your time in this room</div>
         <button class="leave-btn" id="leaveBtn" type="button">Leave room</button>
+      </div>
+
+      <div class="poll-card is-hidden" id="pollCard">
+        <div class="poll-question">Did you focus for the last 30 minutes — a serious study block?</div>
+        <div class="poll-options">
+          <button class="poll-btn" data-response="yes" type="button">💪 Yes</button>
+          <button class="poll-btn" data-response="partial" type="button">😐 Kinda</button>
+          <button class="poll-btn" data-response="no" type="button">😴 No</button>
+        </div>
+        <div class="poll-results" id="pollResults"></div>
       </div>
 
       <div class="present">
@@ -42,11 +58,11 @@
 
       <div class="chat-panel" id="chatPanel">
         <div class="chat-log" id="chatLog">
-          <p class="chat-empty">No messages yet — say hi 👋</p>
+          <p class="chat-empty" id="chatLockedMsg">🔒 Chat opens during the next break</p>
         </div>
         <form class="chat-form" id="chatForm">
-          <input id="chatInput" type="text" placeholder="Type a message…" maxlength="240" autocomplete="off" />
-          <button type="submit">Send</button>
+          <input id="chatInput" type="text" placeholder="Chat opens on break…" maxlength="240" autocomplete="off" disabled />
+          <button type="submit" id="chatSendBtn" disabled>Send</button>
         </form>
       </div>
     </div>
@@ -67,7 +83,32 @@
       document.getElementById('roomTitle').textContent = room.title;
 
       const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const deviceId = getDeviceId();
       const myKey = `${name}-${Math.random().toString(36).slice(2, 8)}`;
+
+      // ── Identity + session logging ─────────────────────────────────
+      supabase.from('pb_users').upsert(
+        { id: deviceId, display_name: name, name_type: getStudentNameType(), last_seen_at: new Date().toISOString() },
+        { onConflict: 'id' },
+      ).then(() => {}, () => {});
+
+      const sessionId = crypto.randomUUID();
+      supabase.from('pb_room_sessions').insert({
+        id: sessionId,
+        user_id: deviceId,
+        room_id: room.id,
+        joined_at: new Date().toISOString(),
+      }).then(() => {}, () => {});
+
+      supabase.from('pb_events').insert({
+        user_id: deviceId,
+        device_session_id: getDeviceSessionId(),
+        event_name: 'room_join',
+        room_id: room.id,
+        properties: { name_type: getStudentNameType() },
+      }).then(() => {}, () => {});
+
+      // ── Presence + chip list ─────────────────────────────────────────
       const channel = supabase.channel(`room:${room.id}`, {
         config: { presence: { key: myKey }, broadcast: { self: true } },
       });
@@ -94,53 +135,94 @@
 
       channel.on('presence', { event: 'sync' }, renderPresence);
 
-      // Chat via broadcast — live-only, nothing persisted server-side.
+      // ── Chat (break-only, cleared after each break) ──────────────────
       const chatLog = document.getElementById('chatLog');
       const chatForm = document.getElementById('chatForm');
       const chatInput = document.getElementById('chatInput');
-      let chatStarted = false;
+      const chatSendBtn = document.getElementById('chatSendBtn');
+      const chatLockedMsg = document.getElementById('chatLockedMsg');
 
-      function appendMessage(who, body, isYou) {
-        if (!chatStarted) {
-          chatLog.innerHTML = '';
-          chatStarted = true;
+      function renderMessages(rows) {
+        chatLog.innerHTML = '';
+        if (!rows.length) {
+          chatLog.append(chatLockedMsgClone('No messages yet — say hi 👋'));
+          return;
         }
-        const msg = document.createElement('div');
-        msg.className = 'chat-msg' + (isYou ? ' is-you' : '');
-        const whoEl = document.createElement('span');
-        whoEl.className = 'who';
-        whoEl.textContent = who + ': ';
-        const bodyEl = document.createElement('span');
-        bodyEl.className = 'body';
-        bodyEl.textContent = body;
-        msg.append(whoEl, bodyEl);
-        chatLog.append(msg);
+        rows.forEach((row) => {
+          const msg = document.createElement('div');
+          msg.className = 'chat-msg' + (row.user_id === deviceId ? ' is-you' : '');
+          const who = document.createElement('span');
+          who.className = 'who';
+          who.textContent = row.display_name + ': ';
+          const body = document.createElement('span');
+          body.className = 'body';
+          body.textContent = row.body;
+          msg.append(who, body);
+          chatLog.append(msg);
+        });
         chatLog.scrollTop = chatLog.scrollHeight;
       }
 
-      channel.on('broadcast', { event: 'chat' }, ({ payload }) => {
-        appendMessage(payload.name, payload.body, payload.key === myKey);
-      });
+      function chatLockedMsgClone(text) {
+        const p = document.createElement('p');
+        p.className = 'chat-empty';
+        p.textContent = text;
+        return p;
+      }
 
-      chatForm.addEventListener('submit', (e) => {
+      async function loadChatForCycle(cycleKey) {
+        const { data } = await supabase
+          .from('pb_chat_messages')
+          .select('user_id, display_name, body')
+          .eq('room_id', room.id)
+          .eq('cycle_key', cycleKey)
+          .order('created_at', { ascending: true })
+          .limit(200);
+        renderMessages(data || []);
+      }
+
+      channel.on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'pb_chat_messages', filter: `room_id=eq.${room.id}` },
+        ({ new: row }) => {
+          if (row.cycle_key !== cycleState.cycleKey) return;
+          const empty = chatLog.querySelector('.chat-empty');
+          if (empty) chatLog.innerHTML = '';
+          const msg = document.createElement('div');
+          msg.className = 'chat-msg' + (row.user_id === deviceId ? ' is-you' : '');
+          const who = document.createElement('span');
+          who.className = 'who';
+          who.textContent = row.display_name + ': ';
+          const body = document.createElement('span');
+          body.className = 'body';
+          body.textContent = row.body;
+          msg.append(who, body);
+          chatLog.append(msg);
+          chatLog.scrollTop = chatLog.scrollHeight;
+        },
+      );
+
+      chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const body = chatInput.value.trim();
-        if (!body) return;
-        channel.send({
-          type: 'broadcast',
-          event: 'chat',
-          payload: { key: myKey, name, body },
-        });
+        if (!body || !cycleState.isBreak) return;
         chatInput.value = '';
+        await supabase.from('pb_chat_messages').insert({
+          room_id: room.id,
+          user_id: deviceId,
+          display_name: name,
+          body,
+          cycle_key: cycleState.cycleKey,
+        });
       });
 
-      channel.subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          await channel.track({ key: myKey, name, joined_at: Date.now() });
-        }
-      });
+      function setChatLocked(locked) {
+        chatInput.disabled = locked;
+        chatSendBtn.disabled = locked;
+        chatInput.placeholder = locked ? 'Chat opens on break…' : 'Type a message…';
+      }
 
-      // Chat visibility toggle
+      // ── Chat visibility (user preference) toggle ─────────────────────
       const chatPanel = document.getElementById('chatPanel');
       const chatToggleBtn = document.getElementById('chatToggleBtn');
       let chatHidden = localStorage.getItem('pb_chat_hidden') === '1';
@@ -155,7 +237,142 @@
         applyChatVisibility();
       });
 
-      // Personal timer
+      // ── Poll ("did you focus the last 30 minutes?") ──────────────────
+      const pollCard = document.getElementById('pollCard');
+      const pollResults = document.getElementById('pollResults');
+      let myVote = null;
+
+      async function loadPoll(cycleKey) {
+        const { data } = await supabase
+          .from('pb_poll_responses')
+          .select('user_id, response')
+          .eq('room_id', room.id)
+          .eq('cycle_key', cycleKey)
+          .limit(1000);
+        renderPollResults(data || []);
+        const mine = (data || []).find((r) => r.user_id === deviceId);
+        myVote = mine ? mine.response : null;
+        highlightMyVote();
+      }
+
+      function renderPollResults(rows) {
+        const counts = { yes: 0, partial: 0, no: 0 };
+        rows.forEach((r) => {
+          if (counts[r.response] !== undefined) counts[r.response] += 1;
+        });
+        const total = rows.length;
+        pollResults.textContent = total
+          ? `💪 ${counts.yes} · 😐 ${counts.partial} · 😴 ${counts.no} (${total} responded)`
+          : 'No responses yet';
+      }
+
+      function highlightMyVote() {
+        document.querySelectorAll('.poll-btn').forEach((btn) => {
+          btn.classList.toggle('is-selected', btn.dataset.response === myVote);
+        });
+      }
+
+      document.querySelectorAll('.poll-btn').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const response = btn.dataset.response;
+          myVote = response;
+          highlightMyVote();
+          await supabase.from('pb_poll_responses').upsert(
+            { room_id: room.id, user_id: deviceId, cycle_key: cycleState.cycleKey, response },
+            { onConflict: 'room_id,user_id,cycle_key' },
+          );
+          supabase.from('pb_events').insert({
+            user_id: deviceId,
+            device_session_id: getDeviceSessionId(),
+            event_name: 'poll_answered',
+            room_id: room.id,
+            properties: { response, cycle_key: cycleState.cycleKey },
+          }).then(() => {}, () => {});
+        });
+      });
+
+      channel.on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'pb_poll_responses', filter: `room_id=eq.${room.id}` },
+        (payload) => {
+          const row = payload.new || payload.old;
+          if (!row || row.cycle_key !== cycleState.cycleKey) return;
+          loadPoll(cycleState.cycleKey);
+        },
+      );
+
+      channel.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({ key: myKey, name, joined_at: Date.now() });
+        }
+      });
+
+      // ── Pomodoro cycle ─────────────────────────────────────────────
+      const phaseEl = document.getElementById('pomodoroPhase');
+      const pomodoroTimerEl = document.getElementById('pomodoroTimer');
+      const pomodoroLabelEl = document.getElementById('pomodoroLabel');
+      const pomodoroCard = document.getElementById('pomodoroCard');
+
+      let cycleState = getCycleState();
+      let lastCycleKey = cycleState.cycleKey;
+      let lastIsBreak = cycleState.isBreak;
+
+      function fmtClock(seconds) {
+        const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+        const s = String(seconds % 60).padStart(2, '0');
+        return `${m}:${s}`;
+      }
+
+      async function enterBreak() {
+        pollCard.classList.remove('is-hidden');
+        pollResults.textContent = '';
+        myVote = null;
+        setChatLocked(false);
+        await loadChatForCycle(cycleState.cycleKey);
+        await loadPoll(cycleState.cycleKey);
+      }
+
+      function enterFocus(previousCycleKey) {
+        pollCard.classList.add('is-hidden');
+        setChatLocked(true);
+        chatLog.innerHTML = '';
+        chatLog.append(chatLockedMsgClone('🔒 Chat opens during the next break'));
+        // Clear out the break that just ended — RLS only allows deleting
+        // rows from a cycle that has already finished, so this is safe
+        // even if several clients in the room all fire it at once.
+        if (previousCycleKey !== undefined) {
+          supabase
+            .from('pb_chat_messages')
+            .delete()
+            .eq('room_id', room.id)
+            .eq('cycle_key', previousCycleKey)
+            .then(() => {}, () => {});
+        }
+      }
+
+      function tickPomodoro() {
+        cycleState = getCycleState();
+        phaseEl.textContent = cycleState.isBreak ? 'BREAK' : 'FOCUS';
+        pomodoroCard.classList.toggle('is-break', cycleState.isBreak);
+        pomodoroTimerEl.textContent = fmtClock(cycleState.remaining);
+        pomodoroLabelEl.textContent = cycleState.isBreak ? 'back to focus in' : 'until break';
+
+        if (cycleState.isBreak !== lastIsBreak) {
+          if (cycleState.isBreak) {
+            enterBreak();
+          } else {
+            enterFocus(lastCycleKey);
+          }
+          lastIsBreak = cycleState.isBreak;
+          lastCycleKey = cycleState.cycleKey;
+        }
+      }
+
+      tickPomodoro();
+      if (cycleState.isBreak) enterBreak();
+      setInterval(tickPomodoro, 1000);
+
+      // ── Personal timer + leave ────────────────────────────────────
       const startedAt = Date.now();
       const timerEl = document.getElementById('timer');
       function tick() {
@@ -171,7 +388,19 @@
       function saveStudyTime() {
         if (studySaved) return;
         studySaved = true;
-        addStudiedSeconds((Date.now() - startedAt) / 1000);
+        const elapsedSeconds = (Date.now() - startedAt) / 1000;
+        addStudiedSeconds(elapsedSeconds);
+        supabase.from('pb_room_sessions').update({
+          left_at: new Date().toISOString(),
+          duration_seconds: Math.round(elapsedSeconds),
+        }).eq('id', sessionId).then(() => {}, () => {});
+        supabase.from('pb_events').insert({
+          user_id: deviceId,
+          device_session_id: getDeviceSessionId(),
+          event_name: 'room_leave',
+          room_id: room.id,
+          properties: { duration_seconds: Math.round(elapsedSeconds) },
+        }).then(() => {}, () => {});
       }
 
       function leave() {

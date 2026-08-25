@@ -20,7 +20,7 @@
       <a class="back" href="/">← Back to PadhleBeta</a>
 
       <h1 class="page-title">Study Rooms</h1>
-      <p class="page-sub">Pick your batch, join in, and study alongside others. No mic, no camera — just quiet company and chat.</p>
+      <p class="page-sub">Pick a room, join in, and study alongside others. No mic, no camera — just quiet company and chat during breaks.</p>
 
       <div class="studied-badge" id="studiedBadge" hidden>
         📚 Studied so far: <strong id="studiedAmount">0m</strong>
@@ -28,19 +28,30 @@
 
       <div class="name-card">
         <label for="nameInput">Your name</label>
-        <input id="nameInput" type="text" placeholder="e.g. Aarav" maxlength="24" autocomplete="off" />
+        <div class="name-row">
+          <input id="nameInput" type="text" placeholder="e.g. Aarav" maxlength="24" autocomplete="off" />
+          <button id="randomNameBtn" type="button" title="Get a random name">🎲 Random</button>
+        </div>
       </div>
 
-      <div id="roomGroups"></div>
+      <div class="room-grid" id="roomGrid"></div>
     </div>
 
     <script src="/rooms/config.js"></script>
     <script type="module">
       import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+      const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
       const nameInput = document.getElementById('nameInput');
       nameInput.value = getStudentName();
-      nameInput.addEventListener('input', () => setStudentName(nameInput.value));
+      nameInput.addEventListener('input', () => setStudentName(nameInput.value, 'custom'));
+
+      document.getElementById('randomNameBtn').addEventListener('click', () => {
+        const name = randomName();
+        nameInput.value = name;
+        setStudentName(name, 'random');
+      });
 
       const studiedSeconds = getStudiedSeconds();
       if (studiedSeconds > 0) {
@@ -48,52 +59,37 @@
         document.getElementById('studiedAmount').textContent = formatDuration(studiedSeconds);
       }
 
-      const groupsEl = document.getElementById('roomGroups');
-      const groups = [...new Set(ROOMS.map((r) => r.group))];
+      const grid = document.getElementById('roomGrid');
       const cardByRoom = {};
 
-      groups.forEach((group) => {
-        const heading = document.createElement('div');
-        heading.className = 'room-group';
-        heading.textContent = group;
-        groupsEl.append(heading);
-
-        const grid = document.createElement('div');
-        grid.className = 'room-grid';
-
-        ROOMS.filter((r) => r.group === group).forEach((room) => {
-          const card = document.createElement('a');
-          card.className = 'room-card';
-          card.href = `/rooms/room.html?room=${room.id}`;
-          card.addEventListener('click', (e) => {
-            if (!nameInput.value.trim()) {
-              e.preventDefault();
-              nameInput.focus();
-              nameInput.placeholder = 'Enter your name first';
-            } else {
-              setStudentName(nameInput.value);
-            }
-          });
-
-          const label = document.createElement('span');
-          label.className = 'room-card__label';
-          label.textContent = room.label;
-
-          const count = document.createElement('span');
-          count.className = 'room-card__count';
-          count.innerHTML = '<span class="dot"></span><span>—</span>';
-
-          card.append(label, count);
-          grid.append(card);
-          cardByRoom[room.id] = count.querySelector('span:last-child');
+      ROOMS.forEach((room) => {
+        const card = document.createElement('a');
+        card.className = 'room-card';
+        card.href = `/rooms/room.html?room=${room.id}`;
+        card.addEventListener('click', (e) => {
+          if (!nameInput.value.trim()) {
+            e.preventDefault();
+            nameInput.focus();
+            nameInput.placeholder = 'Enter your name first';
+          } else {
+            setStudentName(nameInput.value, getStudentNameType());
+          }
         });
 
-        groupsEl.append(grid);
+        const label = document.createElement('span');
+        label.className = 'room-card__label';
+        label.textContent = room.title;
+
+        const count = document.createElement('span');
+        count.className = 'room-card__count';
+        count.innerHTML = '<span class="dot"></span><span>—</span>';
+
+        card.append(label, count);
+        grid.append(card);
+        cardByRoom[room.id] = count.querySelector('span:last-child');
       });
 
-      // Best-effort live headcounts for the picker — subscribe briefly to
-      // each room's presence channel just to read the count, then let it go.
-      const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      // Best-effort live headcounts for the picker.
       ROOMS.forEach((room) => {
         const channel = supabase.channel(`room:${room.id}`, {
           config: { presence: { key: `peek-${Math.random().toString(36).slice(2)}` } },
@@ -106,6 +102,15 @@
         });
         channel.subscribe();
       });
+
+      // Log a page view — fire-and-forget, never blocks the UI. user_id is
+      // left out here since pb_users only gets a row once someone actually
+      // joins a room (the FK would otherwise fail for first-time visitors).
+      supabase.from('pb_events').insert({
+        device_session_id: getDeviceSessionId(),
+        event_name: 'rooms_page_view',
+        properties: {},
+      }).then(() => {}, () => {});
     </script>
   </body>
 </html>

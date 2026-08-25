@@ -1,30 +1,66 @@
-// Shared config for the study rooms. Presence + chat run on Supabase
-// Realtime channels only — no database table, so this "publishable" key
-// (safe to expose client-side by design) is all that's needed.
+// Shared config for the study rooms.
 const SUPABASE_URL = 'https://aoljwsoczdyevvvtoxkb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ocDNtgEUb5k1GOSWUVnZ0Q_2daL54ZZ';
 
 const ROOMS = [
-  { id: 'jee-11', group: 'IIT-JEE', label: 'Class 11', title: 'IIT-JEE · Class 11' },
-  { id: 'jee-12', group: 'IIT-JEE', label: 'Class 12', title: 'IIT-JEE · Class 12' },
-  { id: 'jee-drop', group: 'IIT-JEE', label: 'Dropper', title: 'IIT-JEE · Dropper' },
-  { id: 'neet-11', group: 'NEET', label: 'Class 11', title: 'NEET · Class 11' },
-  { id: 'neet-12', group: 'NEET', label: 'Class 12', title: 'NEET · Class 12' },
-  { id: 'neet-drop', group: 'NEET', label: 'Dropper', title: 'NEET · Dropper' },
-  { id: 'board-10', group: 'Boards', label: 'Class 10', title: 'Boards · Class 10' },
-  { id: 'board-12', group: 'Boards', label: 'Class 12', title: 'Boards · Class 12' },
+  { id: 'iitjee', title: 'IIT-JEE' },
+  { id: 'neet', title: 'NEET' },
+  { id: 'board10', title: 'Boards · Class 10' },
+  { id: 'board12', title: 'Boards · Class 12' },
+  { id: 'lakshya', title: 'Lakshya · Open Focus' },
 ];
 
 function getRoomById(id) {
   return ROOMS.find((r) => r.id === id) || null;
 }
 
+// ── Device identity (no login — a UUID that lives in this browser) ──────
+function getDeviceId() {
+  let id = localStorage.getItem('pb_uid');
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem('pb_uid', id);
+  }
+  return id;
+}
+
+// A fresh id per tab/visit, used to group events from one sitting.
+function getDeviceSessionId() {
+  let id = sessionStorage.getItem('pb_session_id');
+  if (!id) {
+    id = crypto.randomUUID();
+    sessionStorage.setItem('pb_session_id', id);
+  }
+  return id;
+}
+
 function getStudentName() {
   return localStorage.getItem('pb_name') || '';
 }
 
-function setStudentName(name) {
+function setStudentName(name, type) {
   localStorage.setItem('pb_name', name.trim().slice(0, 24));
+  if (type) localStorage.setItem('pb_name_type', type);
+}
+
+function getStudentNameType() {
+  return localStorage.getItem('pb_name_type') || 'custom';
+}
+
+// ── Random name picker — anonymizes and cuts down on spammy custom names ──
+const NAME_ADJECTIVES = [
+  'Sharp', 'Calm', 'Swift', 'Bright', 'Bold', 'Silent', 'Focused', 'Steady',
+  'Brave', 'Wise', 'Fierce', 'Cool', 'Sincere', 'Sturdy', 'Keen', 'Patient',
+];
+const NAME_NOUNS = [
+  'Falcon', 'Tiger', 'Eagle', 'Wolf', 'Owl', 'Lion', 'Panther', 'Hawk',
+  'Cheetah', 'Bear', 'Fox', 'Rhino', 'Otter', 'Stag', 'Lynx', 'Heron',
+];
+
+function randomName() {
+  const a = NAME_ADJECTIVES[Math.floor(Math.random() * NAME_ADJECTIVES.length)];
+  const n = NAME_NOUNS[Math.floor(Math.random() * NAME_NOUNS.length)];
+  return `${a} ${n}`;
 }
 
 // Total minutes studied, tracked purely client-side (per browser, no login).
@@ -46,4 +82,19 @@ function formatDuration(totalSeconds) {
   if (h > 0) return `${h}h ${m}m`;
   if (m > 0) return `${m}m`;
   return `${s}s`;
+}
+
+// ── Pomodoro cycle: 30 min focus + 3 min break, derived purely from
+// wall-clock time so every device agrees without any server coordination. ──
+const FOCUS_SECONDS = 30 * 60;
+const BREAK_SECONDS = 3 * 60;
+const CYCLE_SECONDS = FOCUS_SECONDS + BREAK_SECONDS;
+
+function getCycleState(now = Date.now()) {
+  const epochSeconds = Math.floor(now / 1000);
+  const cycleKey = Math.floor(epochSeconds / CYCLE_SECONDS);
+  const phase = epochSeconds % CYCLE_SECONDS;
+  const isBreak = phase >= FOCUS_SECONDS;
+  const remaining = isBreak ? CYCLE_SECONDS - phase : FOCUS_SECONDS - phase;
+  return { cycleKey, isBreak, remaining };
 }

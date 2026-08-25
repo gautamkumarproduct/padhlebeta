@@ -125,8 +125,14 @@ h1.page-title {
   margin-bottom: 0.5rem;
 }
 
+.name-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .name-card input {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   font-family: var(--body);
   font-size: 1rem;
   font-weight: 600;
@@ -142,6 +148,27 @@ h1.page-title {
 }
 .name-card input:focus {
   border-color: var(--accent);
+}
+
+#randomNameBtn {
+  flex: none;
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0 0.9rem;
+  border-radius: 0.8rem;
+  border: 1px solid var(--glass-line);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  transition: background var(--swift), transform var(--swift);
+}
+#randomNameBtn:hover {
+  background: rgba(255, 207, 77, 0.18);
+  border-color: rgba(255, 207, 77, 0.4);
+}
+#randomNameBtn:active {
+  transform: scale(0.95);
 }
 
 /* ── Room grid ──────────────────────────────────────────────── */
@@ -237,6 +264,105 @@ h1.page-title {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+}
+
+/* ── Pomodoro card ─────────────────────────────────────────── */
+
+.pomodoro-card {
+  text-align: center;
+  border: 1px solid rgba(255, 207, 77, 0.35);
+  background: rgba(255, 207, 77, 0.08);
+  border-radius: 1.5rem;
+  padding: 1.1rem 1rem;
+  margin-bottom: 1rem;
+  transition: background var(--swift), border-color var(--swift);
+}
+
+.pomodoro-card.is-break {
+  border-color: rgba(74, 222, 128, 0.4);
+  background: rgba(74, 222, 128, 0.08);
+}
+
+.pomodoro-phase {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+}
+.pomodoro-card.is-break .pomodoro-phase {
+  color: var(--green);
+}
+
+.pomodoro-timer {
+  font-size: clamp(1.8rem, 7vw, 2.4rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  margin-top: 0.15rem;
+}
+
+.pomodoro-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 0.1rem;
+}
+
+/* ── Poll card ─────────────────────────────────────────────── */
+
+.poll-card {
+  border: 1px solid var(--glass-line);
+  background: var(--glass);
+  border-radius: 1.25rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.poll-card.is-hidden {
+  display: none;
+}
+
+.poll-question {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+}
+
+.poll-options {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.poll-btn {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--glass-line);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  cursor: pointer;
+  transition: background var(--swift), border-color var(--swift), transform var(--swift);
+}
+.poll-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+.poll-btn:active {
+  transform: scale(0.95);
+}
+.poll-btn.is-selected {
+  border-color: var(--accent);
+  background: rgba(255, 207, 77, 0.22);
+}
+
+.poll-results {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .timer-card {
