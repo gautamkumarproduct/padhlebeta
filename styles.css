@@ -473,6 +473,24 @@ body {
   max-width: 30rem;
 }
 
+/* Scrolling room content passes directly behind this fixed bar — without
+   something to ground it, whatever's mid-scroll shows through the glass
+   and reads as a layout bug rather than normal fixed-over-scroll
+   layering. A solid fade behind the dock (wider than the pill itself, so
+   the bumper line sits on solid ground too) makes content visibly fade
+   out as it nears the bar instead of "poking through" it. */
+.dock::before {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--dock-height, 13rem) + 3rem);
+  background: linear-gradient(to bottom, transparent 0%, #08080d 55%, #08080d 100%);
+  z-index: -1;
+  pointer-events: none;
+}
+
 .player {
   display: flex;
   align-items: center;

@@ -157,16 +157,27 @@ function nextPos(fromPos = state.pos) {
 
 // Cue the upcoming track into whichever player isn't currently live, so
 // it's already buffered by the time "next" is pressed.
-function preloadUpcoming() {
+function preloadUpcoming(attempt = 0) {
   const idle = activeSlot === 0 ? 1 : 0;
   const p = players[idle];
   if (!p || typeof p.cueVideoById !== 'function') return;
   const targetPos = nextPos();
-  if (playerCuedPos[idle] === targetPos) return;
+  if (playerCuedPos[idle] === targetPos && attempt === 0) return;
   const track = state.tracks[state.order[targetPos]];
   if (!track) return;
   p.cueVideoById({ videoId: track.id, suggestedQuality: 'tiny' });
   playerCuedPos[idle] = targetPos;
+
+  // Same dropped-cue race as the initial track (see cueInitialTrack) can
+  // hit a freshly-ready preload player too — verify and retry.
+  setTimeout(() => {
+    if (playerCuedPos[idle] !== targetPos) return; // superseded already
+    const gotDuration = (p.getDuration?.() || 0) > 0;
+    const st = p.getPlayerState?.();
+    if (!gotDuration && st !== 5 && attempt < 4) {
+      preloadUpcoming(attempt + 1);
+    }
+  }, 200 + attempt * 250);
 }
 
 function go(newPos) {
@@ -452,6 +463,24 @@ function preferAudio() {
 let ytApiReady = false;
 let tracksReady = false;
 
+function cueInitialTrack(attempt = 0) {
+  const p = players[0];
+  if (!p || typeof p.cueVideoById !== 'function') return;
+  p.cueVideoById({ videoId: currentTrack().id, suggestedQuality: 'tiny' });
+  playerCuedPos[0] = state.pos;
+
+  // Verify it actually took — a dropped cue call leaves the player at
+  // UNSTARTED (-1) with no duration, so retry a couple of times with a
+  // growing delay before giving up.
+  setTimeout(() => {
+    const st = p.getPlayerState?.();
+    const gotDuration = (p.getDuration?.() || 0) > 0;
+    if (!gotDuration && st !== 5 /* CUED */ && attempt < 4) {
+      cueInitialTrack(attempt + 1);
+    }
+  }, 200 + attempt * 250);
+}
+
 function createYtPlayer(slot, elementId) {
   return new YT.Player(elementId, {
     height: '1',
@@ -470,8 +499,16 @@ function createYtPlayer(slot, elementId) {
           el.play.disabled = false;
           // Cue (don't load) at the lowest rendition — nothing has to
           // re-buffer at a higher quality before the first play.
-          players[0].cueVideoById({ videoId: currentTrack().id, suggestedQuality: 'tiny' });
-          playerCuedPos[0] = state.pos;
+          //
+          // Calling cueVideoById synchronously inside onReady is a known
+          // YouTube IFrame API race: the player object answers to
+          // getCurrentTime()/getPlayerState() at this point, but isn't
+          // always actually ready to accept a cue call yet, and the call
+          // is silently dropped — nothing gets loaded and playVideo()
+          // later does nothing. loadVideoById called any time after
+          // onReady works reliably; a short delay avoids the race without
+          // needing that autoplay side effect for the very first track.
+          cueInitialTrack();
         } else {
           preloadUpcoming();
         }
@@ -559,18 +596,3 @@ if ('requestIdleCallback' in window) {
   tracksReady = true;
   tryBootPlayer();
 })();
-
-window.__pbDebug = () => ({
-  state: { ...state },
-  activeSlot,
-  hasYt: !!yt,
-  ytIsPlayers0: yt === players[0],
-  ytIsPlayers1: yt === players[1],
-  player0Exists: !!players[0],
-  player1Exists: !!players[1],
-  ytPlayerState: yt?.getPlayerState?.(),
-  ytCurrentTime: yt?.getCurrentTime?.(),
-  ytDuration: yt?.getDuration?.(),
-  ytVolume: yt?.getVolume?.(),
-  ytMuted: yt?.isMuted?.(),
-});

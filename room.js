@@ -350,6 +350,15 @@ async function enterBreak() {
   await loadChatForCycle(cycleState.cycleKey);
   await loadPoll(cycleState.cycleKey);
   startPollVoteWindow();
+
+  // The poll + chat appearing further down the room is easy to miss
+  // entirely if it's below the fold — bring it into view instead of
+  // leaving people to discover it by scrolling around.
+  if (joined) {
+    window.setTimeout(() => {
+      pollCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  }
 }
 
 function enterFocus(previousCycleKey) {
