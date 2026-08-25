@@ -72,6 +72,22 @@ function buildOrder() {
   return state.shuffle ? shuffleArr(seq) : seq;
 }
 
+// Whatever a visitor hears first should be consistent — the rain ambience
+// track always leads, regardless of shuffle. Only applied once at initial
+// load, not on every shuffle toggle, so re-shuffling mid-listen doesn't
+// unexpectedly yank someone back to it.
+const RAIN_TRACK_ID = '13EL6Mgeocc';
+function leadWithRain(order) {
+  const rainIdx = state.tracks.findIndex((t) => t.id === RAIN_TRACK_ID);
+  if (rainIdx === -1) return order;
+  const pos = order.indexOf(rainIdx);
+  if (pos > 0) {
+    order.splice(pos, 1);
+    order.unshift(rainIdx);
+  }
+  return order;
+}
+
 const currentTrack = () => state.tracks[state.order[state.pos]];
 
 let swapTimer = null;
@@ -588,7 +604,7 @@ if ('requestIdleCallback' in window) {
     return;
   }
 
-  state.order = buildOrder();
+  state.order = leadWithRain(buildOrder());
   renderList();
   renderTrack();
   rotateBackground(0);
