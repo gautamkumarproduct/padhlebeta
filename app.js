@@ -559,3 +559,18 @@ if ('requestIdleCallback' in window) {
   tracksReady = true;
   tryBootPlayer();
 })();
+
+window.__pbDebug = () => ({
+  state: { ...state },
+  activeSlot,
+  hasYt: !!yt,
+  ytIsPlayers0: yt === players[0],
+  ytIsPlayers1: yt === players[1],
+  player0Exists: !!players[0],
+  player1Exists: !!players[1],
+  ytPlayerState: yt?.getPlayerState?.(),
+  ytCurrentTime: yt?.getCurrentTime?.(),
+  ytDuration: yt?.getDuration?.(),
+  ytVolume: yt?.getVolume?.(),
+  ytMuted: yt?.isMuted?.(),
+});
