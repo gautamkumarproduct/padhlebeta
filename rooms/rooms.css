@@ -479,7 +479,23 @@ h1.page-title {
 .poll-question {
   font-size: 0.9rem;
   font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.poll-timer {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--accent);
   margin-bottom: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+.poll-timer.is-closed {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.poll-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .poll-options {
@@ -521,7 +537,7 @@ h1.page-title {
 
 .poll-bar-row {
   display: grid;
-  grid-template-columns: 4.4rem 1fr 1.4rem;
+  grid-template-columns: 4.4rem 1fr 2.4rem;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.76rem;
@@ -616,30 +632,91 @@ h1.page-title {
 /* Present students */
 
 .present {
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
-.present-list {
+/* Video-call-style presence grid — tiles with an initial, a name, and a
+   soft "live" ring, so the room reads as occupied rather than a bare list. */
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(4.4rem, 1fr));
+  gap: 0.7rem;
+}
+
+.avatar-tile {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.present-chip {
-  display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.35rem 0.7rem;
-  border-radius: 999px;
-  border: 1px solid var(--glass-line);
-  background: var(--glass);
-  font-size: 0.82rem;
-  font-weight: 600;
+  gap: 0.35rem;
+  min-width: 0;
 }
 
-.present-chip.is-you {
-  border-color: rgba(255, 207, 77, 0.5);
+.avatar-tile__circle {
+  position: relative;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: rgba(0, 0, 0, 0.75);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.avatar-tile__circle::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  animation: avatar-pulse 2.6s ease-in-out infinite;
+}
+
+.avatar-tile__dot {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--green);
+  border: 2px solid #0a0a12;
+}
+
+.avatar-tile__name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  max-width: 4.6rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.avatar-tile.is-you .avatar-tile__circle {
+  box-shadow: 0 0 0 2px var(--accent), 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+.avatar-tile.is-you .avatar-tile__name {
   color: var(--accent);
+}
+
+@keyframes avatar-pulse {
+  0%, 100% {
+    border-color: rgba(255, 255, 255, 0.18);
+    transform: scale(1);
+  }
+  50% {
+    border-color: rgba(255, 255, 255, 0.35);
+    transform: scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar-tile__circle::after {
+    animation: none;
+  }
 }
 
 /* Chat */
@@ -649,6 +726,9 @@ h1.page-title {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 0.6rem;
+}
+.chat-toggle.is-hidden {
+  display: none;
 }
 
 .chat-toggle button {

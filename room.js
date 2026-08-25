@@ -103,8 +103,12 @@ const chatInput = document.getElementById('chatInput');
 const chatSendBtn = document.getElementById('chatSendBtn');
 const chatPanel = document.getElementById('chatPanel');
 const chatToggleBtn = document.getElementById('chatToggleBtn');
+const chatToggleRow = document.getElementById('chatToggleRow');
 const pollCard = document.getElementById('pollCard');
 const pollResults = document.getElementById('pollResults');
+const pollTimerEl = document.getElementById('pollTimer');
+const POLL_VOTE_WINDOW_SECONDS = 20;
+let pollVoteInterval = null;
 const phaseEl = document.getElementById('pomodoroPhase');
 const pomodoroTimerEl = document.getElementById('pomodoroTimer');
 const pomodoroLabelEl = document.getElementById('pomodoroLabel');
@@ -180,15 +184,20 @@ function setChatLocked(locked) {
   chatInput.placeholder = locked ? 'Chat opens on break…' : 'Type a message…';
 }
 
-let chatHidden = localStorage.getItem('pb_chat_hidden') === '1';
+// Chat visibility now follows the pomodoro phase automatically — hidden
+// through focus, shown through break — rather than a persisted manual
+// preference. The toggle button still lets someone hide it for the rest
+// of the current break if they'd rather not see it.
+let chatManuallyHidden = false;
 function applyChatVisibility() {
-  chatPanel.classList.toggle('is-hidden', chatHidden);
-  chatToggleBtn.textContent = chatHidden ? 'Show chat' : 'Hide chat';
+  const isBreak = !!cycleState?.isBreak;
+  chatToggleRow.classList.toggle('is-hidden', !isBreak);
+  const hidden = !isBreak || chatManuallyHidden;
+  chatPanel.classList.toggle('is-hidden', hidden);
+  chatToggleBtn.textContent = chatManuallyHidden ? 'Show chat' : 'Hide chat';
 }
-applyChatVisibility();
 chatToggleBtn.addEventListener('click', () => {
-  chatHidden = !chatHidden;
-  localStorage.setItem('pb_chat_hidden', chatHidden ? '1' : '0');
+  chatManuallyHidden = !chatManuallyHidden;
   applyChatVisibility();
 });
 
@@ -208,12 +217,11 @@ chatForm.addEventListener('submit', async (e) => {
 
 const POLL_META = {
   yes: { label: '💪 Yes', color: 'var(--green)' },
-  partial: { label: '😐 Kinda', color: 'var(--accent)' },
   no: { label: '😴 No', color: '#f87171' },
 };
 
 function renderPollResults(rows) {
-  const counts = { yes: 0, partial: 0, no: 0 };
+  const counts = { yes: 0, no: 0 };
   rows.forEach((r) => {
     if (counts[r.response] !== undefined) counts[r.response] += 1;
   });
@@ -247,7 +255,7 @@ function renderPollResults(rows) {
 
     const value = document.createElement('span');
     value.className = 'poll-bar-value';
-    value.textContent = `${count}`;
+    value.textContent = `${pct}%`;
 
     row.append(label, track, value);
     pollResults.append(row);
@@ -278,8 +286,11 @@ async function loadPoll(cycleKey) {
   highlightMyVote();
 }
 
+let pollVotingOpen = false;
+
 document.querySelectorAll('.poll-btn').forEach((btn) => {
   btn.addEventListener('click', async () => {
+    if (!pollVotingOpen) return;
     const response = btn.dataset.response;
     myVote = response;
     highlightMyVote();
@@ -297,18 +308,56 @@ document.querySelectorAll('.poll-btn').forEach((btn) => {
   });
 });
 
+function setPollButtonsEnabled(enabled) {
+  document.querySelectorAll('.poll-btn').forEach((btn) => {
+    btn.disabled = !enabled;
+  });
+}
+
+// Voting is only open for the first 20s of each break — after that the
+// buttons lock and the bars become the headline (percentages, not raw
+// counts), then the whole thing resets fresh for the next break.
+function startPollVoteWindow() {
+  pollVotingOpen = true;
+  setPollButtonsEnabled(true);
+  const deadline = Date.now() + POLL_VOTE_WINDOW_SECONDS * 1000;
+
+  clearInterval(pollVoteInterval);
+  function tick() {
+    const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+    if (remaining > 0) {
+      pollTimerEl.textContent = `⏱ ${remaining}s to vote`;
+      pollTimerEl.classList.remove('is-closed');
+    } else {
+      pollTimerEl.textContent = 'Voting closed — results below';
+      pollTimerEl.classList.add('is-closed');
+      pollVotingOpen = false;
+      setPollButtonsEnabled(false);
+      clearInterval(pollVoteInterval);
+    }
+  }
+  tick();
+  pollVoteInterval = setInterval(tick, 1000);
+}
+
 async function enterBreak() {
   pollCard.classList.remove('is-hidden');
   pollResults.textContent = '';
   myVote = null;
   setChatLocked(false);
+  chatManuallyHidden = false;
+  applyChatVisibility();
   await loadChatForCycle(cycleState.cycleKey);
   await loadPoll(cycleState.cycleKey);
+  startPollVoteWindow();
 }
 
 function enterFocus(previousCycleKey) {
   pollCard.classList.add('is-hidden');
+  clearInterval(pollVoteInterval);
+  pollVotingOpen = false;
   setChatLocked(true);
+  applyChatVisibility();
   chatLog.innerHTML = '';
   chatLog.append(chatLockedMsgClone('🔒 Chat opens during the next break'));
   if (previousCycleKey !== undefined) {
@@ -366,20 +415,57 @@ function saveStudyTime() {
 
 window.addEventListener('pagehide', saveStudyTime);
 
+// Ambient placeholder profiles — display-only, see config.js. Computed
+// once per page load so they don't visibly reshuffle every presence sync.
+const ambientBots = getAmbientProfiles(11);
+
+function initialsFor(name) {
+  const parts = name.trim().split(/\s+/);
+  return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase();
+}
+
+function hueForName(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360;
+  return h;
+}
+
+function buildAvatarTile(name, isYou) {
+  const tile = document.createElement('div');
+  tile.className = 'avatar-tile' + (isYou ? ' is-you' : '');
+
+  const circle = document.createElement('div');
+  circle.className = 'avatar-tile__circle';
+  circle.style.background = `hsl(${hueForName(name)}, 70%, 65%)`;
+  circle.textContent = initialsFor(name);
+
+  const dot = document.createElement('span');
+  dot.className = 'avatar-tile__dot';
+  circle.append(dot);
+
+  const label = document.createElement('span');
+  label.className = 'avatar-tile__name';
+  label.textContent = isYou ? `${name} (you)` : name;
+
+  tile.append(circle, label);
+  return tile;
+}
+
 function renderPresence() {
   const state = channel.presenceState();
   const people = Object.values(state)
     .flat()
     .sort((a, b) => a.joined_at - b.joined_at);
 
-  roomCount.textContent = people.length === 1 ? '1 studying' : `${people.length} studying`;
+  const totalCount = people.length + ambientBots.length;
+  roomCount.textContent = totalCount === 1 ? '1 studying' : `${totalCount} studying`;
 
   presentList.innerHTML = '';
   people.forEach((p) => {
-    const chip = document.createElement('span');
-    chip.className = 'present-chip' + (p.key === myKey ? ' is-you' : '');
-    chip.textContent = p.key === myKey ? `${p.name} (you)` : p.name;
-    presentList.append(chip);
+    presentList.append(buildAvatarTile(p.name, p.key === myKey));
+  });
+  ambientBots.forEach((name) => {
+    presentList.append(buildAvatarTile(name, false));
   });
 }
 
@@ -425,6 +511,7 @@ channel.on(
 channel.subscribe();
 
 tickPomodoro();
+applyChatVisibility();
 pomodoroInterval = window.setInterval(tickPomodoro, 1000);
 
 function joinRoom() {

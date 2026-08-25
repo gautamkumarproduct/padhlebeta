@@ -73,6 +73,52 @@ function randomName() {
   return `${a} ${n}`;
 }
 
+// ── Ambient placeholder profiles ─────────────────────────────────────
+// Purely a display-layer thing to make an empty room feel occupied — never
+// written to Supabase, never counted in real analytics (pb_events /
+// pb_room_sessions stay untouched). The set rotates every hour (same set
+// for everyone that hour, seeded off the clock) and is shuffled fresh on
+// each render so the on-screen order isn't identical every time.
+const BOT_NAME_POOL = [
+  'Aarav Sharma', 'Priya Patel', 'Rohan Gupta', 'Ananya Iyer', 'Vikram Singh',
+  'Sneha Reddy', 'Karan Mehta', 'Isha Verma', 'Arjun Nair', 'Pooja Joshi',
+  'Aditya Rao', 'Neha Kapoor', 'Rahul Bose', 'Divya Menon', 'Manish Yadav',
+  'Kavya Pillai', 'Siddharth Jain', 'Riya Chauhan', 'Aman Tiwari', 'Simran Kaur',
+  'Yash Agarwal', 'Meera Pillai', 'Nikhil Desai', 'Tanvi Shah', 'Harsh Malhotra',
+  'Anjali Rana', 'Varun Chopra', 'Sanya Bhatt', 'Kunal Saxena', 'Ritika Dutta',
+  'Abhishek Pandey', 'Shreya Kulkarni', 'Naman Khanna', 'Ishita Bansal', 'Devansh Trivedi',
+];
+
+function mulberry32(seed) {
+  return function () {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function getAmbientProfiles(count = 11) {
+  const hourSeed = Math.floor(Date.now() / 3600000);
+  const rand = mulberry32(hourSeed);
+  const pool = [...BOT_NAME_POOL];
+  // Fisher–Yates with the seeded generator — same result for everyone
+  // within the same clock hour.
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const picked = pool.slice(0, count);
+  // Shuffle again with the real RNG so render order isn't identical on
+  // every visit even within the same hour.
+  for (let i = picked.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [picked[i], picked[j]] = [picked[j], picked[i]];
+  }
+  return picked;
+}
+
 // Total minutes studied, tracked purely client-side (per browser, no login).
 function getStudiedSeconds() {
   return Number(localStorage.getItem('pb_studied_seconds') || 0);
