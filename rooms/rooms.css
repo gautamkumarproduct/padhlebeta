@@ -796,8 +796,7 @@ h1.page-title {
   border-radius: 1.25rem;
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-height: 0;
+  flex: none;
   overflow: hidden;
 }
 

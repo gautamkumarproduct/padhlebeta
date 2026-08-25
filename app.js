@@ -395,6 +395,19 @@ el.bumperText.textContent = BUMPER_LINES[bumperOrder[0]];
 bumperTimer = setInterval(nextBumper, 12000);
 el.bumperNext.addEventListener('click', nextBumper);
 
+// The mini player is fixed at the bottom on every view, and #viewRoom
+// reserves --dock-height of padding so its own content can't end up
+// hidden behind it. The dock's real height varies (bumper text can wrap
+// to one or two lines, screen width changes it further), so measure it
+// live instead of trusting a guessed constant.
+const dockEl = document.getElementById('dock');
+if (dockEl && 'ResizeObserver' in window) {
+  const ro = new ResizeObserver(([entry]) => {
+    document.documentElement.style.setProperty('--dock-height', `${entry.contentRect.height}px`);
+  });
+  ro.observe(dockEl);
+}
+
 /* ── Ambient chrome: clock + fellow students ────────────────── */
 
 function tickClock() {

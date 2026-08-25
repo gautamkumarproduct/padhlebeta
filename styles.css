@@ -182,7 +182,7 @@ body {
   flex-direction: column;
   align-items: center;
   padding: max(var(--edge), env(safe-area-inset-top)) var(--edge)
-    calc(var(--dock-height, 7.5rem) + var(--edge));
+    calc(var(--dock-height, 13rem) + var(--edge) + 0.5rem);
   transition: opacity 0.42s ease, transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -207,8 +207,16 @@ body {
 }
 
 #viewRoom {
+  /* Unlike #viewHome, this needs a hard height ceiling, not just a
+     min-height floor — otherwise the box just grows to fit the (now
+     fairly tall) content instead of ever engaging overflow-y, and since
+     body has overflow:hidden, anything past the fold becomes completely
+     unreachable rather than merely hidden behind the fixed player. */
+  height: 100vh;
+  height: 100dvh;
   justify-content: flex-start;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   gap: 0;
 }
 
