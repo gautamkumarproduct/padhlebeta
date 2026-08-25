@@ -25,7 +25,6 @@ const el = {
   listeners: $('listeners'),
   bumperText: $('bumperText'),
   bumperNext: $('bumperNext'),
-  horn: $('horn'),
   logo: document.querySelector('.logo'),
 };
 
@@ -265,95 +264,13 @@ document.addEventListener('keydown', (e) => {
     if (e.target !== el.seek) go(state.pos + 1);
   } else if (e.key === 'p' || e.key === 'ArrowLeft') {
     if (e.target !== el.seek) go(state.pos - 1);
-  } else if (e.key === 'h') {
-    ring();
   }
 });
-
-/* ── Study bell ──────────────────────────────────────────────
-   A short synthesised chime — three detuned sine partials through
-   a quick decay envelope, the way a school bell rings and fades. */
-
-let audioCtx = null;
-
-try {
-  if (navigator.audioSession) navigator.audioSession.type = 'playback';
-} catch {
-  /* not supported */
-}
-
-function ensureAudio() {
-  try {
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    return audioCtx;
-  } catch {
-    return null;
-  }
-}
-
-['pointerdown', 'keydown'].forEach((evt) =>
-  document.addEventListener(evt, ensureAudio, { once: true, capture: true }),
-);
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) return;
-  if (audioCtx?.state === 'suspended') audioCtx.resume();
   samplePlayer();
 });
-
-let duckTimer = null;
-let duckedFrom = null;
-
-function duckMusic(ms) {
-  if (!yt || typeof yt.getVolume !== 'function') return;
-  if (duckedFrom === null) duckedFrom = yt.getVolume();
-  yt.setVolume(Math.round(duckedFrom * 0.4));
-
-  clearTimeout(duckTimer);
-  duckTimer = setTimeout(() => {
-    if (duckedFrom !== null) yt.setVolume(duckedFrom);
-    duckedFrom = null;
-  }, ms + 120);
-}
-
-function ring() {
-  const ctx = ensureAudio();
-  if (!ctx) return;
-
-  const now = ctx.currentTime;
-  const master = ctx.createGain();
-  master.gain.setValueAtTime(0.0001, now);
-  master.gain.exponentialRampToValueAtTime(0.5, now + 0.02);
-  master.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
-  master.connect(ctx.destination);
-
-  [880, 1320, 1760].forEach((freq, i) => {
-    const osc = ctx.createOscillator();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, now);
-    const g = ctx.createGain();
-    g.gain.value = i === 0 ? 1 : 0.4;
-    osc.connect(g).connect(master);
-    osc.start(now);
-    osc.stop(now + 1.4);
-  });
-
-  duckMusic(1400);
-
-  [
-    [el.horn, 'is-blaring', 450],
-    [el.logo, 'is-shaking', 720],
-  ].forEach(([node, cls, ms]) => {
-    if (!node) return;
-    node.classList.remove(cls);
-    void node.offsetWidth;
-    node.classList.add(cls);
-    setTimeout(() => node.classList.remove(cls), ms);
-  });
-}
-
-el.horn.addEventListener('click', ring);
 
 /* ── Bumper lines ────────────────────────────────────────────
    Motivational study couplets, in the spirit of a truck's back panel. */
