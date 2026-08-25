@@ -1,7 +1,6 @@
 /* Shared "premium" ambient backdrop — a near-black canvas with a few rich,
-   constantly drifting colour blobs (slow hue-cycling for a living, never-
-   static feel) plus a bold spotlight that follows the pointer. Used on
-   every page so the whole site feels like one interactive surface. */
+   constantly drifting colour blobs and a slow hue-cycle, so it stays
+   visibly alive without depending on cursor movement. Used on every page. */
 
 .ambient {
   position: fixed;
@@ -9,21 +8,6 @@
   z-index: -2;
   overflow: hidden;
   background: #060609;
-}
-
-.ambient::before {
-  content: "";
-  position: absolute;
-  inset: -10%;
-  background: radial-gradient(
-    900px circle at var(--mx, 50%) var(--my, 40%),
-    rgba(255, 207, 77, 0.22),
-    rgba(139, 92, 246, 0.14) 35%,
-    transparent 62%
-  );
-  mix-blend-mode: screen;
-  pointer-events: none;
-  transition: background 60ms linear;
 }
 
 .ambient__color {

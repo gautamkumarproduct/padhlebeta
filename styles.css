@@ -79,8 +79,7 @@ body {
 }
 
 .topbar,
-.logo,
-.dock {
+.logo {
   animation: rise var(--settle) both;
 }
 
@@ -90,8 +89,21 @@ body {
 .logo {
   animation-delay: 0.06s;
 }
+
+/* Opacity-only — .dock's own centering relies on `transform:
+   translateX(-50%)`, and an animation's fill-forward value for a
+   property permanently wins over any static declaration of that same
+   property, so a transform-based entrance here would clobber it. */
+@keyframes dock-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 .dock {
-  animation-delay: 0.16s;
+  animation: dock-fade var(--settle) 0.16s both;
 }
 
 .bg__layer.is-active {
