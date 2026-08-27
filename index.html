@@ -3,18 +3,18 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>PadhleBeta — Study motivation, non-stop</title>
+    <title>PadhleBeta — Online Study Room for JEE, NEET &amp; Boards | Study Together Live</title>
     <meta
       name="description"
-      content="Non-stop Hindi motivational songs to study, focus and grind with. Join a live study room, or just press play."
+      content="Free online study room for JEE, NEET and Board exam students. Join a live Pomodoro session (30 min focus + 3 min break), study alongside others, and stay motivated with non-stop Hindi study music."
     />
     <meta name="theme-color" content="#08080d" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="PadhleBeta" />
     <meta property="og:locale" content="en_IN" />
-    <meta property="og:title" content="PadhleBeta" />
-    <meta property="og:description" content="Non-stop Hindi motivational songs to study, focus and grind with." />
+    <meta property="og:title" content="PadhleBeta — Online Study Room for JEE, NEET &amp; Boards" />
+    <meta property="og:description" content="Free live study room with a 30-min Pomodoro timer, real people studying alongside you, and non-stop Hindi motivational music." />
     <meta property="og:url" content="https://padhlebeta.live" />
     <!-- Bump ?v= whenever the image changes: WhatsApp, iMessage and X cache
          link previews for weeks and key that cache on the URL. -->
@@ -25,12 +25,45 @@
     <meta property="og:image:alt" content="PadhleBeta — non-stop motivational songs to study, focus and grind with." />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="PadhleBeta" />
-    <meta name="twitter:description" content="Non-stop Hindi motivational songs to study, focus and grind with." />
+    <meta name="twitter:title" content="PadhleBeta — Online Study Room for JEE, NEET &amp; Boards" />
+    <meta name="twitter:description" content="Free live study room with a 30-min Pomodoro timer, real people studying alongside you, and non-stop Hindi motivational music." />
     <meta name="twitter:image" content="https://padhlebeta.live/og-image.png?v=1" />
     <meta name="twitter:image:alt" content="PadhleBeta — non-stop motivational songs to study, focus and grind with." />
 
     <link rel="canonical" href="https://padhlebeta.live" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://padhlebeta.live/#website",
+            "url": "https://padhlebeta.live/",
+            "name": "PadhleBeta",
+            "description": "Free online study room for JEE, NEET and Board exam students, with a live Pomodoro timer and non-stop Hindi motivational music.",
+            "inLanguage": ["en", "hi"]
+          },
+          {
+            "@type": "WebApplication",
+            "name": "PadhleBeta",
+            "url": "https://padhlebeta.live/",
+            "applicationCategory": "EducationApplication",
+            "operatingSystem": "Any (web browser)",
+            "description": "A free live study room where JEE, NEET and Board exam students study together on a synced 30-minute focus / 3-minute break cycle, with non-stop Hindi motivational music.",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "INR"
+            },
+            "audience": {
+              "@type": "EducationalAudience",
+              "educationalRole": "student"
+            }
+          }
+        ]
+      }
+    </script>
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
@@ -62,8 +95,8 @@
     </noscript>
 
     <link rel="stylesheet" href="/ambient.css" />
-    <link rel="stylesheet" href="/styles.css?v=8" />
-    <link rel="stylesheet" href="/rooms/rooms.css?v=8" />
+    <link rel="stylesheet" href="/styles.css?v=9" />
+    <link rel="stylesheet" href="/rooms/rooms.css?v=9" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-CFKL02YN12"></script>
@@ -114,7 +147,22 @@
         <h1 class="logo">
           <span class="logo__line">पढ़ले</span>
           <span class="logo__line">बेटा</span>
+          <span class="sr-only">PadhleBeta — Online Study Room for JEE, NEET and Boards</span>
         </h1>
+
+        <!-- Real descriptive content for search crawlers and screen
+             readers — the visual design has no room for a paragraph of
+             copy, but the product genuinely does what this describes. -->
+        <p class="sr-only">
+          PadhleBeta is a free online study room where JEE, NEET and Board exam
+          students in India study together, live. Join a room and everyone
+          shares the same synced Pomodoro cycle — 30 minutes of focused study
+          followed by a 3-minute break, with a quick check-in poll asking
+          whether you actually focused. During breaks, chat with the other
+          students studying alongside you. Outside of study rooms, play
+          non-stop Hindi motivational songs, lofi focus music, or rain sounds
+          to help you concentrate.
+        </p>
 
         <button class="rooms-cta" id="roomsCtaBtn" type="button">
           <span class="rooms-cta__ring">
@@ -273,8 +321,8 @@
       </div>
     </div>
 
-    <script src="/rooms/config.js?v=8"></script>
-    <script src="/app.js?v=8"></script>
-    <script type="module" src="/room.js?v=8"></script>
+    <script src="/rooms/config.js?v=9"></script>
+    <script src="/app.js?v=9"></script>
+    <script type="module" src="/room.js?v=9"></script>
   </body>
 </html>
