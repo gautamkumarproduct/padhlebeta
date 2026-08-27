@@ -451,23 +451,10 @@ function tickClock() {
 tickClock();
 setInterval(tickClock, 15000);
 
-(function driftListeners() {
-  const MIN = 400;
-  const MAX = 900;
-  let count = MIN + Math.floor(Math.random() * (MAX - MIN));
-
-  el.listeners.textContent = String(count);
-
-  const step = () => {
-    const midpoint = (MIN + MAX) / 2;
-    const up = Math.random() < (count < midpoint ? 0.58 : 0.42);
-    count = Math.max(MIN, Math.min(MAX, count + (up ? 1 : -1) * (1 + Math.floor(Math.random() * 4))));
-    el.listeners.textContent = String(count);
-    setTimeout(step, 2500 + Math.random() * 3500);
-  };
-
-  setTimeout(step, 2000);
-})();
+// The top-bar headcount used to be its own invented random walk between
+// 400 and 900, which contradicted the room's real number (presence +
+// ambient profiles, typically ~10). room.js now drives this element from
+// the same count the room header uses, so the two can't disagree.
 
 /* ── YouTube iframe boot ─────────────────────────────────────── */
 

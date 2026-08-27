@@ -96,6 +96,7 @@ let sessionId = null;
 let cycleState = null;
 
 const roomCount = document.getElementById('roomCount');
+const listenersEl = document.getElementById('listeners');
 const presentList = document.getElementById('presentList');
 const chatLog = document.getElementById('chatLog');
 const chatForm = document.getElementById('chatForm');
@@ -537,9 +538,17 @@ function renderPresence() {
     .flat()
     .sort((a, b) => a.joined_at - b.joined_at);
 
+  // One number, four surfaces — the home top bar, the home CTA, the room
+  // header and the focus story all read from this, so they can never
+  // disagree the way they did when the top bar invented its own figure.
   const totalCount = people.length + activeBots.size;
   roomCount.textContent = totalCount === 1 ? '1 studying' : `${totalCount} studying`;
   focusRoomCountEl.textContent = totalCount === 1 ? 'just you' : `${totalCount} together`;
+  if (listenersEl) listenersEl.textContent = String(totalCount);
+  if (!joined) {
+    roomsCtaHoursEl.textContent =
+      `${baseHoursText} · ${totalCount === 1 ? '1 studying now' : totalCount + ' studying now'}`;
+  }
 
   const desired = new Map();
   people.forEach((p) => desired.set('u:' + p.key, { name: p.name, isYou: p.key === myKey }));
@@ -576,14 +585,7 @@ channel = supabase.channel(`room:${room.id}`, {
   config: { presence: { key: myKey }, broadcast: { self: true } },
 });
 
-channel.on('presence', { event: 'sync' }, () => {
-  renderPresence();
-  if (!joined) {
-    const state = channel.presenceState();
-    const n = Object.values(state).flat().length;
-    roomsCtaHoursEl.textContent = n > 0 ? `${baseHoursText} · ${n === 1 ? '1 studying now' : n + ' studying now'}` : baseHoursText;
-  }
-});
+channel.on('presence', { event: 'sync' }, renderPresence);
 
 channel.on(
   'postgres_changes',
