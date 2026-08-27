@@ -216,11 +216,6 @@ body {
   transform: translateY(18px) scale(0.97);
 }
 
-#viewHome {
-  justify-content: center;
-  gap: clamp(2rem, 8vh, 5rem);
-}
-
 #viewRoom {
   /* Unlike #viewHome, this needs a hard height ceiling, not just a
      min-height floor — otherwise the box just grows to fit the (now
@@ -1230,4 +1225,145 @@ body {
 .name-gate__close:hover {
   background: rgba(255, 255, 255, 0.16);
   color: #fff;
+}
+
+/* ── Content pages (about / faq / topic pages) ─────────────────
+   Standalone static pages for search crawl depth, not part of the
+   app shell. Reuses the same dark glass palette as the study room. */
+
+.content-page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: max(2.5rem, env(safe-area-inset-top)) var(--edge) 5rem;
+}
+
+.content-page__inner {
+  width: 100%;
+  max-width: 38rem;
+}
+
+.content-page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: none;
+  font-family: var(--ui);
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 2.5rem;
+  transition: color var(--swift);
+}
+.content-page__back:hover {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.content-page h1 {
+  font-family: "Yatra One", var(--body);
+  font-weight: 400;
+  font-size: clamp(1.6rem, 5vw, 2.1rem);
+  color: var(--accent);
+  margin: 0 0 1.25rem;
+  line-height: 1.25;
+}
+
+.content-page h2 {
+  font-family: var(--ui);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #fff;
+  margin: 2.25rem 0 0.75rem;
+}
+
+.content-page p {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  margin: 0 0 1rem;
+}
+
+.content-page a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 207, 77, 0.35);
+  text-underline-offset: 2px;
+}
+.content-page a:hover {
+  text-decoration-color: var(--accent);
+}
+
+.content-page .faq {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.content-page .faq details {
+  border: 1px solid var(--glass-line);
+  background: var(--glass);
+  border-radius: 1rem;
+  padding: 0.9rem 1.1rem;
+}
+
+.content-page .faq summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.92rem;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: #fff;
+}
+.content-page .faq summary::-webkit-details-marker {
+  display: none;
+}
+.content-page .faq summary::after {
+  content: "+";
+  flex: none;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--accent);
+  transition: transform var(--swift);
+}
+.content-page .faq details[open] summary::after {
+  transform: rotate(45deg);
+}
+
+.content-page .faq details p {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+}
+
+.content-page__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2.5rem;
+  padding: 0.7rem 1.25rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #1a1200;
+  font-family: var(--ui);
+  font-weight: 700;
+  font-size: 0.88rem;
+  text-decoration: none;
+}
+.content-page__cta:hover {
+  filter: brightness(1.06);
+}
+
+.content-page__related {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--glass-line);
+}
+.content-page__related p {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 0.4rem;
 }

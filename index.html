@@ -95,8 +95,8 @@
     </noscript>
 
     <link rel="stylesheet" href="/ambient.css" />
-    <link rel="stylesheet" href="/styles.css?v=9" />
-    <link rel="stylesheet" href="/rooms/rooms.css?v=9" />
+    <link rel="stylesheet" href="/styles.css?v=11" />
+    <link rel="stylesheet" href="/rooms/rooms.css?v=11" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-CFKL02YN12"></script>
@@ -141,7 +141,11 @@
             <span class="presence__count" id="listeners">—</span>
             <span class="presence__label">studying now</span>
           </span>
-          <span class="links"></span>
+          <span class="links">
+            <a class="link" href="/about.html" aria-label="About PadhleBeta" title="About">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            </a>
+          </span>
         </div>
 
         <h1 class="logo">
@@ -149,20 +153,6 @@
           <span class="logo__line">बेटा</span>
           <span class="sr-only">PadhleBeta — Online Study Room for JEE, NEET and Boards</span>
         </h1>
-
-        <!-- Real descriptive content for search crawlers and screen
-             readers — the visual design has no room for a paragraph of
-             copy, but the product genuinely does what this describes. -->
-        <p class="sr-only">
-          PadhleBeta is a free online study room where JEE, NEET and Board exam
-          students in India study together, live. Join a room and everyone
-          shares the same synced Pomodoro cycle — 30 minutes of focused study
-          followed by a 3-minute break, with a quick check-in poll asking
-          whether you actually focused. During breaks, chat with the other
-          students studying alongside you. Outside of study rooms, play
-          non-stop Hindi motivational songs, lofi focus music, or rain sounds
-          to help you concentrate.
-        </p>
 
         <button class="rooms-cta" id="roomsCtaBtn" type="button">
           <span class="rooms-cta__ring">
@@ -184,7 +174,7 @@
         <button class="back" id="leaveBtn" type="button">← Leave room</button>
 
         <div class="room-header">
-          <h1 id="roomTitle">🎯 Lakshya · Open Focus</h1>
+          <h2 id="roomTitle">🎯 Lakshya · Open Focus</h2>
           <span class="count"><span class="dot"></span><span id="roomCount">1 studying</span></span>
         </div>
 
@@ -321,8 +311,8 @@
       </div>
     </div>
 
-    <script src="/rooms/config.js?v=9"></script>
-    <script src="/app.js?v=9"></script>
-    <script type="module" src="/room.js?v=9"></script>
+    <script src="/rooms/config.js?v=11"></script>
+    <script src="/app.js?v=11"></script>
+    <script type="module" src="/room.js?v=11"></script>
   </body>
 </html>
