@@ -152,6 +152,7 @@
   .copy-btn:hover { color: var(--text); border-color: var(--blue); }
   .copy-btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
   .officers-note { font-size: 12.5px; color: var(--text-faint); text-align: center; margin: 4px 0 0; }
+  .officers-note strong, .retire-desc strong { color: var(--blue); font-weight: 600; }
 
   /* ---- retire (uninstall) ---- */
   section.retire { padding: 0 0 50px; text-align: left; }
@@ -364,12 +365,12 @@ chmod +x install-disconnect-only.sh
     </div>
 
 
-    <p class="officers-note">One file. Open it in a text editor first — it's short, and nothing in it is hidden.</p>
+    <p class="officers-note">Copy the command, paste it into <strong>Terminal</strong> (Applications → Utilities → Terminal), then press Return. One file, one paste — it's short, and nothing in it is hidden.</p>
   </section>
 
   <section class="retire wrap">
     <div class="sec-label" style="text-align:center">Retire The <span class="b">Officer</span></div>
-    <p class="retire-desc">Stops whichever version is running and deletes everything it created.</p>
+    <p class="retire-desc">Stops whichever version is running and deletes everything it created. Same as above — paste this into <strong>Terminal</strong> and press Return.</p>
     <div class="codeblock">
       <button class="copy-btn" data-copy-target="cmd-uninstall">Copy</button>
       <pre id="cmd-uninstall"><span class="comment"># one paste — writes the file, then runs it</span>
