@@ -136,6 +136,7 @@
   .o-name { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.04em; }
   .o-tag { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--blue); border: 1px solid var(--blue-dim); padding: 3px 9px; border-radius: 20px; flex: none; }
   .o-desc { font-size: 13.5px; color: var(--text-dim); margin: 0 0 14px; }
+  .o-desc strong { color: var(--red); font-weight: 600; }
   .codeblock {
     position: relative; background: var(--surface-sunken); border: 1px solid var(--border);
     border-radius: 8px; padding: 14px 16px; font-size: 12.5px; overflow-x: auto;
@@ -243,11 +244,11 @@
   </section>
 
   <section class="officers wrap">
-    <div class="sec-label" style="text-align:center">Choose Your <span class="b">Officer</span></div>
+    <div class="sec-label" style="text-align:center">Your <span class="b">Officer</span></div>
 
     <div class="officer">
-      <div class="officer-head"><span class="o-name">The Beat Cop</span><span class="o-tag">simplest</span></div>
-      <p class="o-desc">Drops the VPN when the network dies. You reconnect it yourself.</p>
+      <div class="officer-head"><span class="o-name">The Beat Cop</span><span class="o-tag">disconnect only</span></div>
+      <p class="o-desc"><strong>Important: this only disconnects.</strong> It will not reconnect the VPN for you — once it drops, you need to open FortiClient and connect yourself.</p>
       <div class="codeblock scroll-code">
         <button class="copy-btn" data-copy-target="cmd-v1">Copy</button>
         <pre id="cmd-v1"><span class="comment"># one paste — writes the file, then runs it</span>
@@ -362,138 +363,8 @@ chmod +x install-disconnect-only.sh
       </div>
     </div>
 
-    <div class="officer">
-      <div class="officer-head"><span class="o-name">The Detective</span><span class="o-tag">follows up</span></div>
-      <p class="o-desc">Same watch, but also reconnects once the network is back — only for the drop it caused. If your VPN normally asks for SSO or MFA on every connect, expect that same prompt here too.</p>
-      <div class="codeblock scroll-code">
-        <button class="copy-btn" data-copy-target="cmd-v2">Copy</button>
-        <pre id="cmd-v2"><span class="comment"># one paste — writes the file, then runs it</span>
-cat &gt; install-auto-reconnect.sh &lt;&lt; 'INSTALL_EOF'
-#!/bin/bash
-# VERSION 2 — disconnect AND auto-reconnect.
-# Same drop-detection as version 1, but once the network comes back, it also
-# tries to reconnect the VPN automatically — ONLY if it was this script that
-# disconnected it (never touches a VPN you disconnected yourself).
-#
-# Caveat: if your FortiClient VPN requires SSO/MFA/2FA on every connect, the
-# reconnect call may open a login prompt instead of silently succeeding —
-# scutil can't complete an interactive login for you.
-set -e
 
-WD_DIR="$HOME/vpn-watchdog"
-LABEL="com.vpnpolice.agent.autoreconnect"
-PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
-
-mkdir -p "$WD_DIR"
-touch "$WD_DIR/watchdog-autoreconnect.log"
-
-cat &gt; "$WD_DIR/watchdog-autoreconnect.sh" &lt;&lt; 'SCRIPT_EOF'
-#!/bin/bash
-
-HOST="google.com"
-CHECK_INTERVAL=15
-FAIL_THRESHOLD=3
-LOG_FILE="$HOME/vpn-watchdog/watchdog-autoreconnect.log"
-
-fail_count=0
-we_disconnected_it=false
-
-log() {
-  echo "$(date '+%Y-%m-%d %H:%M:%S') $1" &gt;&gt; "$LOG_FILE"
-}
-
-get_vpn_service() {
-  scutil --nc list | grep -i fortinet | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}'
-}
-
-is_vpn_connected() {
-  scutil --nc status "$1" 2&gt;/dev/null | head -1 | grep -q "Connected"
-}
-
-check_network() {
-  # Some networks block ICMP ping while regular web traffic works fine.
-  # Try ping first; if that fails, confirm with a real HTTPS request before
-  # calling it a drop, so a ping-blocked network doesn't trigger a false disconnect.
-  ping -c 1 -t 3 "$HOST" &gt;/dev/null 2&gt;&amp;1 &amp;&amp; return 0
-  curl -s --max-time 3 -o /dev/null "https://$HOST" &amp;&amp; return 0
-  return 1
-}
-
-log "watchdog started (auto-reconnect, interval=${CHECK_INTERVAL}s, threshold=${FAIL_THRESHOLD})"
-
-while true; do
-  if check_network; then
-    if [ "$fail_count" -gt 0 ]; then
-      log "network OK again after $fail_count failed check(s)"
-    fi
-    fail_count=0
-
-    if [ "$we_disconnected_it" = true ]; then
-      svc=$(get_vpn_service)
-      if [ -n "$svc" ] &amp;&amp; ! is_vpn_connected "$svc"; then
-        log "attempting to reconnect VPN service $svc"
-        scutil --nc start "$svc"
-        osascript -e 'display notification "Network is back — reconnecting VPN." with title "VPN Police"' &gt;/dev/null 2&gt;&amp;1
-      fi
-      we_disconnected_it=false
-    fi
-  else
-    fail_count=$((fail_count + 1))
-    log "network check failed (count=$fail_count)"
-
-    if [ "$fail_count" -ge "$FAIL_THRESHOLD" ] &amp;&amp; [ "$we_disconnected_it" = false ]; then
-      svc=$(get_vpn_service)
-      if [ -n "$svc" ] &amp;&amp; is_vpn_connected "$svc"; then
-        log "threshold reached, disconnecting VPN service $svc"
-        scutil --nc stop "$svc"
-        we_disconnected_it=true
-        osascript -e 'display notification "Network dropped — VPN auto-disconnected." with title "VPN Police"' &gt;/dev/null 2&gt;&amp;1
-      fi
-    fi
-  fi
-
-  sleep "$CHECK_INTERVAL"
-done
-SCRIPT_EOF
-
-chmod +x "$WD_DIR/watchdog-autoreconnect.sh"
-
-cat &gt; "$PLIST" &lt;&lt; PLIST_EOF
-&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
-&lt;plist version="1.0"&gt;
-&lt;dict&gt;
-    &lt;key&gt;Label&lt;/key&gt;
-    &lt;string&gt;$LABEL&lt;/string&gt;
-    &lt;key&gt;ProgramArguments&lt;/key&gt;
-    &lt;array&gt;
-        &lt;string&gt;/bin/bash&lt;/string&gt;
-        &lt;string&gt;$WD_DIR/watchdog-autoreconnect.sh&lt;/string&gt;
-    &lt;/array&gt;
-    &lt;key&gt;RunAtLoad&lt;/key&gt;
-    &lt;true/&gt;
-    &lt;key&gt;KeepAlive&lt;/key&gt;
-    &lt;true/&gt;
-    &lt;key&gt;StandardOutPath&lt;/key&gt;
-    &lt;string&gt;$WD_DIR/launchagent-autoreconnect.out.log&lt;/string&gt;
-    &lt;key&gt;StandardErrorPath&lt;/key&gt;
-    &lt;string&gt;$WD_DIR/launchagent-autoreconnect.err.log&lt;/string&gt;
-&lt;/dict&gt;
-&lt;/plist&gt;
-PLIST_EOF
-
-launchctl unload "$PLIST" 2&gt;/dev/null || true
-launchctl load "$PLIST"
-
-echo "VPN Police (auto-reconnect) installed and running."
-echo "Log: $WD_DIR/watchdog-autoreconnect.log"
-INSTALL_EOF
-chmod +x install-auto-reconnect.sh
-./install-auto-reconnect.sh</pre>
-      </div>
-    </div>
-
-    <p class="officers-note">One file each. Open it in a text editor first — it's short, and nothing in it is hidden.</p>
+    <p class="officers-note">One file. Open it in a text editor first — it's short, and nothing in it is hidden.</p>
   </section>
 
   <section class="retire wrap">
