@@ -260,20 +260,20 @@ cat &gt; install-disconnect-only.sh &lt;&lt; 'INSTALL_EOF'
 # the FortiClient VPN. Does NOT reconnect it automatically — you reconnect by hand.
 set -e
 
-WD_DIR="$HOME/vpn-watchdog"
+WD_DIR="$HOME/vpn-police"
 LABEL="com.vpnpolice.agent"
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 
 mkdir -p "$WD_DIR"
-touch "$WD_DIR/watchdog.log"
+touch "$WD_DIR/police.log"
 
-cat &gt; "$WD_DIR/watchdog.sh" &lt;&lt; 'SCRIPT_EOF'
+cat &gt; "$WD_DIR/police.sh" &lt;&lt; 'SCRIPT_EOF'
 #!/bin/bash
 
 HOST="google.com"
 CHECK_INTERVAL=15
 FAIL_THRESHOLD=3
-LOG_FILE="$HOME/vpn-watchdog/watchdog.log"
+LOG_FILE="$HOME/vpn-police/police.log"
 
 fail_count=0
 already_disconnected=false
@@ -299,7 +299,7 @@ check_network() {
   return 1
 }
 
-log "watchdog started (disconnect-only, interval=${CHECK_INTERVAL}s, threshold=${FAIL_THRESHOLD})"
+log "police started (disconnect-only, interval=${CHECK_INTERVAL}s, threshold=${FAIL_THRESHOLD})"
 
 while true; do
   if check_network; then
@@ -327,7 +327,7 @@ while true; do
 done
 SCRIPT_EOF
 
-chmod +x "$WD_DIR/watchdog.sh"
+chmod +x "$WD_DIR/police.sh"
 
 cat &gt; "$PLIST" &lt;&lt; PLIST_EOF
 &lt;?xml version="1.0" encoding="UTF-8"?&gt;
@@ -339,7 +339,7 @@ cat &gt; "$PLIST" &lt;&lt; PLIST_EOF
     &lt;key&gt;ProgramArguments&lt;/key&gt;
     &lt;array&gt;
         &lt;string&gt;/bin/bash&lt;/string&gt;
-        &lt;string&gt;$WD_DIR/watchdog.sh&lt;/string&gt;
+        &lt;string&gt;$WD_DIR/police.sh&lt;/string&gt;
     &lt;/array&gt;
     &lt;key&gt;RunAtLoad&lt;/key&gt;
     &lt;true/&gt;
@@ -357,7 +357,7 @@ launchctl unload "$PLIST" 2&gt;/dev/null || true
 launchctl load "$PLIST"
 
 echo "VPN Police (disconnect-only) installed and running."
-echo "Log: $WD_DIR/watchdog.log"
+echo "Log: $WD_DIR/police.log"
 INSTALL_EOF
 chmod +x install-disconnect-only.sh
 ./install-disconnect-only.sh</pre>
@@ -379,7 +379,7 @@ cat &gt; uninstall.sh &lt;&lt; 'INSTALL_EOF'
 # Removes either/both VPN Police versions completely.
 set -e
 
-WD_DIR="$HOME/vpn-watchdog"
+WD_DIR="$HOME/vpn-police"
 LABELS=("com.vpnpolice.agent" "com.vpnpolice.agent.autoreconnect")
 
 for LABEL in "${LABELS[@]}"; do
