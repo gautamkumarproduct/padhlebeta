@@ -1,318 +1,553 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>PadhleBeta — Online Study Room for JEE, NEET &amp; Boards | Study Together Live</title>
-    <meta
-      name="description"
-      content="Free online study room for JEE, NEET and Board exam students. Join a live Pomodoro session (30 min focus + 3 min break), study alongside others, and stay motivated with non-stop Hindi study music."
-    />
-    <meta name="theme-color" content="#08080d" />
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VPN Police</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="PadhleBeta" />
-    <meta property="og:locale" content="en_IN" />
-    <meta property="og:title" content="PadhleBeta — Online Study Room for JEE, NEET &amp; Boards" />
-    <meta property="og:description" content="Free live study room with a 30-min Pomodoro timer, real people studying alongside you, and non-stop Hindi motivational music." />
-    <meta property="og:url" content="https://padhlebeta.live" />
-    <!-- Bump ?v= whenever the image changes: WhatsApp, iMessage and X cache
-         link previews for weeks and key that cache on the URL. -->
-    <meta property="og:image" content="https://padhlebeta.live/og-image.png?v=1" />
-    <meta property="og:image:type" content="image/png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="PadhleBeta — non-stop motivational songs to study, focus and grind with." />
+  :root {
+    --bg: #0a0e17;
+    --surface: #121a29;
+    --surface-sunken: #0c121e;
+    --border: #26324a;
+    --text: #eef1f7;
+    --text-dim: #9aa7bf;
+    --text-faint: #5e6c88;
+    --red: #ff5a5c;
+    --red-dim: #a8383a;
+    --red-glow: rgba(255, 90, 92, 0.30);
+    --blue: #5b9bff;
+    --blue-dim: #33517f;
+    --blue-glow: rgba(91, 155, 255, 0.30);
+    --shadow: 0 1px 2px rgba(0,0,0,0.5), 0 14px 34px -14px rgba(0,0,0,0.7);
+  }
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="PadhleBeta — Online Study Room for JEE, NEET &amp; Boards" />
-    <meta name="twitter:description" content="Free live study room with a 30-min Pomodoro timer, real people studying alongside you, and non-stop Hindi motivational music." />
-    <meta name="twitter:image" content="https://padhlebeta.live/og-image.png?v=1" />
-    <meta name="twitter:image:alt" content="PadhleBeta — non-stop motivational songs to study, focus and grind with." />
+  * { box-sizing: border-box; }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+  }
 
-    <link rel="canonical" href="https://padhlebeta.live" />
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 24px; }
 
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@graph": [
-          {
-            "@type": "WebSite",
-            "@id": "https://padhlebeta.live/#website",
-            "url": "https://padhlebeta.live/",
-            "name": "PadhleBeta",
-            "description": "Free online study room for JEE, NEET and Board exam students, with a live Pomodoro timer and non-stop Hindi motivational music.",
-            "inLanguage": ["en", "hi"]
-          },
-          {
-            "@type": "WebApplication",
-            "name": "PadhleBeta",
-            "url": "https://padhlebeta.live/",
-            "applicationCategory": "EducationApplication",
-            "operatingSystem": "Any (web browser)",
-            "description": "A free live study room where JEE, NEET and Board exam students study together on a synced 30-minute focus / 3-minute break cycle, with non-stop Hindi motivational music.",
-            "offers": {
-              "@type": "Offer",
-              "price": "0",
-              "priceCurrency": "INR"
-            },
-            "audience": {
-              "@type": "EducationalAudience",
-              "educationalRole": "student"
-            }
-          }
-        ]
+  .badge-font { font-family: 'Bebas Neue', 'IBM Plex Sans', sans-serif; letter-spacing: 0.04em; text-wrap: balance; }
+  code, pre, .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+
+  a { color: var(--blue); }
+
+  /* ---- header ---- */
+  header.top { padding: 26px 0 0; }
+  .top-inner { display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand svg { width: 22px; height: 22px; }
+  .brand .word { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.06em; }
+  .onduty { display: flex; align-items: center; gap: 7px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; color: var(--text-faint); text-transform: uppercase; }
+  .onduty .pulse { width: 8px; height: 8px; border-radius: 50%; animation: siren 1.4s infinite; }
+
+  @keyframes siren {
+    0%, 45% { background: var(--red); box-shadow: 0 0 8px var(--red-glow); }
+    50%, 95% { background: var(--blue); box-shadow: 0 0 8px var(--blue-glow); }
+    100% { background: var(--red); box-shadow: 0 0 8px var(--red-glow); }
+  }
+
+  /* ---- hero ---- */
+  .hero { position: relative; padding: 76px 0 46px; text-align: center; overflow: hidden; }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; top: -40px; width: 340px; height: 340px;
+    border-radius: 50%; filter: blur(70px); z-index: 0; opacity: 0.55;
+    animation: sweep 3.2s ease-in-out infinite;
+  }
+  .hero::before { left: -120px; background: var(--red-glow); }
+  .hero::after { right: -120px; background: var(--blue-glow); animation-delay: 1.6s; }
+  @keyframes sweep {
+    0%, 100% { opacity: 0.25; transform: scale(0.9); }
+    50% { opacity: 0.6; transform: scale(1.05); }
+  }
+  .hero-inner { position: relative; z-index: 1; }
+  .case-tag {
+    display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-faint);
+    border: 1px solid var(--border); border-radius: 20px; padding: 5px 14px; margin-bottom: 22px;
+  }
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif; font-size: 52px; line-height: 1.05;
+    letter-spacing: 0.01em; margin: 0 auto 18px; max-width: 15ch; text-wrap: balance;
+  }
+  .hero h1 .lie { color: var(--red); text-shadow: 0 0 22px var(--red-glow); }
+  .hero p { font-size: 16.5px; color: var(--text-dim); max-width: 42ch; margin: 0 auto; }
+
+  /* ---- case file / story ---- */
+  section.story { padding: 8px 0 58px; }
+  .case-file {
+    max-width: 520px; margin: 0 auto; border: 1px solid var(--border); border-radius: 12px;
+    background: var(--surface); box-shadow: var(--shadow); padding: 22px 24px; text-align: left;
+  }
+  .case-file .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .case-file .head .label { color: var(--text-faint); }
+  .case-file .head .status { color: var(--blue); }
+  .case-file p { margin: 0; font-size: 15px; color: var(--text-dim); }
+  .case-file p strong { color: var(--text); font-weight: 600; }
+
+  /* ---- the patrol (how it works) ---- */
+  section.patrol { padding: 0 0 60px; }
+  .sec-label { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 0.05em; text-align: center; margin-bottom: 26px; color: var(--text); }
+  .sec-label .b { color: var(--blue); }
+  .patrol-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .p-step { text-align: center; }
+  .p-step .num { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-faint); margin-bottom: 10px; }
+  .p-step svg { width: 26px; height: 26px; color: var(--blue); margin-bottom: 10px; }
+  .p-step:last-child svg { color: var(--red); }
+  .p-step .t { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.04em; margin-bottom: 4px; }
+  .p-step .d { font-size: 13px; color: var(--text-dim); }
+
+  /* ---- rulebook (does/doesn't) ---- */
+  section.rulebook { padding: 0 0 60px; }
+  .rulebook-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+    background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+  }
+  .rb-col { background: var(--surface); padding: 20px 20px 22px; text-align: left; }
+  .rb-label { font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 0.06em; margin-bottom: 12px; }
+  .rb-col.permitted .rb-label { color: var(--blue); }
+  .rb-col.forbidden .rb-label { color: var(--red); }
+  .rb-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+  .rb-list li { font-size: 13.5px; color: var(--text); padding-left: 18px; position: relative; }
+  .rb-col.permitted .rb-list li::before { content: "✓"; position: absolute; left: 0; color: var(--blue); font-weight: 600; }
+  .rb-col.forbidden .rb-list li::before { content: "✕"; position: absolute; left: 0; color: var(--red); font-weight: 600; }
+  .rb-col.forbidden .rb-list li { color: var(--text-dim); }
+
+  /* ---- officers (install versions) ---- */
+  section.officers { padding: 0 0 56px; text-align: left; }
+  .officer {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: var(--shadow); padding: 20px 22px; margin-bottom: 16px;
+  }
+  .officer-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+  .o-name { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.04em; }
+  .o-tag { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--blue); border: 1px solid var(--blue-dim); padding: 3px 9px; border-radius: 20px; flex: none; }
+  .o-desc { font-size: 13.5px; color: var(--text-dim); margin: 0 0 14px; }
+  .codeblock {
+    position: relative; background: var(--surface-sunken); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px; font-size: 12.5px; overflow-x: auto;
+  }
+  .codeblock pre { margin: 0; white-space: pre; color: var(--text); font-family: 'IBM Plex Mono', monospace; line-height: 1.6; }
+  .codeblock .comment { color: var(--text-faint); }
+  .codeblock.scroll-code { max-height: 220px; overflow-y: auto; }
+  .copy-btn {
+    position: absolute; top: 9px; right: 9px; font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text-dim); cursor: pointer;
+  }
+  .copy-btn:hover { color: var(--text); border-color: var(--blue); }
+  .copy-btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .officers-note { font-size: 12.5px; color: var(--text-faint); text-align: center; margin: 4px 0 0; }
+
+  /* ---- retire (uninstall) ---- */
+  section.retire { padding: 0 0 50px; text-align: left; }
+  .retire-desc { font-size: 13.5px; color: var(--text-dim); text-align: center; margin: 0 0 14px; }
+
+  footer { border-top: 1px solid var(--border); padding: 22px 0 48px; text-align: center; }
+  footer p { font-size: 12.5px; color: var(--text-faint); margin: 0; }
+  footer .mono { color: var(--text-faint); }
+
+  @media (max-width: 560px) {
+    .hero h1 { font-size: 38px; }
+    .patrol-steps { grid-template-columns: 1fr; text-align: left; }
+    .rulebook-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-inner">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.6"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z"/><path d="M9 12l2 2 4-4" stroke="var(--red)"/></svg>
+      <span class="word">VPN POLICE</span>
+    </div>
+    <div class="onduty"><span class="pulse"></span> On patrol</div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-inner wrap">
+      <span class="case-tag">Case No. 0417 — Open</span>
+      <h1>Your WiFi isn't the culprit. Your <span class="lie">VPN</span> is.</h1>
+      <p>FortiClient sometimes still says "Connected" even after your internet has actually stopped working. VPN Police notices that first, and disconnects it for you.</p>
+    </div>
+  </section>
+
+  <section class="story wrap">
+    <div class="case-file">
+      <div class="head"><span class="label">Field Notes</span><span class="status">● Active</span></div>
+      <p>Your internet drops sometimes — that's just normal. The problem is your VPN not noticing. So this quietly checks in the background, and turns the VPN off the moment your internet is really down.</p>
+    </div>
+  </section>
+
+  <section class="patrol wrap">
+    <div class="sec-label">The <span class="b">Patrol</span></div>
+    <div class="patrol-steps">
+      <div class="p-step">
+        <div class="num">STEP 01</div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <div class="t">Patrols</div>
+        <div class="d">Pings google.com every 15 seconds.</div>
+      </div>
+      <div class="p-step">
+        <div class="num">STEP 02</div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+        <div class="t">Confirms</div>
+        <div class="d">Waits for three drops in a row.</div>
+      </div>
+      <div class="p-step">
+        <div class="num">STEP 03</div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13 3 5 13h6l-1 8 9-11h-6l0-7Z"/></svg>
+        <div class="t">Responds</div>
+        <div class="d">Disconnects the VPN, then radios you.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="rulebook wrap">
+    <div class="sec-label">The <span class="b">Rulebook</span></div>
+    <div class="rulebook-grid">
+      <div class="rb-col permitted">
+        <div class="rb-label">Permitted</div>
+        <ul class="rb-list">
+          <li>Checking google.com every 15 seconds</li>
+          <li>Waiting for a real drop, not one blip</li>
+          <li>Disconnecting your VPN, once per drop</li>
+          <li>Notifying you the moment it acts</li>
+        </ul>
+      </div>
+      <div class="rb-col forbidden">
+        <div class="rb-label">Forbidden</div>
+        <ul class="rb-list">
+          <li>Sending anything anywhere</li>
+          <li>Requesting admin or root access</li>
+          <li>Touching anything but this one VPN</li>
+          <li>Acting twice on the same drop</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="officers wrap">
+    <div class="sec-label" style="text-align:center">Choose Your <span class="b">Officer</span></div>
+
+    <div class="officer">
+      <div class="officer-head"><span class="o-name">The Beat Cop</span><span class="o-tag">simplest</span></div>
+      <p class="o-desc">Drops the VPN when the network dies. You reconnect it yourself.</p>
+      <div class="codeblock scroll-code">
+        <button class="copy-btn" data-copy-target="cmd-v1">Copy</button>
+        <pre id="cmd-v1"><span class="comment"># one paste — writes the file, then runs it</span>
+cat &gt; install-disconnect-only.sh &lt;&lt; 'INSTALL_EOF'
+#!/bin/bash
+# VERSION 1 — disconnect only.
+# Watches the network. On a real drop (3 consecutive failed pings), disconnects
+# the FortiClient VPN. Does NOT reconnect it automatically — you reconnect by hand.
+set -e
+
+WD_DIR="$HOME/vpn-watchdog"
+LABEL="com.vpnpolice.agent"
+PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
+
+mkdir -p "$WD_DIR"
+touch "$WD_DIR/watchdog.log"
+
+cat &gt; "$WD_DIR/watchdog.sh" &lt;&lt; 'SCRIPT_EOF'
+#!/bin/bash
+
+HOST="google.com"
+CHECK_INTERVAL=15
+FAIL_THRESHOLD=3
+LOG_FILE="$HOME/vpn-watchdog/watchdog.log"
+
+fail_count=0
+already_disconnected=false
+
+log() {
+  echo "$(date '+%Y-%m-%d %H:%M:%S') $1" &gt;&gt; "$LOG_FILE"
+}
+
+get_vpn_service() {
+  scutil --nc list | grep -i fortinet | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}'
+}
+
+is_vpn_connected() {
+  scutil --nc status "$1" 2&gt;/dev/null | head -1 | grep -q "Connected"
+}
+
+check_network() {
+  # Some networks block ICMP ping while regular web traffic works fine.
+  # Try ping first; if that fails, confirm with a real HTTPS request before
+  # calling it a drop, so a ping-blocked network doesn't trigger a false disconnect.
+  ping -c 1 -t 3 "$HOST" &gt;/dev/null 2&gt;&amp;1 &amp;&amp; return 0
+  curl -s --max-time 3 -o /dev/null "https://$HOST" &amp;&amp; return 0
+  return 1
+}
+
+log "watchdog started (disconnect-only, interval=${CHECK_INTERVAL}s, threshold=${FAIL_THRESHOLD})"
+
+while true; do
+  if check_network; then
+    if [ "$fail_count" -gt 0 ]; then
+      log "network OK again after $fail_count failed check(s)"
+    fi
+    fail_count=0
+    already_disconnected=false
+  else
+    fail_count=$((fail_count + 1))
+    log "network check failed (count=$fail_count)"
+
+    if [ "$fail_count" -ge "$FAIL_THRESHOLD" ] &amp;&amp; [ "$already_disconnected" = false ]; then
+      svc=$(get_vpn_service)
+      if [ -n "$svc" ] &amp;&amp; is_vpn_connected "$svc"; then
+        log "threshold reached, disconnecting VPN service $svc"
+        scutil --nc stop "$svc"
+        already_disconnected=true
+        osascript -e 'display notification "Network dropped — VPN auto-disconnected." with title "VPN Police"' &gt;/dev/null 2&gt;&amp;1
+      fi
+    fi
+  fi
+
+  sleep "$CHECK_INTERVAL"
+done
+SCRIPT_EOF
+
+chmod +x "$WD_DIR/watchdog.sh"
+
+cat &gt; "$PLIST" &lt;&lt; PLIST_EOF
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+    &lt;key&gt;Label&lt;/key&gt;
+    &lt;string&gt;$LABEL&lt;/string&gt;
+    &lt;key&gt;ProgramArguments&lt;/key&gt;
+    &lt;array&gt;
+        &lt;string&gt;/bin/bash&lt;/string&gt;
+        &lt;string&gt;$WD_DIR/watchdog.sh&lt;/string&gt;
+    &lt;/array&gt;
+    &lt;key&gt;RunAtLoad&lt;/key&gt;
+    &lt;true/&gt;
+    &lt;key&gt;KeepAlive&lt;/key&gt;
+    &lt;true/&gt;
+    &lt;key&gt;StandardOutPath&lt;/key&gt;
+    &lt;string&gt;$WD_DIR/launchagent.out.log&lt;/string&gt;
+    &lt;key&gt;StandardErrorPath&lt;/key&gt;
+    &lt;string&gt;$WD_DIR/launchagent.err.log&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+PLIST_EOF
+
+launchctl unload "$PLIST" 2&gt;/dev/null || true
+launchctl load "$PLIST"
+
+echo "VPN Police (disconnect-only) installed and running."
+echo "Log: $WD_DIR/watchdog.log"
+INSTALL_EOF
+chmod +x install-disconnect-only.sh
+./install-disconnect-only.sh</pre>
+      </div>
+    </div>
+
+    <div class="officer">
+      <div class="officer-head"><span class="o-name">The Detective</span><span class="o-tag">follows up</span></div>
+      <p class="o-desc">Same watch, but also reconnects once the network is back — only for the drop it caused. If your VPN normally asks for SSO or MFA on every connect, expect that same prompt here too.</p>
+      <div class="codeblock scroll-code">
+        <button class="copy-btn" data-copy-target="cmd-v2">Copy</button>
+        <pre id="cmd-v2"><span class="comment"># one paste — writes the file, then runs it</span>
+cat &gt; install-auto-reconnect.sh &lt;&lt; 'INSTALL_EOF'
+#!/bin/bash
+# VERSION 2 — disconnect AND auto-reconnect.
+# Same drop-detection as version 1, but once the network comes back, it also
+# tries to reconnect the VPN automatically — ONLY if it was this script that
+# disconnected it (never touches a VPN you disconnected yourself).
+#
+# Caveat: if your FortiClient VPN requires SSO/MFA/2FA on every connect, the
+# reconnect call may open a login prompt instead of silently succeeding —
+# scutil can't complete an interactive login for you.
+set -e
+
+WD_DIR="$HOME/vpn-watchdog"
+LABEL="com.vpnpolice.agent.autoreconnect"
+PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
+
+mkdir -p "$WD_DIR"
+touch "$WD_DIR/watchdog-autoreconnect.log"
+
+cat &gt; "$WD_DIR/watchdog-autoreconnect.sh" &lt;&lt; 'SCRIPT_EOF'
+#!/bin/bash
+
+HOST="google.com"
+CHECK_INTERVAL=15
+FAIL_THRESHOLD=3
+LOG_FILE="$HOME/vpn-watchdog/watchdog-autoreconnect.log"
+
+fail_count=0
+we_disconnected_it=false
+
+log() {
+  echo "$(date '+%Y-%m-%d %H:%M:%S') $1" &gt;&gt; "$LOG_FILE"
+}
+
+get_vpn_service() {
+  scutil --nc list | grep -i fortinet | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}'
+}
+
+is_vpn_connected() {
+  scutil --nc status "$1" 2&gt;/dev/null | head -1 | grep -q "Connected"
+}
+
+check_network() {
+  # Some networks block ICMP ping while regular web traffic works fine.
+  # Try ping first; if that fails, confirm with a real HTTPS request before
+  # calling it a drop, so a ping-blocked network doesn't trigger a false disconnect.
+  ping -c 1 -t 3 "$HOST" &gt;/dev/null 2&gt;&amp;1 &amp;&amp; return 0
+  curl -s --max-time 3 -o /dev/null "https://$HOST" &amp;&amp; return 0
+  return 1
+}
+
+log "watchdog started (auto-reconnect, interval=${CHECK_INTERVAL}s, threshold=${FAIL_THRESHOLD})"
+
+while true; do
+  if check_network; then
+    if [ "$fail_count" -gt 0 ]; then
+      log "network OK again after $fail_count failed check(s)"
+    fi
+    fail_count=0
+
+    if [ "$we_disconnected_it" = true ]; then
+      svc=$(get_vpn_service)
+      if [ -n "$svc" ] &amp;&amp; ! is_vpn_connected "$svc"; then
+        log "attempting to reconnect VPN service $svc"
+        scutil --nc start "$svc"
+        osascript -e 'display notification "Network is back — reconnecting VPN." with title "VPN Police"' &gt;/dev/null 2&gt;&amp;1
+      fi
+      we_disconnected_it=false
+    fi
+  else
+    fail_count=$((fail_count + 1))
+    log "network check failed (count=$fail_count)"
+
+    if [ "$fail_count" -ge "$FAIL_THRESHOLD" ] &amp;&amp; [ "$we_disconnected_it" = false ]; then
+      svc=$(get_vpn_service)
+      if [ -n "$svc" ] &amp;&amp; is_vpn_connected "$svc"; then
+        log "threshold reached, disconnecting VPN service $svc"
+        scutil --nc stop "$svc"
+        we_disconnected_it=true
+        osascript -e 'display notification "Network dropped — VPN auto-disconnected." with title "VPN Police"' &gt;/dev/null 2&gt;&amp;1
+      fi
+    fi
+  fi
+
+  sleep "$CHECK_INTERVAL"
+done
+SCRIPT_EOF
+
+chmod +x "$WD_DIR/watchdog-autoreconnect.sh"
+
+cat &gt; "$PLIST" &lt;&lt; PLIST_EOF
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+    &lt;key&gt;Label&lt;/key&gt;
+    &lt;string&gt;$LABEL&lt;/string&gt;
+    &lt;key&gt;ProgramArguments&lt;/key&gt;
+    &lt;array&gt;
+        &lt;string&gt;/bin/bash&lt;/string&gt;
+        &lt;string&gt;$WD_DIR/watchdog-autoreconnect.sh&lt;/string&gt;
+    &lt;/array&gt;
+    &lt;key&gt;RunAtLoad&lt;/key&gt;
+    &lt;true/&gt;
+    &lt;key&gt;KeepAlive&lt;/key&gt;
+    &lt;true/&gt;
+    &lt;key&gt;StandardOutPath&lt;/key&gt;
+    &lt;string&gt;$WD_DIR/launchagent-autoreconnect.out.log&lt;/string&gt;
+    &lt;key&gt;StandardErrorPath&lt;/key&gt;
+    &lt;string&gt;$WD_DIR/launchagent-autoreconnect.err.log&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+PLIST_EOF
+
+launchctl unload "$PLIST" 2&gt;/dev/null || true
+launchctl load "$PLIST"
+
+echo "VPN Police (auto-reconnect) installed and running."
+echo "Log: $WD_DIR/watchdog-autoreconnect.log"
+INSTALL_EOF
+chmod +x install-auto-reconnect.sh
+./install-auto-reconnect.sh</pre>
+      </div>
+    </div>
+
+    <p class="officers-note">One file each. Open it in a text editor first — it's short, and nothing in it is hidden.</p>
+  </section>
+
+  <section class="retire wrap">
+    <div class="sec-label" style="text-align:center">Retire The <span class="b">Officer</span></div>
+    <p class="retire-desc">Stops whichever version is running and deletes everything it created.</p>
+    <div class="codeblock">
+      <button class="copy-btn" data-copy-target="cmd-uninstall">Copy</button>
+      <pre id="cmd-uninstall"><span class="comment"># one paste — writes the file, then runs it</span>
+cat &gt; uninstall.sh &lt;&lt; 'INSTALL_EOF'
+#!/bin/bash
+# Removes either/both VPN Police versions completely.
+set -e
+
+WD_DIR="$HOME/vpn-watchdog"
+LABELS=("com.vpnpolice.agent" "com.vpnpolice.agent.autoreconnect")
+
+for LABEL in "${LABELS[@]}"; do
+  PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
+  if [ -f "$PLIST" ]; then
+    launchctl unload "$PLIST" 2&gt;/dev/null || true
+    rm -f "$PLIST"
+    echo "Removed $LABEL"
+  fi
+done
+
+rm -rf "$WD_DIR"
+echo "Deleted $WD_DIR"
+echo "VPN Police fully uninstalled."
+INSTALL_EOF
+chmod +x uninstall.sh
+./uninstall.sh</pre>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <p>macOS + FortiClient only. Filed locally, per user — nothing leaves the precinct.</p>
+</footer>
+
+<script>
+  document.querySelectorAll('.copy-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var target = document.getElementById(btn.getAttribute('data-copy-target'));
+      var text = target.innerText;
+      var done = function () {
+        var original = btn.textContent;
+        btn.textContent = 'Copied';
+        setTimeout(function () { btn.textContent = original; }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(function () {});
       }
-    </script>
-
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://www.youtube.com" />
-    <link rel="preconnect" href="https://i.ytimg.com" />
-    <link rel="dns-prefetch" href="https://www.youtube.com" />
-
-    <!-- Non-blocking font load: the page paints in the fallback stack
-         immediately, then swaps once the webfont arrives, instead of
-         holding up first paint on a fonts.googleapis.com round trip. -->
-    <link
-      rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Yatra+One&family=Inter:wght@500;600;700;800&display=swap"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Yatra+One&family=Inter:wght@500;600;700;800&display=swap"
-      media="print"
-      onload="this.media='all'"
-    />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Yatra+One&family=Inter:wght@500;600;700;800&display=swap"
-      />
-    </noscript>
-
-    <link rel="stylesheet" href="/ambient.css" />
-    <link rel="stylesheet" href="/styles.css?v=12" />
-    <link rel="stylesheet" href="/rooms/rooms.css?v=12" />
-
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-CFKL02YN12"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag('js', new Date());
-      gtag('config', 'G-CFKL02YN12');
-    </script>
-  </head>
-  <body>
-    <div class="ambient" aria-hidden="true">
-      <div class="ambient__color">
-        <div class="ambient__blob ambient__blob--1"></div>
-        <div class="ambient__blob ambient__blob--2"></div>
-        <div class="ambient__blob ambient__blob--3"></div>
-        <div class="ambient__blob ambient__blob--4"></div>
-      </div>
-      <div class="ambient__grain"></div>
-
-      <div class="ambient__deco">
-        <svg class="deco-icon deco-icon--1" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10c6-3 12-3 18 0v28c-6-3-12-3-18 0Z"/><path d="M42 10c-6-3-12-3-18 0v28c6-3 12-3 18 0Z"/></svg>
-        <svg class="deco-icon deco-icon--2" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 34 30 8l6 6-26 26H4Z"/><path d="M26 12l6 6"/><path d="M4 34l4 4"/></svg>
-        <svg class="deco-icon deco-icon--3" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16 24 8l20 8-20 8Z"/><path d="M14 20v10c0 3 6 6 10 6s10-3 10-6V20"/><path d="M44 16v12"/></svg>
-        <svg class="deco-icon deco-icon--4" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 40h12"/><path d="M20 44h8"/><path d="M24 4a13 13 0 0 0-7 24c2 1.5 3 3.5 3 6h8c0-2.5 1-4.5 3-6a13 13 0 0 0-7-24Z"/></svg>
-        <svg class="deco-icon deco-icon--5" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 18h26v10a10 10 0 0 1-10 10H18A10 10 0 0 1 8 28Z"/><path d="M34 20h4a5 5 0 0 1 0 10h-4"/><path d="M14 6c0 2-2 2-2 4s2 2 2 4"/><path d="M22 6c0 2-2 2-2 4s2 2 2 4"/></svg>
-      </div>
-    </div>
-
-    <div id="yt-player" class="yt-host"></div>
-    <div id="yt-player-2" class="yt-host"></div>
-
-    <div id="app">
-      <!-- ── HOME VIEW ─────────────────────────────────────────────── -->
-      <section class="view" id="viewHome">
-        <div class="topbar">
-          <span class="clock" id="clock"></span>
-          <span class="presence">
-            <span class="presence__dot"></span>
-            <span class="presence__count" id="listeners">—</span>
-            <span class="presence__label">studying now</span>
-          </span>
-          <span class="links">
-            <a class="link" href="/about.html" aria-label="About PadhleBeta" title="About">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-            </a>
-          </span>
-        </div>
-
-        <h1 class="logo">
-          <span class="logo__line">पढ़ले</span>
-          <span class="logo__line">बेटा</span>
-          <span class="sr-only">PadhleBeta — Online Study Room for JEE, NEET and Boards</span>
-        </h1>
-
-        <button class="rooms-cta" id="roomsCtaBtn" type="button">
-          <span class="rooms-cta__ring">
-            <span class="rooms-cta__dot"></span>
-          </span>
-          <span class="rooms-cta__text">
-            <span class="rooms-cta__title" id="roomsCtaTitle">Study Room is open</span>
-            <span class="rooms-cta__sub" id="roomsCtaHours">— IST</span>
-            <span class="rooms-cta__sub rooms-cta__studied" id="studiedBadge" hidden></span>
-          </span>
-          <span class="rooms-cta__arrow">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M13 5l7 7-7 7"></path></svg>
-          </span>
-        </button>
-      </section>
-
-      <!-- ── STUDY ROOM VIEW ───────────────────────────────────────── -->
-      <section class="view is-hidden" id="viewRoom">
-        <button class="back" id="leaveBtn" type="button">← Leave room</button>
-
-        <div class="room-header">
-          <h2 id="roomTitle">🎯 Lakshya · Open Focus</h2>
-          <span class="count"><span class="dot"></span><span id="roomCount">1 studying</span></span>
-        </div>
-
-        <div class="pomodoro-card" id="pomodoroCard">
-          <div class="pomodoro-ring">
-            <svg viewBox="0 0 120 120" width="152" height="152">
-              <circle class="pomodoro-ring__track" cx="60" cy="60" r="52"></circle>
-              <circle class="pomodoro-ring__fill" id="pomodoroRingFill" cx="60" cy="60" r="52"></circle>
-            </svg>
-            <div class="pomodoro-ring__center">
-              <div class="pomodoro-phase" id="pomodoroPhase">FOCUS</div>
-              <div class="pomodoro-timer" id="pomodoroTimer">30:00</div>
-            </div>
-          </div>
-          <div class="pomodoro-label" id="pomodoroLabel">until break</div>
-
-          <!-- The story: this room has been heads-down together for X,
-               and you joined Y ago. Two stats side by side so the
-               comparison reads instantly, without a sentence. -->
-          <div class="focus-story">
-            <div class="focus-stat focus-stat--room">
-              <span class="focus-stat__label" id="focusRoomLabel">Room focusing</span>
-              <span class="focus-stat__value" id="roomFocusTime">00:00</span>
-              <span class="focus-stat__sub"><span class="dot"></span><span id="focusRoomCount">1 together</span></span>
-            </div>
-            <div class="focus-stat__divider"></div>
-            <div class="focus-stat focus-stat--you">
-              <span class="focus-stat__label">You here</span>
-              <span class="focus-stat__value" id="timer">00:00</span>
-              <span class="focus-stat__sub" id="focusYouSub">just joined</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="poll-card is-hidden" id="pollCard">
-          <div class="poll-question">Did you seriously study for the last 30 minutes?</div>
-          <div class="poll-timer" id="pollTimer">⏱ 20s to vote</div>
-          <div class="poll-options">
-            <button class="poll-btn" data-response="yes" type="button">💪 Yes</button>
-            <button class="poll-btn" data-response="no" type="button">😴 No</button>
-          </div>
-          <div class="poll-results" id="pollResults"></div>
-        </div>
-
-        <div class="present">
-          <div class="room-group">In this room</div>
-          <div class="avatar-grid" id="presentList"></div>
-        </div>
-
-        <div class="chat-toggle" id="chatToggleRow">
-          <div class="room-group" style="margin: 0">Chat</div>
-          <button id="chatToggleBtn" type="button">Hide chat</button>
-        </div>
-
-        <div class="chat-panel" id="chatPanel">
-          <div class="chat-log" id="chatLog">
-            <p class="chat-empty" id="chatLockedMsg">🔒 Chat opens during the next break</p>
-          </div>
-          <form class="chat-form" id="chatForm">
-            <input id="chatInput" type="text" placeholder="Chat opens on break…" maxlength="240" autocomplete="off" disabled />
-            <button type="submit" id="chatSendBtn" disabled>Send</button>
-          </form>
-        </div>
-      </section>
-    </div>
-
-    <!-- ── Persistent mini player — visible on every view, so music and
-         motivational lines never disappear, even inside the study room ── -->
-    <div class="dock" id="dock">
-      <p class="bumper">
-        <span class="bumper__text" id="bumperText"></span>
-        <button class="bumper__next" id="bumperNext" type="button" aria-label="Next line">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-        </button>
-      </p>
-
-      <div class="list" id="list">
-        <ol id="listItems"></ol>
-      </div>
-
-      <div class="player" id="player">
-        <div class="disc">
-          <div class="disc__ring">
-            <img class="disc__art" id="cover" src="" alt="" />
-          </div>
-          <div class="disc__hub"></div>
-        </div>
-
-        <div class="meta">
-          <p class="meta__title" id="title">Loading playlist…</p>
-          <p class="meta__artist" id="artist">padhlebeta.live</p>
-
-          <div class="seek" id="seek" role="slider" tabindex="0" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-            <div class="seek__rail">
-              <div class="seek__fill" id="seekFill"></div>
-            </div>
-            <div class="seek__knob" id="seekKnob"></div>
-          </div>
-          <div class="time">
-            <span id="tCur">0:00</span> / <span id="tDur">0:00</span>
-          </div>
-        </div>
-
-        <div class="controls">
-          <button class="btn btn--toggle is-on" id="shuffle" type="button" aria-label="Shuffle" aria-pressed="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
-          </button>
-          <button class="btn" id="prev" type="button" aria-label="Previous">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM20 18L9 12l11-6v12z"></path></svg>
-          </button>
-          <button class="btn btn--play" id="play" type="button" aria-label="Play" disabled>
-            <svg class="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
-            <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
-          </button>
-          <button class="btn" id="next" type="button" aria-label="Next">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 18h2V6h-2zM4 6l11 6L4 18V6z"></path></svg>
-          </button>
-          <button class="btn btn--toggle" id="listBtn" type="button" aria-label="Playlist" aria-expanded="false">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── Name gate — shown once before the first room join ────────── -->
-    <div class="name-gate is-hidden" id="nameGate">
-      <div class="name-gate__card">
-        <button class="name-gate__close" id="nameGateClose" type="button" aria-label="Close">✕</button>
-        <h2>What should we call you?</h2>
-        <p>Shown to others in the room. No email, no signup.</p>
-        <input id="nameInput" type="text" placeholder="e.g. Aarav" maxlength="24" autocomplete="off" />
-        <button class="name-gate__random" id="randomNameBtn" type="button">🎲 Get a random name</button>
-        <button class="name-gate__enter" id="enterRoomBtn" type="button">Enter Study Room →</button>
-      </div>
-    </div>
-
-    <script src="/rooms/config.js?v=12"></script>
-    <script src="/app.js?v=12"></script>
-    <script type="module" src="/room.js?v=12"></script>
-  </body>
+    });
+  });
+</script>
+</body>
 </html>
