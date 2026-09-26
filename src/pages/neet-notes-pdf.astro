@@ -1,0 +1,122 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import FeatureCard from '~/components/FeatureCard.astro';
+import FAQ from '~/components/FAQ.astro';
+import { site, tools } from '~/data/site';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'Free NEET Notes PDF Tools · ' + site.name,
+  description: 'Print coaching PDFs for NEET without wasting ink. Free browser-based tools for Biology, Physics, and Chemistry notes.',
+  url: site.siteUrl + site.basePath + '/neet-notes-pdf/',
+};
+
+const faq = [
+  {
+    q: 'How do I print NEET coaching notes cheaply?',
+    a: 'The fastest way is to convert dark-themed lecture slides to light (white background, dark text) before printing. This typically saves 40–60% on ink. Use our free dark-to-light tool to do this in your browser.',
+  },
+  {
+    q: 'Can I combine multiple NEET chapters into one PDF?',
+    a: 'Yes. Use our merge tool — drop all your chapter PDFs, reorder by drag-and-drop, and download one combined file. Useful for revision at the end of a unit.',
+  },
+  {
+    q: 'Where can I get NEET coaching notes as PDF?',
+    a: 'Most coaching platforms (PW, Allen, Unacademy, Vedantu, Aakash) provide downloadable PDFs for enrolled students. Padhle Beta does not host any coaching content — we only help you print what you already have.',
+  },
+  {
+    q: 'Is it safe to upload NEET notes to a free PDF tool?',
+    a: 'Most online PDF tools upload your files to a server. Padhle Beta is different: every tool runs in your browser using pdf-lib, so your files never leave your device. Open DevTools and verify.',
+  },
+];
+---
+
+<BaseLayout
+  title="Free NEET Notes PDF Tools"
+  description="Print NEET coaching notes cheaply. Convert dark slides to ink-saving light PDFs, merge chapters, compress for sharing — all free, all in your browser."
+  jsonLd={jsonLd}
+>
+  <section class="section">
+    <div class="container">
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'NEET Notes PDF' }]} />
+
+      <header class="page-head">
+        <span class="eyebrow">For NEET students</span>
+        <h1>NEET coaching notes, ready to print cheaply.</h1>
+        <p>
+          Whether you are studying Biology diagrams, Physics numericals, or Chemistry reactions,
+          coaching PDFs are essential — and expensive to print. Padhle Beta's free tools help you
+          save ink and stay organised without uploading a single file.
+        </p>
+      </header>
+
+      <div class="grid grid--3">
+        {tools.map((t) => (
+          <FeatureCard
+            href={`/tools/${t.slug}/`}
+            title={t.name}
+            description={t.description}
+            iconType={t.slug as any}
+          />
+        ))}
+      </div>
+
+      <div class="prose subject-guide">
+        <h2>Best free NEET preparation tools (2026)</h2>
+        <p>
+          The most common PDF tasks NEET students run into:
+        </p>
+
+        <h3>Biology</h3>
+        <p>
+          Coaching Biology PDFs are often image-heavy — labelled diagrams of cells, organs, life cycles.
+          The dark-to-light tool inverts these into clean black-on-white printables. For chapter bundles
+          (e.g. all of Human Physiology), merge them into one file before printing.
+        </p>
+
+        <h3>Physics</h3>
+        <p>
+          Numerical-heavy chapters benefit from print-friendly formatting. Convert dark slides, then use
+          draft mode on your printer for review prints and higher quality only for finals. The
+          extract-pages tool is great for pulling just the formula sheets or the numerical examples
+          you are stuck on.
+        </p>
+
+        <h3>Chemistry</h3>
+        <p>
+          Organic chemistry mechanisms and reaction charts can be hard to read in dark themes.
+          Convert to light, then use A4 single-sided printing so you can scribble annotations on the
+          reverse side. The image-to-PDF tool is handy for capturing whiteboard reactions from class.
+        </p>
+
+        <h2>NEET exam day tips for printed notes</h2>
+        <ul>
+          <li><strong>One file per subject.</strong> End your revision cycle with merged PDFs so you can flip through a single document.</li>
+          <li><strong>Highlight sparingly.</strong> If you print in greyscale, use coloured pens to highlight on paper instead.</li>
+          <li><strong>Print formula sheets on both sides of one page.</strong> The compress tool shrinks the file so you can fit two-up printing.</li>
+        </ul>
+      </div>
+
+      <FAQ items={faq} id="neet-faq" />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-head {
+    max-width: 720px;
+    margin: 0 auto var(--space-7);
+    text-align: center;
+  }
+  .page-head p {
+    font-family: var(--font-body);
+    font-size: 1.125rem;
+    color: var(--fg-muted);
+    margin-top: var(--space-3);
+  }
+  .subject-guide {
+    margin-top: var(--space-9);
+  }
+</style>

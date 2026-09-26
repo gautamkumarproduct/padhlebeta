@@ -1,0 +1,39 @@
+---
+export interface Props {
+  items: readonly { q: string; a: string }[];
+  id?: string;
+}
+const { items, id = 'faq' } = Astro.props;
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: items.map((item) => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: { '@type': 'Answer', text: item.a },
+  })),
+};
+---
+
+<section class="faq section" aria-labelledby={`${id}-heading`}>
+  <div class="container">
+    <header class="faq__head">
+      <span class="eyebrow">FAQ</span>
+      <h2 id={`${id}-heading`}>Frequently asked questions</h2>
+    </header>
+    <div class="faq__items">
+      {items.map((item) => (
+        <details>
+          <summary>{item.q}</summary>
+          <p>{item.a}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+</section>
+
+<style>
+  .faq__head { max-width: 720px; margin: 0 auto var(--space-6); text-align: center; }
+  .faq__items { max-width: 760px; margin: 0 auto; }
+</style>

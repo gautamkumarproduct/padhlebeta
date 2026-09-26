@@ -1,0 +1,366 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import FAQ from '~/components/FAQ.astro';
+import RelatedTools from '~/components/RelatedTools.astro';
+import ToolShell from '~/components/ToolShell.astro';
+import ToolIcon from '~/components/ToolIcon.astro';
+import { site, tools } from '~/data/site';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = () => {
+  return tools.map((t) => ({
+    params: { slug: t.slug },
+    props: { tool: t },
+  }));
+};
+
+const { tool } = Astro.props;
+
+const howToJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'HowTo',
+  name: `How to ${tool.name.toLowerCase()}`,
+  description: tool.description,
+  totalTime: 'PT1M',
+  step: tool.steps.map((text, i) => ({
+    '@type': 'HowToStep',
+    position: i + 1,
+    name: text,
+    text,
+  })),
+};
+
+const softwareJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: `${tool.name} · ${site.name}`,
+  description: tool.description,
+  applicationCategory: 'UtilitiesApplication',
+  operatingSystem: 'Any (browser-based)',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+  url: site.siteUrl + site.basePath + '/tools/' + tool.slug + '/',
+};
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: site.siteUrl + site.basePath + '/' },
+    { '@type': 'ListItem', position: 2, name: 'Tools', item: site.siteUrl + site.basePath + '/tools/' },
+    { '@type': 'ListItem', position: 3, name: tool.name, item: site.siteUrl + site.basePath + '/tools/' + tool.slug + '/' },
+  ],
+};
+
+// Tool-specific config
+const accept = tool.slug === 'image-to-pdf' ? 'image/jpeg,image/png,image/heic,image/heif' : 'application/pdf,.pdf';
+const multiple = tool.slug === 'merge' || tool.slug === 'image-to-pdf';
+const extraControls = tool.slug === 'extract-pages';
+---
+
+<BaseLayout
+  title={tool.name}
+  description={tool.description}
+  jsonLd={[howToJsonLd, softwareJsonLd, breadcrumbJsonLd]}
+>
+  <section class="section tool-hero">
+    <div class="container">
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Tools', href: '/tools/' },
+        { label: tool.name },
+      ]} />
+
+      <div class="tool-hero__inner">
+        <div class="tool-hero__copy">
+          <span class="tool-hero__icon" aria-hidden="true">
+            <ToolIcon name={tool.slug as any} size={28} />
+          </span>
+          <span class="eyebrow">Free tool · No signup</span>
+          <h1>{tool.name}</h1>
+          <p class="tool-hero__lede">{tool.longDescription}</p>
+        </div>
+
+        <ToolShell
+          tool={tool.slug}
+          accept={accept}
+          multiple={multiple}
+          extraControls={extraControls}
+        >
+          {tool.slug === 'extract-pages' && (
+            <Fragment slot="options">
+              <label>
+                <span>Pages to extract (e.g. <code>1-5, 12, 18-22</code>)</span>
+                <input type="text" name="ranges" placeholder="1-5, 10, 15-20" data-ranges />
+              </label>
+            </Fragment>
+          )}
+        </ToolShell>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="tool-page-grid">
+        <div>
+          <span class="eyebrow">How it works</span>
+          <h2>Three steps. No uploads. No waiting.</h2>
+          <ol class="steps" role="list">
+            {tool.steps.map((s, i) => (
+              <li class="step">
+                <span class="step__num">{String(i + 1).padStart(2, '0')}</span>
+                <p>{s}</p>
+              </li>
+            ))}
+          </ol>
+
+          <div class="tool-benefits">
+            <span class="eyebrow">Why use it</span>
+            <h3>What you get</h3>
+            <ul role="list">
+              {tool.benefits.map((b) => (
+                <li>
+                  <span class="tool-benefits__check" aria-hidden="true">✓</span>
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <aside class="tool-aside">
+          <div class="tool-aside__card">
+            <h3>Privacy guarantee</h3>
+            <p>This tool runs entirely in your browser. Your file is never uploaded, logged, or shared.</p>
+            <a href="/privacy/">Read our privacy policy →</a>
+          </div>
+          <div class="tool-aside__card">
+            <h3>No account needed</h3>
+            <p>No email, no Google sign-in, no phone number. Open the tool, drop your file, done.</p>
+          </div>
+          <div class="tool-aside__card">
+            <h3>Works offline</h3>
+            <p>Once the page loads, your internet can drop. The tool will still finish the job.</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <FAQ items={tool.faq} id={`${tool.slug}-faq`} />
+
+  <RelatedTools currentSlug={tool.slug} />
+</BaseLayout>
+
+<script>
+  // Generic tool wiring — dispatches to the correct lib based on data-tool.
+  type AnyFile = File;
+
+  const forms = document.querySelectorAll<HTMLFormElement>('.tool-shell');
+  forms.forEach((form) => {
+    const tool = form.dataset.tool!;
+    const multiple = form.dataset.multiple === 'true';
+    const drop = form.querySelector<HTMLElement>('[data-drop]')!;
+    const fileInput = form.querySelector<HTMLInputElement>('[data-file-input]')!;
+    const fileList = form.querySelector<HTMLElement>('[data-filelist]')!;
+    const status = form.querySelector<HTMLElement>('[data-status]')!;
+    const errEl = form.querySelector<HTMLElement>('[data-error]')!;
+    const reset = form.querySelector<HTMLButtonElement>('[data-reset]')!;
+
+    function showError(msg: string) {
+      errEl.textContent = msg;
+      errEl.classList.remove('is-hidden');
+    }
+    function clearError() {
+      errEl.textContent = '';
+      errEl.classList.add('is-hidden');
+    }
+    function updateFileList() {
+      const files = Array.from(fileInput.files ?? []);
+      if (files.length === 0) {
+        fileList.textContent = '';
+      } else {
+        fileList.textContent = files.map((f) => `• ${f.name} (${(f.size / 1024).toFixed(1)} KB)`).join('\n');
+      }
+    }
+
+    drop.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      drop.classList.add('dropzone--active');
+    });
+    drop.addEventListener('dragleave', () => drop.classList.remove('dropzone--active'));
+    drop.addEventListener('drop', (e) => {
+      e.preventDefault();
+      drop.classList.remove('dropzone--active');
+      if (!e.dataTransfer) return;
+      // Sync the input's FileList (via DataTransfer)
+      const dt = new DataTransfer();
+      Array.from(e.dataTransfer.files).forEach((f) => dt.items.add(f));
+      fileInput.files = dt.files;
+      updateFileList();
+    });
+    fileInput.addEventListener('change', updateFileList);
+
+    reset.addEventListener('click', (e) => {
+      e.preventDefault();
+      form.reset();
+      fileList.textContent = '';
+      status.classList.add('is-hidden');
+      clearError();
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearError();
+      const files = Array.from(fileInput.files ?? []);
+      if (files.length === 0) { showError('Please choose at least one file.'); return; }
+      if (!multiple && files.length > 1) { showError('This tool accepts only one file at a time.'); return; }
+
+      try {
+        if (tool === 'dark-to-light') {
+          const { runDarkToLight } = await import('~/lib/pdf-dark-to-light');
+          await runDarkToLight(files[0], status);
+        } else if (tool === 'merge') {
+          const { runMerge } = await import('~/lib/pdf-merge');
+          await runMerge(files, status);
+        } else if (tool === 'compress') {
+          const { runCompress } = await import('~/lib/pdf-compress');
+          await runCompress(files[0], status);
+        } else if (tool === 'image-to-pdf') {
+          const { runImageToPdf } = await import('~/lib/pdf-image-to-pdf');
+          await runImageToPdf(files, status);
+        } else if (tool === 'extract-pages') {
+          const rangesInput = form.querySelector<HTMLInputElement>('[data-ranges]')?.value ?? '';
+          if (!rangesInput.trim()) { showError('Enter page ranges (e.g. 1-5, 12, 18-22).'); return; }
+          const { runExtract } = await import('~/lib/pdf-extract-pages');
+          await runExtract(files[0], rangesInput, status);
+        }
+      } catch (err: any) {
+        showError(err?.message ?? 'Something went wrong. Try again or use a different file.');
+        status.classList.add('is-hidden');
+      }
+    });
+  });
+</script>
+
+<style>
+  .tool-hero__inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-7);
+    align-items: start;
+  }
+  @media (max-width: 900px) { .tool-hero__inner { grid-template-columns: 1fr; } }
+
+  .tool-hero__icon {
+    display: inline-flex;
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    background: var(--accent-soft);
+    color: var(--saffron-700);
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--space-5);
+  }
+  .tool-hero__lede {
+    font-family: var(--font-body);
+    font-size: var(--text-lg);
+    line-height: 1.6;
+    color: var(--fg-muted);
+    margin-top: var(--space-4);
+  }
+
+  /* Steps */
+  .steps { display: grid; gap: var(--space-4); padding: 0; margin: var(--space-5) 0 0; list-style: none; }
+  .step {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-4);
+    align-items: start;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-5);
+  }
+  .step__num {
+    font-family: var(--font-ui);
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: var(--accent);
+    min-width: 36px;
+  }
+  .step p {
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--fg);
+    margin: 0;
+  }
+
+  /* Benefits */
+  .tool-benefits {
+    margin-top: var(--space-8);
+    background: var(--bg-soft);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+  }
+  .tool-benefits h3 { margin-block: var(--space-3) var(--space-4); }
+  .tool-benefits ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--space-3);
+  }
+  .tool-benefits li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-3);
+    align-items: start;
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    line-height: 1.55;
+    color: var(--fg);
+  }
+  .tool-benefits__check {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--green-600);
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* Aside */
+  .tool-page-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: var(--space-7);
+    align-items: start;
+  }
+  @media (max-width: 900px) { .tool-page-grid { grid-template-columns: 1fr; } }
+  .tool-aside { display: grid; gap: var(--space-3); position: sticky; top: 100px; }
+  .tool-aside__card {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-5);
+  }
+  .tool-aside__card h3 { font-size: 1rem; margin-bottom: var(--space-2); }
+  .tool-aside__card p { font-family: var(--font-body); font-size: 0.9375rem; line-height: 1.55; color: var(--fg-muted); }
+  .tool-aside__card a {
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--accent);
+    display: inline-block;
+    margin-top: var(--space-2);
+  }
+</style>

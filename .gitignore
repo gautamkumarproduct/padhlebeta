@@ -1,0 +1,26 @@
+
+.astro/
+.DS_Store
+.env
+.env.production
+.idea/
+.output/
+.vscode/
+*.log
+*.tmp
+# build output
+# dependencies
+# Design preview (open locally only, not for production)
+# editor
+# environment variables
+# generated types
+# logs
+# macOS
+# tmp
+dist/
+node_modules/
+npm-debug.log*
+pnpm-debug.log*
+preview.html
+yarn-debug.log*
+yarn-error.log*

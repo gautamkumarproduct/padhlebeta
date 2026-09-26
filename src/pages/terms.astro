@@ -1,0 +1,87 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import { site } from '~/data/site';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'TermsOfService',
+  name: `${site.name} Terms of Service`,
+  url: site.siteUrl + site.basePath + '/terms/',
+};
+---
+
+<BaseLayout
+  title="Terms of Service"
+  description="The terms of use for Padhle Beta. Short, honest, and written in plain English."
+  jsonLd={jsonLd}
+>
+  <section class="section">
+    <div class="container">
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Terms of Service' }]} />
+
+      <div class="prose">
+        <span class="eyebrow">Last updated: 26 September 2026</span>
+        <h1>Terms of Service</h1>
+
+        <p>
+          By using Padhle Beta you agree to these terms. They are short on purpose.
+        </p>
+
+        <h2>The tools are free</h2>
+
+        <p>
+          All five PDF tools are provided free of charge. There is no premium tier that gates the core functionality. We may display a "Support the project" link or tip jar in future; you are never required to pay.
+        </p>
+
+        <h2>Use the tools for lawful purposes only</h2>
+
+        <p>
+          You may use the tools for any lawful purpose, including processing your own coaching notes, study material, and personal documents. You may not use the tools to:
+        </p>
+
+        <ul>
+          <li>Process documents you do not have the right to access.</li>
+          <li>Circumvent DRM, encryption, or copyright protection measures.</li>
+          <li>Attempt to disrupt, reverse-engineer, or misuse the site.</li>
+        </ul>
+
+        <h2>Your content is yours</h2>
+
+        <p>
+          You retain all rights to the files you process. Padhle Beta claims no ownership over your content. Because we never see your content, we have no claim to make.
+        </p>
+
+        <h2>No warranty</h2>
+
+        <p>
+          The tools are provided "as is". We make every effort to ensure they work correctly, but we cannot guarantee that any specific output will be error-free or suitable for a particular purpose. Always keep a copy of your original file.
+        </p>
+
+        <h2>Limitation of liability</h2>
+
+        <p>
+          To the maximum extent permitted by law, Padhle Beta and its contributors are not liable for any damages arising from your use of the tools. This includes but is not limited to data loss, ink cartridge consumption, exam performance, or printer damage.
+        </p>
+
+        <h2>Changes to the tools</h2>
+
+        <p>
+          We may add, remove, or modify tools at any time. We will try to give reasonable notice for major changes but reserve the right to make urgent changes (e.g. to fix a security issue) without notice.
+        </p>
+
+        <h2>Governing law</h2>
+
+        <p>
+          These terms are governed by the laws of India. Any disputes will be resolved in the competent courts of Bengaluru, Karnataka.
+        </p>
+
+        <h2>Contact</h2>
+
+        <p>
+          Questions about these terms? Email <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

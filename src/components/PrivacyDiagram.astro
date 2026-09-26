@@ -1,0 +1,97 @@
+---
+/**
+ * Custom SVG illustration of the privacy guarantee:
+ * a PDF enters your browser, gets processed in-browser, downloads.
+ * A "no server" cross-out is shown beneath. Premium feel.
+ */
+---
+
+<svg viewBox="0 0 480 200" xmlns="http://www.w3.org/2000/svg" class="privacy-illustration" role="img" aria-label="Your file is processed in your browser — no server involved">
+  <defs>
+    <linearGradient id="pb-flow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="var(--ink-300)" stop-opacity="0.4" />
+      <stop offset="50%" stop-color="var(--accent)" stop-opacity="1" />
+      <stop offset="100%" stop-color="var(--ink-300)" stop-opacity="0.4" />
+    </linearGradient>
+    <filter id="pb-soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="6" />
+      <feOffset dx="0" dy="4" />
+      <feComponentTransfer><feFuncA type="linear" slope="0.12" /></feComponentTransfer>
+      <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
+    </filter>
+  </defs>
+
+  {/* Source: PDF document */}
+  <g transform="translate(40, 60)" filter="url(#pb-soft-shadow)">
+    <rect x="0" y="0" width="60" height="80" rx="6" fill="var(--bg-elev)" stroke="var(--border-strong)" stroke-width="1.5" />
+    <rect x="0" y="0" width="60" height="14" rx="6" fill="var(--accent-soft)" stroke="none" />
+    <text x="30" y="11" font-family="Manrope, sans-serif" font-size="7" font-weight="700" text-anchor="middle" fill="var(--saffron-700)">PDF</text>
+    <line x1="10" y1="26" x2="50" y2="26" stroke="var(--ink-300)" stroke-width="1" />
+    <line x1="10" y1="34" x2="45" y2="34" stroke="var(--ink-300)" stroke-width="1" />
+    <line x1="10" y1="42" x2="50" y2="42" stroke="var(--ink-300)" stroke-width="1" />
+    <line x1="10" y1="50" x2="40" y2="50" stroke="var(--ink-300)" stroke-width="1" />
+    <line x1="10" y1="58" x2="48" y2="58" stroke="var(--ink-300)" stroke-width="1" />
+    <line x1="10" y1="66" x2="38" y2="66" stroke="var(--ink-300)" stroke-width="1" />
+    <text x="30" y="98" font-family="Manrope, sans-serif" font-size="9" font-weight="600" text-anchor="middle" fill="var(--fg-muted)">Your PDF</text>
+  </g>
+
+  {/* Flow arrow with animated dashes */}
+  <g>
+    <line x1="115" y1="100" x2="195" y2="100" stroke="url(#pb-flow)" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 6" class="pb-flow-line" />
+    <polygon points="195,100 188,96 188,104" fill="var(--accent)" />
+  </g>
+
+  {/* Middle: Browser with engine */}
+  <g transform="translate(210, 50)" filter="url(#pb-soft-shadow)">
+    <rect x="0" y="0" width="100" height="100" rx="10" fill="var(--bg-elev)" stroke="var(--accent)" stroke-width="2" />
+    {/* Browser chrome */}
+    <rect x="0" y="0" width="100" height="18" rx="10" fill="var(--bg-soft)" />
+    <rect x="0" y="10" width="100" height="8" fill="var(--bg-soft)" />
+    <circle cx="10" cy="9" r="2.5" fill="var(--ink-300)" />
+    <circle cx="18" cy="9" r="2.5" fill="var(--ink-300)" />
+    <circle cx="26" cy="9" r="2.5" fill="var(--ink-300)" />
+    <rect x="36" y="5" width="58" height="8" rx="4" fill="var(--bg-elev)" stroke="var(--border)" stroke-width="0.5" />
+    {/* Gear icon */}
+    <g transform="translate(50, 50)">
+      <circle r="14" fill="var(--accent-soft)" stroke="none" />
+      <path d="M-4 -4 L4 -4 L4 -2 L2 0 L2 4 L-2 4 L-2 0 L-4 -2 Z M0 -7 L2 -5 L0 -3 L-2 -5 Z M0 7 L2 5 L0 3 L-2 5 Z" fill="var(--saffron-700)" stroke="none" />
+      <circle r="2" fill="var(--bg-elev)" />
+    </g>
+    <text x="50" y="118" font-family="Manrope, sans-serif" font-size="9" font-weight="700" text-anchor="middle" fill="var(--saffron-700)">Your browser</text>
+    <text x="50" y="128" font-family="ui-monospace, monospace" font-size="7" text-anchor="middle" fill="var(--fg-subtle)">pdf-lib · local</text>
+  </g>
+
+  {/* Flow arrow */}
+  <g>
+    <line x1="325" y1="100" x2="405" y2="100" stroke="url(#pb-flow)" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 6" class="pb-flow-line" />
+    <polygon points="405,100 398,96 398,104" fill="var(--accent)" />
+  </g>
+
+  {/* Destination: download arrow + file */}
+  <g transform="translate(420, 60)" filter="url(#pb-soft-shadow)">
+    <path d="M 30 0 L 30 30 M 22 22 L 30 30 L 38 22" fill="none" stroke="var(--green-600)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+    <rect x="0" y="40" width="60" height="40" rx="4" fill="var(--bg-elev)" stroke="var(--border-strong)" stroke-width="1.5" />
+    <text x="30" y="64" font-family="Manrope, sans-serif" font-size="11" font-weight="700" text-anchor="middle" fill="var(--green-600)">✓</text>
+    <text x="30" y="98" font-family="Manrope, sans-serif" font-size="9" font-weight="600" text-anchor="middle" fill="var(--fg-muted)">Saved file</text>
+  </g>
+</svg>
+
+<style>
+  .privacy-illustration {
+    width: 100%;
+    max-width: 520px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  @keyframes pb-dash {
+    to { stroke-dashoffset: -20; }
+  }
+  .pb-flow-line {
+    animation: pb-dash 1.4s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pb-flow-line { animation: none; }
+  }
+</style>

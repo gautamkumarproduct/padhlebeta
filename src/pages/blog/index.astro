@@ -1,0 +1,137 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import { site } from '~/data/site';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+
+const byCategory = posts.reduce<Record<string, typeof posts>>((acc, p) => {
+  (acc[p.data.category] ??= []).push(p);
+  return acc;
+}, {});
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Blog',
+  name: `${site.name} Blog`,
+  description: 'PDF tips, study strategies, and exam prep guides for Indian students.',
+  url: site.siteUrl + site.basePath + '/blog/',
+};
+---
+
+<BaseLayout
+  title="Blog"
+  description="Free PDF tips, study strategies, and exam preparation guides for Indian students. From dark-PDF ink saving to NEET/JEE planning."
+  jsonLd={jsonLd}
+>
+  <section class="section">
+    <div class="container">
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Blog' }]} />
+
+      <header class="blog-head">
+        <span class="eyebrow">Blog</span>
+        <h1>Tips, guides, and study strategies</h1>
+        <p>Long-form posts on printing coaching notes, exam preparation, and getting the most out of free PDF tools.</p>
+      </header>
+
+      <div class="blog-categories" role="tablist" aria-label="Categories">
+        <a href="#all" class="blog-cat blog-cat--active">All ({posts.length})</a>
+        {Object.entries(byCategory).map(([cat, list]) => (
+          <a href={`#cat-${cat.toLowerCase().replace(/\s+/g, '-')}`} class="blog-cat">{cat} ({list.length})</a>
+        ))}
+      </div>
+
+      <div class="blog-grid">
+        {posts.map((post) => (
+          <a class="blog-card-lg" href={`/blog/${post.id}/`}>
+            <div class="blog-card-lg__meta">
+              <span class="tag">{post.data.category}</span>
+              <time datetime={post.data.pubDate.toISOString()}>
+                {post.data.pubDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </time>
+            </div>
+            <h2>{post.data.title}</h2>
+            <p>{post.data.description}</p>
+            <span class="blog-card-lg__cta">Read post →</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .blog-head {
+    max-width: 720px;
+    margin: 0 auto var(--space-6);
+    text-align: center;
+  }
+  .blog-head p {
+    font-family: var(--font-body);
+    font-size: 1.125rem;
+    color: var(--fg-muted);
+    margin-top: var(--space-3);
+  }
+
+  .blog-categories {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-6);
+  }
+  .blog-cat {
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    background: var(--bg-soft);
+    color: var(--fg-muted);
+    border: 1px solid var(--border);
+    transition: background 150ms ease, color 150ms ease;
+  }
+  .blog-cat:hover { text-decoration: none; background: var(--accent-soft); color: var(--saffron-700); }
+  .blog-cat--active { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .blog-cat--active:hover { background: var(--accent-hover); color: var(--accent-fg); }
+
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-5);
+    max-width: 980px;
+    margin: 0 auto;
+  }
+  @media (max-width: 700px) { .blog-grid { grid-template-columns: 1fr; } }
+
+  .blog-card-lg {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    color: inherit;
+    transition: border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+  }
+  .blog-card-lg:hover {
+    text-decoration: none;
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+  .blog-card-lg__meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-ui);
+    font-size: 0.8125rem;
+    color: var(--fg-subtle);
+  }
+  .blog-card-lg h2 { font-size: 1.375rem; margin: 0; }
+  .blog-card-lg p { font-family: var(--font-body); font-size: 1rem; color: var(--fg-muted); line-height: 1.6; flex-grow: 1; }
+  .blog-card-lg__cta { font-family: var(--font-ui); font-weight: 600; font-size: 0.9375rem; color: var(--accent); margin-top: auto; }
+</style>

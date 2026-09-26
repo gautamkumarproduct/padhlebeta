@@ -1,0 +1,164 @@
+---
+/**
+ * ToolShell — the consistent UI wrapper every tool page uses.
+ * Provides: dropzone, optional options, run button, progress bar, error area,
+ * status feedback, and a hidden file input wired up by data attributes.
+ *
+ * The dynamic tool page wires up the actual handlers via an inline script
+ * that imports the right lib function based on data-tool attribute.
+ */
+
+export interface Props {
+  tool: string; // matches pdf-* lib filename
+  accept: string;
+  multiple?: boolean;
+  extraControls?: boolean;
+  helpText?: string;
+}
+const { tool, accept, multiple = false, extraControls = false, helpText } = Astro.props;
+---
+
+<form class="tool-shell" data-tool={tool} data-multiple={multiple ? 'true' : 'false'}>
+  <div class="dropzone" data-drop>
+    <input type="file" id={`file-${tool}`} accept={accept} multiple={multiple} data-file-input />
+    <label for={`file-${tool}`}>Choose {multiple ? 'files' : 'a file'}</label>
+    <p>{helpText ?? `Drop your ${multiple ? 'files' : 'file'} here or click to browse.`}</p>
+    <p class="dropzone__filelist" data-filelist></p>
+  </div>
+
+  {extraControls && (
+    <div class="tool-shell__options" data-options>
+      <slot name="options" />
+    </div>
+  )}
+
+  <div class="tool-shell__actions">
+    <button type="submit" class="btn btn--primary btn--lg" data-run>Run tool</button>
+    <button type="reset" class="btn btn--ghost" data-reset>Reset</button>
+  </div>
+
+  <div class="tool-shell__status is-hidden" data-status>
+    <div class="tool-shell__progress" data-progress-bar-wrap>
+      <div class="tool-shell__progress-bar" data-progress-bar></div>
+    </div>
+    <p class="tool-shell__status-text" data-progress-text>Ready.</p>
+  </div>
+
+  <div class="tool-shell__error is-hidden" data-error role="alert"></div>
+</form>
+
+<style>
+  .tool-shell {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .dropzone {
+    border: 2px dashed var(--border-strong);
+    background: var(--bg-soft);
+    border-radius: var(--radius-lg);
+    padding: var(--space-9) var(--space-5);
+    text-align: center;
+    transition: background 150ms ease, border-color 150ms ease;
+  }
+  .dropzone--active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+  .dropzone label {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--accent-fg);
+    font-family: var(--font-ui);
+    font-weight: 600;
+    padding: 0.7rem 1.4rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 120ms ease;
+  }
+  .dropzone label:hover { background: var(--accent-hover); }
+  .dropzone p { color: var(--fg-muted); margin-top: var(--space-3); font-size: 0.9375rem; }
+  .dropzone__filelist {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem !important;
+    color: var(--fg) !important;
+    margin-top: var(--space-3) !important;
+  }
+
+  .tool-shell__options {
+    display: grid;
+    gap: var(--space-3);
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-5);
+  }
+  .tool-shell__options label {
+    display: grid;
+    gap: 0.35rem;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    color: var(--fg-muted);
+  }
+  .tool-shell__options input {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    padding: 0.55rem 0.85rem;
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 0.9375rem;
+    color: var(--fg);
+  }
+  .tool-shell__options input:focus { border-color: var(--accent); outline: none; }
+
+  .tool-shell__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .tool-shell__status {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-4);
+  }
+  .tool-shell__progress {
+    height: 8px;
+    background: var(--ink-200);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .tool-shell__progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--saffron-700));
+    width: 0%;
+    transition: width 200ms var(--ease-out);
+  }
+  .tool-shell__status-text {
+    margin-top: var(--space-2);
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    color: var(--fg-muted);
+  }
+
+  .tool-shell__error {
+    background: rgba(220, 38, 38, 0.08);
+    border: 1px solid rgba(220, 38, 38, 0.4);
+    color: #B91C1C;
+    padding: var(--space-4);
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: 0.9375rem;
+  }
+  :global(html[data-theme='dark']) .tool-shell__error {
+    color: #FCA5A5;
+    background: rgba(220, 38, 38, 0.15);
+  }
+
+  .is-hidden { display: none !important; }
+</style>

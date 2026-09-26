@@ -1,0 +1,182 @@
+---
+// Interactive ink savings calculator — linkable asset for SEO.
+// Defaults are calibrated for an Indian coaching-student average.
+---
+
+<section class="ink-calc" aria-labelledby="ink-calc-heading">
+  <div class="container">
+    <div class="ink-calc__inner">
+      <div class="ink-calc__copy">
+        <span class="eyebrow">Save ink, save money</span>
+        <h2 id="ink-calc-heading">How much will <em>you</em> save?</h2>
+        <p>Most students who print dark coaching slides spend ₹600–₹1,200 a month on ink. Convert to light backgrounds and you can slash that by half. Try it:</p>
+      </div>
+
+      <form class="ink-calc__form" id="ink-calc" autocomplete="off">
+        <label>
+          <span>Pages you print per month</span>
+          <input type="number" id="ic-pages" min="50" max="20000" step="50" value="800" inputmode="numeric" />
+        </label>
+        <label>
+          <span>Cost of one ink cartridge (₹)</span>
+          <input type="number" id="ic-cart" min="200" max="6000" step="50" value="900" inputmode="numeric" />
+        </label>
+        <label>
+          <span>Pages per cartridge (today, on dark slides)</span>
+          <input type="number" id="ic-ypd" min="50" max="3000" step="10" value="200" inputmode="numeric" />
+        </label>
+
+        <div class="ink-calc__results" aria-live="polite">
+          <div class="ink-calc__result">
+            <span class="ink-calc__num" id="ic-save-month">₹0</span>
+            <span class="ink-calc__label">Saved per month</span>
+          </div>
+          <div class="ink-calc__result ink-calc__result--big">
+            <span class="ink-calc__num" id="ic-save-year">₹0</span>
+            <span class="ink-calc__label">Saved per year</span>
+          </div>
+          <div class="ink-calc__result">
+            <span class="ink-calc__num" id="ic-ink-pct">0%</span>
+            <span class="ink-calc__label">Less ink used</span>
+          </div>
+        </div>
+
+        <p class="ink-calc__note">
+          Based on a conservative 50% ink-coverage reduction from converting dark slides to light printables.
+          Your mileage will vary by printer model.
+        </p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+  function rupee(n: number) {
+    return '₹' + Math.round(n).toLocaleString('en-IN');
+  }
+  function pct(n: number) {
+    return Math.round(n) + '%';
+  }
+
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const pages = $('ic-pages') as HTMLInputElement;
+  const cart = $('ic-cart') as HTMLInputElement;
+  const ypd = $('ic-ypd') as HTMLInputElement;
+  const outMonth = $('ic-save-month');
+  const outYear = $('ic-save-year');
+  const outPct = $('ic-ink-pct');
+
+  const REDUCTION = 0.5; // ~50% ink savings when converting dark slides
+
+  function recalc() {
+    const p = Math.max(50, Number(pages.value) || 0);
+    const c = Math.max(200, Number(cart.value) || 0);
+    const y = Math.max(50, Number(ypd.value) || 0);
+    const costPerPage = c / y;
+    const monthlySpend = p * costPerPage;
+    const monthlySave = monthlySpend * REDUCTION;
+    outMonth.textContent = rupee(monthlySave);
+    outYear.textContent = rupee(monthlySave * 12);
+    outPct.textContent = pct(REDUCTION * 100);
+  }
+
+  [pages, cart, ypd].forEach((el) => el.addEventListener('input', recalc));
+  recalc();
+</script>
+
+<style>
+  .ink-calc {
+    background: var(--ink-900);
+    color: var(--paper-100);
+    padding-block: clamp(3rem, 6vw, 5rem);
+  }
+  .ink-calc__inner {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: var(--space-8);
+    align-items: center;
+  }
+  @media (max-width: 800px) { .ink-calc__inner { grid-template-columns: 1fr; } }
+
+  .ink-calc h2 em {
+    font-style: normal;
+    color: var(--saffron-400);
+  }
+  .ink-calc p { color: var(--ink-300); font-family: var(--font-body); font-size: 1.0625rem; line-height: 1.65; }
+
+  .ink-calc .eyebrow {
+    background: rgba(251, 146, 60, 0.15);
+    color: var(--saffron-400);
+  }
+
+  .ink-calc__form {
+    background: var(--ink-800);
+    border: 1px solid var(--ink-700);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    display: grid;
+    gap: var(--space-4);
+  }
+  .ink-calc__form label {
+    display: grid;
+    gap: 0.4rem;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    color: var(--ink-300);
+  }
+  .ink-calc__form input {
+    background: var(--ink-900);
+    border: 1px solid var(--ink-700);
+    color: var(--paper-100);
+    padding: 0.65rem 0.85rem;
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    transition: border-color 120ms ease;
+  }
+  .ink-calc__form input:focus { border-color: var(--accent); outline: none; }
+
+  .ink-calc__results {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr 1fr;
+    gap: var(--space-3);
+    margin-top: var(--space-2);
+  }
+  @media (max-width: 520px) { .ink-calc__results { grid-template-columns: 1fr; } }
+
+  .ink-calc__result {
+    background: var(--ink-900);
+    border: 1px solid var(--ink-700);
+    border-radius: var(--radius);
+    padding: var(--space-4);
+    text-align: center;
+  }
+  .ink-calc__result--big {
+    background: linear-gradient(135deg, rgba(255, 107, 26, 0.15), rgba(255, 107, 26, 0.05));
+    border-color: var(--saffron-500);
+  }
+  .ink-calc__num {
+    display: block;
+    font-family: var(--font-ui);
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: var(--paper-100);
+    letter-spacing: -0.02em;
+  }
+  .ink-calc__result--big .ink-calc__num { color: var(--saffron-400); font-size: 1.875rem; }
+  .ink-calc__label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--ink-400);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .ink-calc__note {
+    font-size: 0.8125rem !important;
+    color: var(--ink-400) !important;
+    font-style: italic;
+    margin: 0;
+  }
+</style>

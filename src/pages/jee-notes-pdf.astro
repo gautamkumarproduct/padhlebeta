@@ -1,0 +1,129 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import FeatureCard from '~/components/FeatureCard.astro';
+import FAQ from '~/components/FAQ.astro';
+import { site, tools } from '~/data/site';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'Free JEE Notes PDF Tools · ' + site.name,
+  description: 'Print JEE Main and Advanced coaching PDFs cheaply. Convert dark slides to light, merge chapters, compress for sharing. Free, browser-based, no upload.',
+  url: site.siteUrl + site.basePath + '/jee-notes-pdf/',
+};
+
+const faq = [
+  {
+    q: 'How do I print JEE coaching notes without wasting ink?',
+    a: 'Convert dark-themed slides to white-background printables using our dark-to-light tool. Then enable draft or econo mode on your printer. Combined savings: 50–70%.',
+  },
+  {
+    q: 'Can I combine JEE chapter PDFs into one file?',
+    a: 'Yes — use the merge tool to combine any number of PDFs. Common workflow: at the end of each unit, merge all chapters + DPPs + formula sheets into a single revision-ready PDF.',
+  },
+  {
+    q: 'How do I reduce PDF size for sharing on WhatsApp or Telegram?',
+    a: 'Use the compress tool. It re-packs the PDF using object streams — typical reduction of 15–40% on coaching slides without quality loss.',
+  },
+];
+---
+
+<BaseLayout
+  title="Free JEE Notes PDF Tools"
+  description="Print JEE Main and Advanced coaching PDFs cheaply. Convert dark slides to light, merge chapters, compress for sharing. Free, browser-based, no upload."
+  jsonLd={jsonLd}
+>
+  <section class="section">
+    <div class="container">
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'JEE Notes PDF' }]} />
+
+      <header class="page-head">
+        <span class="eyebrow">For JEE students</span>
+        <h1>JEE coaching notes, print-ready and ink-friendly.</h1>
+        <p>
+          JEE Main and Advanced demand a relentless volume of problem practice. Coaching PDFs pile up fast.
+          Padhle Beta's free tools help you print, organise, and share them — without uploading a single file to a server.
+        </p>
+      </header>
+
+      <div class="grid grid--3">
+        {tools.map((t) => (
+          <FeatureCard
+            href={`/tools/${t.slug}/`}
+            title={t.name}
+            description={t.description}
+            iconType={t.slug as any}
+          />
+        ))}
+      </div>
+
+      <div class="prose subject-guide">
+        <h2>The JEE student's PDF workflow</h2>
+
+        <h3>During the chapter (week 1–2)</h3>
+        <p>
+          Keep individual chapter PDFs as-is. Use the extract-pages tool to pull specific examples or
+          numerical sets that the teacher flagged in class. This is your "active" revision material.
+        </p>
+
+        <h3>End of the unit (week 3)</h3>
+        <p>
+          Merge all chapter PDFs + DPPs + formula sheets into one unit-level PDF. Compress it for sharing
+          in your study group. Print it once, in light-background draft mode, for offline revision.
+        </p>
+
+        <h3>Before exams</h3>
+        <p>
+          Extract just the formula sheets and the most-tested problem types. Print those in high quality.
+          Skip printing solved examples you already understand.
+        </p>
+
+        <h2>Subject-specific tips</h2>
+
+        <h3>Mathematics</h3>
+        <p>
+          Math PDFs are usually light already (no dark themes). Focus on merging chapters and extracting
+          specific problem sets. Skip printing worked solutions — read those on screen.
+        </p>
+
+        <h3>Physics</h3>
+        <p>
+          Physics slides are often dark. Convert to light before printing. Numerical-heavy pages benefit
+          from greyscale printing. Print diagrams on photo-quality paper only.
+        </p>
+
+        <h3>Chemistry</h3>
+        <p>
+          Organic chemistry mechanisms are notoriously hard to read on dark backgrounds. Convert, print
+          single-sided, and you will have room to draw your own reaction arrows in the margins.
+        </p>
+
+        <h2>JEE Main vs JEE Advanced: different notes strategies</h2>
+        <p>
+          <strong>JEE Main</strong> is speed-accuracy. Print everything you might need once and revise from the printouts.
+          <strong>JEE Advanced</strong> rewards deep understanding. Be selective — print only the chapters you keep getting wrong.
+        </p>
+      </div>
+
+      <FAQ items={faq} id="jee-faq" />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-head {
+    max-width: 720px;
+    margin: 0 auto var(--space-7);
+    text-align: center;
+  }
+  .page-head p {
+    font-family: var(--font-body);
+    font-size: 1.125rem;
+    color: var(--fg-muted);
+    margin-top: var(--space-3);
+  }
+  .subject-guide {
+    margin-top: var(--space-9);
+  }
+</style>

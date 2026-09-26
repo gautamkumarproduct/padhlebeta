@@ -1,0 +1,82 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { site, tools } from '~/data/site';
+---
+
+<BaseLayout title="Page not found" description="The page you were looking for does not exist. Try one of our tools instead." noindex={true}>
+  <section class="section not-found">
+    <div class="container">
+      <div class="not-found__inner">
+        <span class="not-found__code">404</span>
+        <h1>Page not found.</h1>
+        <p>The link you followed may be broken, or the page may have moved.</p>
+        <p>Here are some useful places to go instead:</p>
+
+        <div class="not-found__links">
+          <a href={site.basePath + '/'} class="btn btn--primary">Home</a>
+          <a href={site.basePath + '/tools/'} class="btn btn--ghost">All tools</a>
+          <a href={site.basePath + '/blog/'} class="btn btn--ghost">Blog</a>
+        </div>
+
+        <h2>Or jump straight to a tool:</h2>
+        <ul class="not-found__tools">
+          {tools.map((t) => (
+            <li><a href={`${site.basePath}/tools/${t.slug}/`}>{t.name}</a></li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .not-found__inner {
+    max-width: 640px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .not-found__code {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-weight: 800;
+    font-size: 5rem;
+    background: linear-gradient(135deg, var(--accent), var(--saffron-700));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    margin-bottom: var(--space-4);
+  }
+  .not-found__inner h1 { margin-bottom: var(--space-3); }
+  .not-found__inner p {
+    font-family: var(--font-body);
+    font-size: 1.125rem;
+    color: var(--fg-muted);
+    margin-bottom: var(--space-5);
+  }
+  .not-found__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    justify-content: center;
+    margin-bottom: var(--space-7);
+  }
+  .not-found__inner h2 {
+    font-size: 1.0625rem;
+    color: var(--fg-muted);
+    margin-bottom: var(--space-3);
+  }
+  .not-found__tools {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--space-2);
+  }
+  .not-found__tools a {
+    font-family: var(--font-ui);
+    font-weight: 500;
+    color: var(--accent);
+  }
+</style>

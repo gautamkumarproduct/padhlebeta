@@ -1,0 +1,57 @@
+---
+// Inline script: applies theme preference before paint to prevent flash.
+// Reads localStorage > system preference > light.
+---
+<script is:inline>
+  (function () {
+    try {
+      var stored = localStorage.getItem('pb-theme');
+      var sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      var theme = stored || sys;
+      document.documentElement.setAttribute('data-theme', theme);
+    } catch (e) {}
+  })();
+</script>
+
+<button class="theme-toggle" type="button" aria-label="Toggle theme" data-theme-toggle>
+  <svg class="theme-toggle__sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4"/>
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+  </svg>
+  <svg class="theme-toggle__moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/>
+  </svg>
+</button>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('pb-theme', next); } catch {}
+    });
+  }
+</script>
+
+<style>
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    color: var(--fg-muted);
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+  .theme-toggle:hover {
+    background: var(--bg-soft);
+    color: var(--fg);
+  }
+  .theme-toggle__sun { display: inline; }
+  .theme-toggle__moon { display: none; }
+  :global(html[data-theme='dark']) .theme-toggle__sun { display: none; }
+  :global(html[data-theme='dark']) .theme-toggle__moon { display: inline; }
+</style>

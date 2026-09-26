@@ -1,0 +1,84 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import { site } from '~/data/site';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  name: `About ${site.name}`,
+  url: site.siteUrl + site.basePath + '/about/',
+};
+---
+
+<BaseLayout
+  title="About"
+  description={`Why ${site.name} exists, who built it, and how to support the project.`}
+  jsonLd={jsonLd}
+>
+  <section class="section">
+    <div class="container">
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'About' }]} />
+
+      <div class="prose about">
+        <span class="eyebrow">About</span>
+        <h1>Built by a student, for students.</h1>
+
+        <p>
+          Padhle Beta started with a simple frustration. Coaching lecture slides are designed for screens —
+          dark backgrounds, white text, slick gradients. They look great in class. They are a disaster
+          when you try to print them.
+        </p>
+
+        <p>
+          One Saturday morning, after burning through a ₹900 ink cartridge printing a 200-page chapter,
+          the project began. The first version was a Python script that converted one PDF at a time.
+          It was ugly, slow, and only worked on a laptop with Python installed.
+        </p>
+
+        <p>
+          This site is the same idea, but done properly: entirely in your browser, no upload, no signup,
+          no install. You drop a file in, you get a printable file back. That is it.
+        </p>
+
+        <h2>What we believe</h2>
+
+        <ul>
+          <li><strong>Free should mean free.</strong> No "first 3 files free", no watermark on output, no upsell wall. The tools on this site will always be free for the things students actually need.</li>
+          <li><strong>Your files are yours.</strong> Every tool runs in your browser. We never see your PDFs, your notes, or your data. We literally could not sell them even if we wanted to.</li>
+          <li><strong>Indian students deserve better tooling.</strong> Most PDF software is built for office workers in North America. We are building for the specific problems of NEET/JEE/Boards students who print coaching notes at home.</li>
+        </ul>
+
+        <h2>What's free, and what's coming</h2>
+
+        <p>
+          All five core tools are free today and will stay free: dark to light, merge, compress, image to PDF, and extract pages. If the site grows enough to need server-side features (OCR, server-side compression), we may add a paid tier for those specifically. The browser-based tools will not become paid.
+        </p>
+
+        <h2>How to support</h2>
+
+        <ul>
+          <li><strong>Share the site</strong> with friends who are also struggling with ink costs. Word of mouth is the only marketing we do.</li>
+          <li><strong>Star us on GitHub</strong> — it helps other students find the project.</li>
+          <li><strong>Send feedback.</strong> If a tool is broken, slow, or missing something obvious, we want to know.</li>
+        </ul>
+
+        <h2>Open source</h2>
+
+        <p>
+          Every line of code that runs this site is open source and lives at
+          <a href={`https://github.com/${site.github.org}/${site.github.repo}`} rel="noopener">
+            github.com/{site.github.org}/{site.github.repo}
+          </a>.
+          Audit it. Fork it. Suggest a pull request. The privacy promise is verifiable because the code is auditable.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .about { padding-top: var(--space-5); }
+  .about .eyebrow { margin-bottom: var(--space-4); }
+  .about h1 { margin-bottom: var(--space-5); }
+</style>

@@ -1,0 +1,11 @@
+---
+// Helper component for adding JSON-LD structured data from a parent page.
+// Usage:
+//   <JsonLd schema={{ '@context': 'https://schema.org', '@type': 'FAQPage', ... }} />
+export interface Props {
+  schema: object | object[];
+}
+const { schema } = Astro.props;
+const arr = Array.isArray(schema) ? schema : [schema];
+---
+{arr.map((s) => <script type="application/ld+json" set:html={JSON.stringify(s)} />)}

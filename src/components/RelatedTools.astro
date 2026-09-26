@@ -1,0 +1,48 @@
+---
+import { tools } from '~/data/site';
+
+export interface Props {
+  currentSlug: string;
+  limit?: number;
+}
+const { currentSlug, limit = 4 } = Astro.props;
+const related = tools.filter((t) => t.slug !== currentSlug).slice(0, limit);
+---
+
+<section class="related-tools section section--tight" aria-labelledby="related-tools-heading">
+  <div class="container">
+    <header class="related-tools__head">
+      <h2 id="related-tools-heading">Other tools you might need</h2>
+      <a href={'/tools/'} class="related-tools__all">All tools →</a>
+    </header>
+    <div class="grid grid--2">
+      {related.map((t) => (
+        <a href={`/tools/${t.slug}/`} class="card related-card">
+          <h3>{t.shortName}</h3>
+          <p>{t.description}</p>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .related-tools__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: var(--space-5);
+    gap: var(--space-4);
+  }
+  .related-tools__all {
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  .related-tools__all:hover { text-decoration: none; color: var(--accent-hover); }
+
+  .related-card { color: inherit; }
+  .related-card h3 { margin-bottom: 0.5rem; }
+</style>

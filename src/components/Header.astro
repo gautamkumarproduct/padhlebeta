@@ -1,0 +1,126 @@
+---
+import { site } from '~/data/site';
+import ThemeToggle from './ThemeToggle.astro';
+
+export interface Props {
+  nav: readonly { label: string; href: string }[];
+}
+const { nav } = Astro.props;
+const here = Astro.url.pathname;
+---
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a href={site.basePath + '/'} class="brand" aria-label={`${site.name} home`}>
+      <svg viewBox="0 0 36 36" width="32" height="32" aria-hidden="true" fill="none">
+        <rect x="0" y="0" width="36" height="36" rx="10" fill="#0F172A" />
+        {/* Stylized "P" + bookmark */}
+        <path d="M11 9 L11 27 L14 27 L14 20 L19 20 Q24 20 24 14.5 Q24 9 19 9 Z M14 12 L19 12 Q21 12 21 14.5 Q21 17 19 17 L14 17 Z" fill="#FAF7F2" />
+        {/* Saffron dot — period / brand accent */}
+        <circle cx="27" cy="11" r="2.5" fill="#FF6B1A" />
+      </svg>
+      <span class="brand__word">padhlebeta</span>
+    </a>
+
+    <nav aria-label="Primary" class="site-nav">
+      <ul role="list" class="site-nav__list">
+        {nav.map((item) => {
+          const isActive = item.href === '/' ? here === site.basePath + '/' || here === site.basePath || here === site.basePath + '/index.html' : here.startsWith(site.basePath + item.href);
+          return (
+            <li>
+              <a href={site.basePath + item.href} aria-current={isActive ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+
+    <div class="site-header__actions">
+      <ThemeToggle />
+      <a href={site.basePath + '/tools/dark-to-light/'} class="btn btn--primary site-header__cta">
+        Try the dark→light tool
+      </a>
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--bg-glass);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5);
+    padding-block: var(--space-4);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-family: var(--font-ui);
+    font-weight: 800;
+    font-size: 1.0625rem;
+    color: var(--fg);
+    letter-spacing: -0.02em;
+  }
+  .brand:hover { text-decoration: none; }
+  .brand svg {
+    transition: transform 240ms var(--ease-out);
+  }
+  .brand:hover svg { transform: rotate(-6deg); }
+
+  .site-nav__list {
+    display: flex;
+    gap: var(--space-6);
+    align-items: center;
+  }
+
+  .site-nav a {
+    font-family: var(--font-ui);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--fg-muted);
+    padding: 0.5rem 0;
+    transition: color 160ms ease;
+    position: relative;
+  }
+  .site-nav a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1.5px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 280ms var(--ease-out);
+  }
+  .site-nav a:hover { color: var(--fg); text-decoration: none; }
+  .site-nav a:hover::after { transform: scaleX(1); }
+  .site-nav a[aria-current='page'] { color: var(--fg); font-weight: 600; }
+  .site-nav a[aria-current='page']::after { transform: scaleX(1); }
+
+  .site-header__actions { display: flex; align-items: center; gap: var(--space-3); }
+  .site-header__cta { font-size: 0.875rem; padding: 0.55rem 1.05rem; }
+
+  @media (max-width: 760px) {
+    .site-header__cta { display: none; }
+  }
+  @media (max-width: 520px) {
+    .site-nav__list { gap: var(--space-4); }
+    .site-nav a { font-size: 0.875rem; }
+  }
+</style>

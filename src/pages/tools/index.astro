@@ -1,0 +1,111 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import ToolIcon from '~/components/ToolIcon.astro';
+import { site, tools } from '~/data/site';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'PDF Tools for Students · ' + site.name,
+  description: 'Five free browser-based PDF utilities built for Indian students printing coaching notes.',
+  url: site.siteUrl + site.basePath + '/tools/',
+  mainEntity: {
+    '@type': 'ItemList',
+    itemListElement: tools.map((t, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: t.name,
+      url: site.siteUrl + site.basePath + '/tools/' + t.slug + '/',
+    })),
+  },
+};
+---
+
+<BaseLayout
+  title="All PDF Tools"
+  description="Browse every free PDF tool Padhle Beta offers — dark to light, merge, compress, image to PDF, and extract pages. No signup, no upload, 100% in your browser."
+  jsonLd={jsonLd}
+>
+  <section class="section">
+    <div class="container">
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Tools' }]} />
+
+      <header class="tools-head">
+        <span class="eyebrow">All tools</span>
+        <h1>Every PDF tool you need as a student.</h1>
+        <p>Five focused utilities. Each one solves a specific problem with coaching notes — and each one runs entirely in your browser.</p>
+      </header>
+
+      <div class="tools-grid">
+        {tools.map((t) => (
+          <a href={`/tools/${t.slug}/`} class="tool-card">
+            <span class="tool-card__icon" aria-hidden="true">
+              <ToolIcon name={t.slug as any} size={26} />
+            </span>
+            <div>
+              <h2>{t.name}</h2>
+              <p>{t.description}</p>
+              <span class="tool-card__cta">Open tool →</span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .tools-head {
+    max-width: 720px;
+    margin: 0 auto var(--space-7);
+    text-align: center;
+  }
+  .tools-head p {
+    font-family: var(--font-body);
+    font-size: 1.125rem;
+    color: var(--fg-muted);
+    margin-top: var(--space-3);
+  }
+
+  .tools-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    max-width: 920px;
+    margin: 0 auto;
+  }
+  .tool-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-5);
+    align-items: start;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5) var(--space-6);
+    color: inherit;
+    transition: border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+  }
+  .tool-card:hover {
+    text-decoration: none;
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+  .tool-card__icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: var(--accent-soft);
+    color: var(--saffron-700);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .tool-card h2 { font-size: 1.25rem; margin-bottom: 0.35rem; }
+  .tool-card p { color: var(--fg-muted); font-family: var(--font-body); font-size: 1rem; line-height: 1.55; margin-bottom: var(--space-3); }
+  .tool-card__cta { font-family: var(--font-ui); font-weight: 600; color: var(--accent); font-size: 0.9375rem; }
+  .tool-card:hover .tool-card__cta { color: var(--accent-hover); }
+</style>

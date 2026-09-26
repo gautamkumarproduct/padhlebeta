@@ -1,0 +1,127 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import { site } from '~/data/site';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ContactPage',
+  name: `Contact ${site.name}`,
+  url: site.siteUrl + site.basePath + '/contact/',
+};
+---
+
+<BaseLayout
+  title="Contact"
+  description={`Get in touch with the ${site.name} team — feedback, bug reports, partnership inquiries, or just a hello.`}
+  jsonLd={jsonLd}
+>
+  <section class="section">
+    <div class="container">
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Contact' }]} />
+
+      <div class="contact-grid">
+        <div class="prose contact-copy">
+          <span class="eyebrow">Contact</span>
+          <h1>Say hi, report a bug, or share an idea.</h1>
+          <p>
+            We read everything. Most messages get a reply within a couple of days.
+            If you have a bug to report, screenshots and the file type (PDF, image, etc.) help a lot.
+          </p>
+
+          <h2>Direct channels</h2>
+          <ul>
+            <li><strong>General:</strong> <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a></li>
+            <li><strong>GitHub issues:</strong> <a href={`https://github.com/${site.github.org}/${site.github.repo}/issues`} rel="noopener">github.com/{site.github.org}/{site.github.repo}/issues</a> (best for bug reports)</li>
+            <li><strong>Feature requests:</strong> <a href={`https://github.com/${site.github.org}/${site.github.repo}/discussions`} rel="noopener">GitHub Discussions</a></li>
+          </ul>
+
+          <h2>What we love hearing about</h2>
+          <ul>
+            <li>Tools that broke on a specific file (please attach the file type and size).</li>
+            <li>Features you wish existed.</li>
+            <li>Cool workflows you have built around the tools.</li>
+            <li>Translations — we would love to offer Hindi, Tamil, Telugu, and Bengali versions.</li>
+          </ul>
+        </div>
+
+        <form class="contact-form" action={`mailto:${site.contactEmail}`} method="post" enctype="text/plain">
+          <h2>Quick message</h2>
+          <p class="contact-form__hint">
+            Opens your mail client. For a private message, replace the placeholder before sending.
+          </p>
+          <label>
+            <span>Your name</span>
+            <input type="text" name="name" required placeholder="Your name" />
+          </label>
+          <label>
+            <span>Your email</span>
+            <input type="email" name="email" required placeholder="you@example.com" />
+          </label>
+          <label>
+            <span>What's it about?</span>
+            <select name="topic">
+              <option value="bug">Bug report</option>
+              <option value="feature">Feature request</option>
+              <option value="feedback">Feedback</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <label>
+            <span>Message</span>
+            <textarea name="message" rows="6" required placeholder="Tell us what is on your mind."></textarea>
+          </label>
+          <button type="submit" class="btn btn--primary btn--lg">Send via mail client</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: var(--space-7);
+    align-items: start;
+  }
+  @media (max-width: 900px) { .contact-grid { grid-template-columns: 1fr; } }
+
+  .contact-copy h2 { margin-top: var(--space-6); }
+
+  .contact-form {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    display: grid;
+    gap: var(--space-4);
+    position: sticky;
+    top: 100px;
+  }
+  .contact-form h2 { font-size: 1.25rem; margin-bottom: 0; }
+  .contact-form__hint { font-family: var(--font-body); font-size: 0.875rem; color: var(--fg-muted); margin: 0 0 var(--space-2); }
+  .contact-form label {
+    display: grid;
+    gap: 0.4rem;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    color: var(--fg-muted);
+  }
+  .contact-form input,
+  .contact-form select,
+  .contact-form textarea {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    padding: 0.65rem 0.85rem;
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: 0.9375rem;
+    color: var(--fg);
+    transition: border-color 120ms ease;
+  }
+  .contact-form input:focus,
+  .contact-form select:focus,
+  .contact-form textarea:focus { border-color: var(--accent); outline: none; }
+  .contact-form textarea { resize: vertical; font-family: var(--font-body); }
+</style>
