@@ -39,6 +39,8 @@ type Settings = Omit<Enhance, 'invert'> & {
   paper: 'a4' | 'original';
   quality: number;
   eraseOn: boolean;
+  /** Set when the grid came from a "slides per page" preset; re-optimised on orientation/page changes. */
+  perPage: number | null;
 };
 
 const DEFAULT_ENHANCE = { forceWhite: true, grayscale: false, brightness: 100, contrast: 110, sharpen: 25, eraseTop: 8, eraseBottom: 6, eraseOn: false };
@@ -58,8 +60,9 @@ export function mountStudio(root: HTMLElement) {
     invertMode: init.invertMode ?? 'auto',
     ...DEFAULT_ENHANCE,
     grayscale: Boolean(init.grayscale),
-    cols: init.cols ?? 1,
-    rows: init.rows ?? 1,
+    cols: 1,
+    rows: 1,
+    perPage: init.perPage ?? 1,
     orientation: 'auto',
     margin: 10,
     gap: 3,
@@ -189,7 +192,7 @@ export function mountStudio(root: HTMLElement) {
       p.dark = meanLuminance(p.thumb) < DARK_THRESHOLD;
       p.invert = p.dark;
       paintThumb(p);
-      if (i === 0) { hideBusy('loading'); renderPreview(); }
+      if (i === 0) { applyPerPage(); syncControls(); updateSummary(); hideBusy('loading'); renderPreview(); }
     }
     hideBusy('loading');
     renderPreview();
@@ -346,6 +349,35 @@ export function mountStudio(root: HTMLElement) {
     previewLabel.textContent = `Printed sheet ${sheetIdx + 1} of ${sheets} · A4 ${g.sheet[0] > g.sheet[1] ? 'landscape' : 'portrait'}`;
   }
 
+  /**
+   * For a "slides per page" preset, choose the rows × columns (and, in Auto,
+   * the orientation) that makes each slide as large as possible — e.g. two
+   * 16:9 slides stack top-and-bottom on portrait A4.
+   */
+  function applyPerPage() {
+    const n = s.perPage;
+    if (!n) return;
+    const ref = included()[0] ?? pages[0];
+    const pw = ref?.widthPt ?? 960, ph = ref?.heightPt ?? 540;
+    const sheets: [number, number][] =
+      s.orientation === 'portrait' ? [A4] : s.orientation === 'landscape' ? [[A4[1], A4[0]]] : [A4, [A4[1], A4[0]]];
+    let best = { cols: 1, rows: n, scale: -1 };
+    for (let cols = 1; cols <= Math.min(8, n); cols++) {
+      if (n % cols) continue;
+      const rows = n / cols;
+      if (rows > 8) continue;
+      for (const sh of sheets) {
+        const m = s.margin * MM, g = s.gap * MM;
+        const cellW = (sh[0] - m * 2 - g * (cols - 1)) / cols;
+        const cellH = (sh[1] - m * 2 - g * (rows - 1)) / rows;
+        const scale = Math.min(cellW / pw, cellH / ph);
+        if (scale > best.scale) best = { cols, rows, scale };
+      }
+    }
+    s.cols = best.cols;
+    s.rows = best.rows;
+  }
+
   /** Scale the preview canvas (CSS size) to fit its box without cropping. */
   function fitPreview() {
     const box = previewWrap.getBoundingClientRect();
@@ -373,7 +405,7 @@ export function mountStudio(root: HTMLElement) {
     $$<HTMLButtonElement>('[data-cs-paper]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.csPaper === s.paper)));
     $$<HTMLButtonElement>('[data-cs-quality]').forEach((b) => b.setAttribute('aria-checked', String(Number(b.dataset.csQuality) === s.quality)));
     $$<HTMLButtonElement>('[data-cs-view]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.csView === view)));
-    $$<HTMLButtonElement>('[data-cs-grid]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.csGrid === `${s.rows}x${s.cols}`)));
+    $$<HTMLButtonElement>('[data-cs-count]').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.csCount) === s.cols * s.rows)));
     $$<HTMLInputElement | HTMLSelectElement>('[data-cs-set]').forEach((el) => {
       const key = el.dataset.csSet as keyof Settings;
       if (el instanceof HTMLInputElement && el.type === 'checkbox') el.checked = Boolean(s[key]);
@@ -413,6 +445,8 @@ export function mountStudio(root: HTMLElement) {
     const key = el.dataset.csSet as keyof Settings;
     el.addEventListener('input', () => {
       (s as any)[key] = el instanceof HTMLInputElement && el.type === 'checkbox' ? el.checked : Number(el.value);
+      if (key === 'cols' || key === 'rows') s.perPage = null; // manual grid wins
+      if (key === 'margin' || key === 'gap') applyPerPage();
       const layoutOnly = ['cols', 'rows', 'margin', 'gap', 'border'].includes(key);
       if (layoutOnly) view = 'sheet';
       onChange(!layoutOnly);
@@ -425,12 +459,18 @@ export function mountStudio(root: HTMLElement) {
     setInvertMode(m);
     onChange();
   }));
-  $$<HTMLButtonElement>('[data-cs-grid]').forEach((b) => b.addEventListener('click', () => {
-    const [r, c] = b.dataset.csGrid!.split('x').map(Number);
-    s.rows = r; s.cols = c; view = 'sheet';
+  $$<HTMLButtonElement>('[data-cs-count]').forEach((b) => b.addEventListener('click', () => {
+    s.perPage = Number(b.dataset.csCount);
+    applyPerPage();
+    view = 'sheet';
     onChange(false);
   }));
-  $$<HTMLButtonElement>('[data-cs-orient]').forEach((b) => b.addEventListener('click', () => { s.orientation = b.dataset.csOrient as Settings['orientation']; view = 'sheet'; onChange(false); }));
+  $$<HTMLButtonElement>('[data-cs-orient]').forEach((b) => b.addEventListener('click', () => {
+    s.orientation = b.dataset.csOrient as Settings['orientation'];
+    applyPerPage();
+    view = 'sheet';
+    onChange(false);
+  }));
   $$<HTMLButtonElement>('[data-cs-paper]').forEach((b) => b.addEventListener('click', () => { s.paper = b.dataset.csPaper as Settings['paper']; onChange(false); }));
   $$<HTMLButtonElement>('[data-cs-quality]').forEach((b) => b.addEventListener('click', () => { s.quality = Number(b.dataset.csQuality); syncControls(); }));
   $$<HTMLButtonElement>('[data-cs-view]').forEach((b) => b.addEventListener('click', () => { view = b.dataset.csView as typeof view; syncControls(); renderPreview(); }));

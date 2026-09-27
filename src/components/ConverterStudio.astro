@@ -17,14 +17,11 @@ export interface Props {
 }
 const { dropTitle = 'Drop your dark notes PDF here', defaults = {} } = Astro.props;
 const per = Number(defaults.perSheet ?? 1);
-// Map the old "slides per sheet" defaults onto a rows × cols grid.
-const grid: Record<number, [number, number]> = { 1: [1, 1], 2: [1, 2], 4: [2, 2], 6: [2, 3], 9: [3, 3] };
-const [cols, rows] = grid[per] ?? [1, 1];
 const init = {
   invertMode: defaults.mode === 'all' ? 'all' : 'auto',
   grayscale: Boolean(defaults.grayscale),
-  cols,
-  rows,
+  // Slides per page; the studio picks the best rows × columns for it.
+  perPage: [1, 2, 4, 6, 9, 16].includes(per) ? per : 1,
   paper: defaults.paper === 'original' ? 'original' : 'a4',
 };
 const range = (name: string, label: string, min: number, max: number, value: number, unit: string, hint?: string) => ({ name, label, min, max, value, unit, hint });
@@ -117,12 +114,12 @@ const sliders = [
         <div class="cs-pane" data-cs-pane="layout" hidden>
           <p class="cs-label">Slides per page</p>
           <div class="cs-presets">
-            <button type="button" data-cs-grid="1x1">1</button>
-            <button type="button" data-cs-grid="1x2">2</button>
-            <button type="button" data-cs-grid="2x2">4</button>
-            <button type="button" data-cs-grid="2x3">6</button>
-            <button type="button" data-cs-grid="3x3">9</button>
-            <button type="button" data-cs-grid="4x4">16</button>
+            <button type="button" data-cs-count="1">1</button>
+            <button type="button" data-cs-count="2">2</button>
+            <button type="button" data-cs-count="4">4</button>
+            <button type="button" data-cs-count="6">6</button>
+            <button type="button" data-cs-count="9">9</button>
+            <button type="button" data-cs-count="16">16</button>
           </div>
           <div class="cs-two">
             <label class="cs-field">Columns
