@@ -4,7 +4,7 @@ import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import FeatureCard from '~/components/FeatureCard.astro';
 import FAQ from '~/components/FAQ.astro';
 import { site, tools, getTool } from '~/data/site';
-import ToolShell from '~/components/ToolShell.astro';
+import ConverterStudio from '~/components/ConverterStudio.astro';
 import { url, absUrl } from '~/lib/url';
 
 const jsonLd = {
@@ -57,7 +57,7 @@ const faq = [
 
       <div class="exam-tool" id="tool">
         <h2>Convert NEET notes from black to white (A4)</h2>
-        <div class="tool-card"><ToolShell tool={getTool('dark-to-light')!} instant dropTitle="Drop your notes PDF here" defaults={{ perSheet: '2' }} runLabel="Convert again" /></div>
+        <div class="tool-card"><ConverterStudio dropTitle="Drop your notes PDF here" defaults={{ perSheet: '2' }} /></div>
       </div>
 
 

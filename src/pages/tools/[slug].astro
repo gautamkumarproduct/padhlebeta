@@ -6,6 +6,7 @@ import RelatedTools from '~/components/RelatedTools.astro';
 import ToolShell from '~/components/ToolShell.astro';
 import ToolIcon from '~/components/ToolIcon.astro';
 import BeforeAfter from '~/components/BeforeAfter.astro';
+import ConverterStudio from '~/components/ConverterStudio.astro';
 import { site, tools } from '~/data/site';
 import { platforms } from '~/data/platforms';
 import { url, absUrl } from '~/lib/url';
@@ -83,7 +84,7 @@ const guides = tool.category === 'print' ? platforms.slice(0, 8) : [];
         </div>
 
         <div id="tool" class="tool-card">
-          <ToolShell tool={tool} instant={tool.slug === 'dark-to-light'} dropTitle="Drop your dark PDF here" runLabel={tool.slug === 'dark-to-light' ? 'Convert again' : undefined} />
+          {tool.slug === 'dark-to-light' ? <ConverterStudio dropTitle="Drop your dark PDF here" /> : <ToolShell tool={tool} />}
         </div>
       </div>
     </div>

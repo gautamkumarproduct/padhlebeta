@@ -4,6 +4,7 @@ import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import FAQ from '~/components/FAQ.astro';
 import ToolShell from '~/components/ToolShell.astro';
 import BeforeAfter from '~/components/BeforeAfter.astro';
+import ConverterStudio from '~/components/ConverterStudio.astro';
 import { getTool, site } from '~/data/site';
 import { platforms, type Platform } from '~/data/platforms';
 import { url, absUrl } from '~/lib/url';
@@ -77,7 +78,7 @@ const others = platforms.filter((o) => o.slug !== p.slug);
           <p class="aka">Also searched as: {p.aliases.join(', ')}</p>
         </div>
         <div id="tool" class="tool-card">
-          <ToolShell tool={tool} instant dropTitle={`Drop your ${p.name} PDF here`} defaults={{ perSheet: p.defaults.perSheet, grayscale: p.defaults.grayscale }} runLabel="Convert again" />
+          <ConverterStudio dropTitle={`Drop your ${p.name} PDF here`} defaults={{ perSheet: p.defaults.perSheet, grayscale: p.defaults.grayscale }} />
         </div>
       </div>
     </div>

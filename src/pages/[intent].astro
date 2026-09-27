@@ -4,6 +4,7 @@ import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import FAQ from '~/components/FAQ.astro';
 import ToolShell from '~/components/ToolShell.astro';
 import BeforeAfter from '~/components/BeforeAfter.astro';
+import ConverterStudio from '~/components/ConverterStudio.astro';
 import { getTool, site } from '~/data/site';
 import { intents, type Intent } from '~/data/intents';
 import { platforms } from '~/data/platforms';
@@ -44,7 +45,7 @@ const related = intents.filter((o) => o.slug !== it.slug && o.lang === it.lang).
           <p class="lede">{it.intro}</p>
         </div>
         <div id="tool" class="tool-card">
-          <ToolShell tool={tool} instant dropTitle={hi ? 'Apni PDF yahan daalein' : 'Drop your dark PDF here'} defaults={it.defaults} runLabel={hi ? 'Dobara convert karein' : 'Convert again'} />
+          <ConverterStudio dropTitle={hi ? 'Apni PDF yahan daalein' : 'Drop your dark PDF here'} defaults={it.defaults} />
         </div>
       </div>
     </div>

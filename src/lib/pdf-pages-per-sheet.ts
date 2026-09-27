@@ -31,25 +31,40 @@ function bestLayout(perSheet: number, pageW: number, pageH: number, margin: numb
   return best!;
 }
 
-/** Lay out the pages of `srcBytes` N-up and return the new PDF bytes. */
-export async function nUp(
-  srcBytes: ArrayBuffer | Uint8Array,
-  perSheet: number,
-  { marginMm = 8, border = true, onProgress }: { marginMm?: number; border?: boolean; onProgress?: (pct: number) => void } = {}
-): Promise<Uint8Array> {
+export type GridOptions = {
+  cols: number;
+  rows: number;
+  orientation?: 'auto' | 'portrait' | 'landscape';
+  marginMm?: number;
+  gapMm?: number;
+  border?: boolean;
+  onProgress?: (pct: number) => void;
+};
+
+/** Lay out the pages of `srcBytes` on A4 sheets in a cols × rows grid (reading order). */
+export async function nUpGrid(srcBytes: ArrayBuffer | Uint8Array, o: GridOptions): Promise<Uint8Array> {
   const { PDFDocument, rgb } = await getPdfLib();
   const out = await PDFDocument.create();
   const src = await PDFDocument.load(srcBytes, { ignoreEncryption: true });
-  const indices = src.getPageIndices();
-  const embedded = await out.embedPdf(src, indices);
-
-  const margin = marginMm * MM_TO_PT;
-  const gap = 6;
+  const embedded = await out.embedPdf(src, src.getPageIndices());
+  const { cols, rows } = o;
+  const perSheet = cols * rows;
+  const margin = (o.marginMm ?? 8) * MM_TO_PT;
+  const gap = (o.gapMm ?? 2) * MM_TO_PT;
   const first = embedded[0];
-  const layout = bestLayout(perSheet, first.width, first.height, margin, gap);
-  const { sheet, cols, rows } = layout;
-  const cellW = (sheet[0] - margin * 2 - gap * (cols - 1)) / cols;
-  const cellH = (sheet[1] - margin * 2 - gap * (rows - 1)) / rows;
+
+  const fit = (sheet: [number, number]) => {
+    const cellW = (sheet[0] - margin * 2 - gap * (cols - 1)) / cols;
+    const cellH = (sheet[1] - margin * 2 - gap * (rows - 1)) / rows;
+    return { cellW, cellH, scale: Math.min(cellW / first.width, cellH / first.height) };
+  };
+  const portrait = A4;
+  const landscape: [number, number] = [A4[1], A4[0]];
+  const sheet =
+    o.orientation === 'portrait' ? portrait
+    : o.orientation === 'landscape' ? landscape
+    : fit(landscape).scale > fit(portrait).scale ? landscape : portrait;
+  const { cellW, cellH } = fit(sheet);
 
   let page = out.addPage(sheet);
   embedded.forEach((ep, i) => {
@@ -63,13 +78,24 @@ export async function nUp(
     const x = margin + col * (cellW + gap) + (cellW - w) / 2;
     const y = sheet[1] - margin - (row + 1) * cellH - row * gap + (cellH - h) / 2;
     page.drawPage(ep, { x, y, width: w, height: h });
-    if (border) {
-      page.drawRectangle({ x, y, width: w, height: h, borderColor: rgb(0.7, 0.7, 0.7), borderWidth: 0.5 });
-    }
-    onProgress?.((i + 1) / embedded.length);
+    if (o.border) page.drawRectangle({ x, y, width: w, height: h, borderColor: rgb(0.7, 0.7, 0.7), borderWidth: 0.5 });
+    o.onProgress?.((i + 1) / embedded.length);
   });
-
   return out.save();
+}
+
+/** Lay out the pages of `srcBytes` N-up and return the new PDF bytes. */
+export async function nUp(
+  srcBytes: ArrayBuffer | Uint8Array,
+  perSheet: number,
+  { marginMm = 8, border = true, onProgress }: { marginMm?: number; border?: boolean; onProgress?: (pct: number) => void } = {}
+): Promise<Uint8Array> {
+  const { PDFDocument } = await getPdfLib();
+  const src = await PDFDocument.load(srcBytes, { ignoreEncryption: true });
+  const first = src.getPage(0);
+  const { width, height } = first.getSize();
+  const layout = bestLayout(perSheet, width, height, marginMm * MM_TO_PT, 6);
+  return nUpGrid(srcBytes, { cols: layout.cols, rows: layout.rows, orientation: layout.sheet[0] > layout.sheet[1] ? 'landscape' : 'portrait', marginMm, gapMm: 6 / MM_TO_PT, border, onProgress });
 }
 
 export const run: ToolRunner = async (files, opts, statusEl) => {

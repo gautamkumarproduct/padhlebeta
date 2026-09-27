@@ -4,7 +4,7 @@ import FeatureCard from '~/components/FeatureCard.astro';
 import FAQ from '~/components/FAQ.astro';
 import { site, tools, type Tool } from '~/data/site';
 import { getCollection } from 'astro:content';
-import ToolShell from '~/components/ToolShell.astro';
+import ConverterStudio from '~/components/ConverterStudio.astro';
 import HomeSeo from '~/components/HomeSeo.astro';
 import BeforeAfter from '~/components/BeforeAfter.astro';
 import { getTool } from '~/data/site';
@@ -28,6 +28,10 @@ const homeFaq = [
   {
     q: 'Will the converted notes be A4 size?',
     a: 'Yes. By default every page is fitted and centred on A4 (portrait or landscape, whichever makes your pages biggest), so it prints at 100% without cropping. You can also keep the original page size.',
+  },
+  {
+    q: 'Can I choose which pages to include, or remove coaching logos?',
+    a: 'Yes. After you choose a PDF, an editor opens with every page as a thumbnail. Untick pages to skip them, drag to reorder, invert page by page, erase header/footer strips with logos, and adjust brightness, contrast and sharpness with a live preview.',
   },
   {
     q: 'Can I print 2 or 4 slides on one page?',
@@ -93,11 +97,11 @@ const webAppJsonLd = {
         <span class="hero__accent">A4 &amp; ready to <span class="scribble">print.<svg viewBox="0 0 200 16" preserveAspectRatio="none" aria-hidden="true"><path d="M3 11 C 40 3, 80 3, 110 8 S 170 14, 197 5" /></svg></span></span>
       </h1>
       <p class="hero__sub">
-        Drop your PW, Unacademy or ALLEN notes. Every black page turns white, fits A4, and downloads in seconds.
+        Drop your PW, Unacademy or ALLEN notes. Every black page turns white and fits A4 — preview it, tweak it, download.
       </p>
 
       <div class="hero__tool">
-        <ToolShell tool={converter} instant dropTitle="Drop your dark notes PDF here" runLabel="Convert again" />
+        <ConverterStudio />
       </div>
 
       <ul class="assure" role="list">
@@ -121,6 +125,25 @@ const webAppJsonLd = {
     </div>
   </section>
 
+  {/* FEATURES */}
+  <section class="section">
+    <div class="container">
+      <header class="center-head">
+        <span class="eyebrow">You’re in control</span>
+        <h2>Customise every page before you print</h2>
+        <p>Works great on autopilot. When you want more, it’s all one tap away.</p>
+      </header>
+      <ul class="feats" role="list">
+        <li><span aria-hidden="true">🗂️</span><h3>Pick your pages</h3><p>See every page, skip covers and ads, drag to reorder, add more PDFs.</p></li>
+        <li><span aria-hidden="true">◐</span><h3>Smart invert</h3><p>Auto flips only dark pages — or choose all, none, or page by page.</p></li>
+        <li><span aria-hidden="true">🧽</span><h3>Remove logos</h3><p>Erase header and footer strips with coaching logos and watermarks.</p></li>
+        <li><span aria-hidden="true">🎚️</span><h3>Brightness, contrast, sharpen</h3><p>Crisper text and a pure-white background, with a live preview.</p></li>
+        <li><span aria-hidden="true">🔲</span><h3>Up to 64 slides per page</h3><p>Any grid from 1×1 to 8×8, portrait or landscape, your margins.</p></li>
+        <li><span aria-hidden="true">🖨️</span><h3>Black &amp; white</h3><p>No colour ink at all — perfect for the Xerox shop.</p></li>
+      </ul>
+    </div>
+  </section>
+
   {/* 3 STEPS */}
   <section class="section section--soft">
     <div class="container">
@@ -136,8 +159,8 @@ const webAppJsonLd = {
         </li>
         <li>
           <span class="steps3__n">2</span>
-          <h3>Drop it above</h3>
-          <p>Black pages become white with dark writing. White pages stay as they are.</p>
+          <h3>Preview &amp; customise</h3>
+          <p>Black pages turn white automatically. Skip pages, remove logos or fit up to 64 slides per page if you like.</p>
         </li>
         <li>
           <span class="steps3__n">3</span>
@@ -228,7 +251,7 @@ const webAppJsonLd = {
     box-shadow: var(--shadow-xl);
     padding: 6px;
   }
-  .hero__tool :global(.tool-shell) { border: 0; background: transparent; }
+  .hero__tool { padding: 10px; }
   .assure {
     list-style: none; padding: 0; margin: var(--space-5) 0 0;
     display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2) var(--space-5);
@@ -240,6 +263,16 @@ const webAppJsonLd = {
   .center-head h2 { margin-top: var(--space-2); }
   .center-head p { font-family: var(--font-ui); color: var(--fg-muted); margin-top: var(--space-3); }
   .center-cta { text-align: center; margin-top: var(--space-7); }
+
+  /* ---------- Features ---------- */
+  .feats { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+  @media (max-width: 900px) { .feats { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .feats { grid-template-columns: 1fr; } }
+  .feats li { padding: var(--space-5); border-radius: var(--radius-lg); background: var(--bg-elev); border: 1px solid var(--border); transition: transform 160ms ease, border-color 160ms ease; }
+  .feats li:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .feats span { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--accent-soft); font-size: 1.3rem; margin-bottom: var(--space-3); }
+  .feats h3 { font-size: 1.0625rem; margin-bottom: var(--space-2); }
+  .feats p { font-family: var(--font-ui); font-size: 0.9375rem; line-height: 1.55; color: var(--fg-muted); margin: 0; }
 
   /* ---------- Steps ---------- */
   .steps3 {

@@ -1,0 +1,428 @@
+---
+/**
+ * ConverterStudio — the dark-notes → printable PDF experience.
+ *
+ * A friendly drop zone that opens a full-screen editor: page thumbnails
+ * (select, reorder, per-page invert), enhancements (invert, force white,
+ * grayscale, erase logo strips, brightness, contrast, sharpen), layout
+ * (rows × columns, orientation, margins) and a live page / sheet preview.
+ * One primary button downloads the result. Everything runs in the browser.
+ */
+import { url } from '~/lib/url';
+
+export interface Props {
+  dropTitle?: string;
+  /** Starting values, e.g. { perSheet: '2', grayscale: true } from platform pages. */
+  defaults?: Record<string, string | number | boolean | undefined>;
+}
+const { dropTitle = 'Drop your dark notes PDF here', defaults = {} } = Astro.props;
+const per = Number(defaults.perSheet ?? 1);
+// Map the old "slides per sheet" defaults onto a rows × cols grid.
+const grid: Record<number, [number, number]> = { 1: [1, 1], 2: [1, 2], 4: [2, 2], 6: [2, 3], 9: [3, 3] };
+const [cols, rows] = grid[per] ?? [1, 1];
+const init = {
+  invertMode: defaults.mode === 'all' ? 'all' : 'auto',
+  grayscale: Boolean(defaults.grayscale),
+  cols,
+  rows,
+  paper: defaults.paper === 'original' ? 'original' : 'a4',
+};
+const range = (name: string, label: string, min: number, max: number, value: number, unit: string, hint?: string) => ({ name, label, min, max, value, unit, hint });
+const sliders = [
+  range('brightness', 'Brightness', 50, 150, 100, '%'),
+  range('contrast', 'Contrast', 50, 200, 110, '%'),
+  range('sharpen', 'Sharpen text', 0, 100, 25, '%', 'Crisper text on paper'),
+];
+---
+
+<div class="cs" data-studio data-init={JSON.stringify(init)} data-sample={url('/sample-dark-notes.pdf')}>
+  <div class="cs-drop" data-cs-drop>
+    <input type="file" id="cs-file" class="sr-only" accept="application/pdf,.pdf" multiple data-cs-input />
+    <svg class="cs-drop__icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 18v-6M9 14l3-3 3 3"/></svg>
+    <p class="cs-drop__title">{dropTitle}</p>
+    <label for="cs-file" class="cs-drop__button">Choose PDF</label>
+    <p class="cs-drop__hint">or drop it here · preview &amp; customise before you download</p>
+    <button type="button" class="cs-drop__sample" data-cs-sample>No PDF handy? <u>Try a sample</u> →</button>
+    <p class="cs-drop__error" role="alert" data-cs-drop-error hidden></p>
+  </div>
+
+  <div class="cs-ws" data-cs-ws hidden role="dialog" aria-modal="true" aria-labelledby="cs-title">
+    <header class="cs-top">
+      <div class="cs-top__title">
+        <strong id="cs-title">Customise &amp; print</strong>
+        <span data-cs-file>—</span>
+      </div>
+      <div class="cs-top__actions">
+        <label class="cs-btn cs-btn--ghost" for="cs-file-add">+ Add PDF</label>
+        <input type="file" id="cs-file-add" class="sr-only" accept="application/pdf,.pdf" multiple data-cs-add />
+        <button type="button" class="cs-btn cs-btn--ghost" data-cs-restart>Start over</button>
+        <button type="button" class="cs-btn cs-btn--icon" data-cs-close aria-label="Close editor">✕</button>
+      </div>
+    </header>
+
+    <div class="cs-body">
+      <aside class="cs-panel">
+        <div class="cs-tabs" role="tablist">
+          <button type="button" role="tab" aria-selected="true" data-cs-tab="enhance">Enhance</button>
+          <button type="button" role="tab" aria-selected="false" data-cs-tab="layout">Layout</button>
+          <button type="button" role="tab" aria-selected="false" data-cs-tab="export">Export</button>
+        </div>
+
+        <div class="cs-pane" data-cs-pane="enhance">
+          <div class="cs-row">
+            <div><strong>Invert colours</strong><span>Black background → white</span></div>
+          </div>
+          <div class="cs-seg" role="radiogroup" aria-label="Which pages to invert">
+            <button type="button" data-cs-invert="auto">Auto</button>
+            <button type="button" data-cs-invert="all">All</button>
+            <button type="button" data-cs-invert="custom">Custom</button>
+            <button type="button" data-cs-invert="off">Off</button>
+          </div>
+          <p class="cs-note" data-cs-invert-note>Only dark pages are inverted. White pages stay as they are.</p>
+
+          <label class="cs-row cs-toggle">
+            <div><strong>Force white background</strong><span>Snap grey haze to pure white</span></div>
+            <input type="checkbox" data-cs-set="forceWhite" checked />
+          </label>
+          <label class="cs-row cs-toggle">
+            <div><strong>Black &amp; white</strong><span>Uses no colour ink</span></div>
+            <input type="checkbox" data-cs-set="grayscale" />
+          </label>
+          <label class="cs-row cs-toggle">
+            <div><strong>Remove logo / watermark</strong><span>Erase header &amp; footer strips</span></div>
+            <input type="checkbox" data-cs-erase-toggle />
+          </label>
+          <div class="cs-erase" data-cs-erase hidden>
+            <label class="cs-slider">
+              <span>Erase top <output data-cs-out="eraseTop">8%</output></span>
+              <input type="range" min="0" max="25" value="8" data-cs-set="eraseTop" />
+            </label>
+            <label class="cs-slider">
+              <span>Erase bottom <output data-cs-out="eraseBottom">6%</output></span>
+              <input type="range" min="0" max="25" value="6" data-cs-set="eraseBottom" />
+            </label>
+          </div>
+
+          <hr />
+          {sliders.map((s) => (
+            <label class="cs-slider">
+              <span>{s.label} <output data-cs-out={s.name}>{s.value}{s.unit}</output></span>
+              <input type="range" min={s.min} max={s.max} value={s.value} data-cs-set={s.name} />
+              {s.hint && <small>{s.hint}</small>}
+            </label>
+          ))}
+          <button type="button" class="cs-link" data-cs-reset-enhance>Reset enhancements</button>
+        </div>
+
+        <div class="cs-pane" data-cs-pane="layout" hidden>
+          <p class="cs-label">Slides per page</p>
+          <div class="cs-presets">
+            <button type="button" data-cs-grid="1x1">1</button>
+            <button type="button" data-cs-grid="1x2">2</button>
+            <button type="button" data-cs-grid="2x2">4</button>
+            <button type="button" data-cs-grid="2x3">6</button>
+            <button type="button" data-cs-grid="3x3">9</button>
+            <button type="button" data-cs-grid="4x4">16</button>
+          </div>
+          <div class="cs-two">
+            <label class="cs-field">Columns
+              <select data-cs-set="cols">{[1,2,3,4,5,6,7,8].map((n) => <option value={n}>{n}</option>)}</select>
+            </label>
+            <label class="cs-field">Rows
+              <select data-cs-set="rows">{[1,2,3,4,5,6,7,8].map((n) => <option value={n}>{n}</option>)}</select>
+            </label>
+          </div>
+          <p class="cs-label">Orientation</p>
+          <div class="cs-seg" role="radiogroup" aria-label="Orientation">
+            <button type="button" data-cs-orient="auto">Auto</button>
+            <button type="button" data-cs-orient="portrait">Portrait</button>
+            <button type="button" data-cs-orient="landscape">Landscape</button>
+          </div>
+          <label class="cs-slider">
+            <span>Margins <output data-cs-out="margin">10 mm</output></span>
+            <input type="range" min="0" max="25" value="10" data-cs-set="margin" />
+          </label>
+          <label class="cs-slider">
+            <span>Gap between slides <output data-cs-out="gap">3 mm</output></span>
+            <input type="range" min="0" max="12" value="3" data-cs-set="gap" />
+          </label>
+          <label class="cs-row cs-toggle">
+            <div><strong>Border around slides</strong><span>Thin grey outline</span></div>
+            <input type="checkbox" data-cs-set="border" checked />
+          </label>
+        </div>
+
+        <div class="cs-pane" data-cs-pane="export" hidden>
+          <p class="cs-label">Paper</p>
+          <div class="cs-seg" role="radiogroup" aria-label="Paper">
+            <button type="button" data-cs-paper="a4">A4 (print-ready)</button>
+            <button type="button" data-cs-paper="original">Original size</button>
+          </div>
+          <p class="cs-note" data-cs-paper-note>Pages are fitted and centred on A4 — print at 100% scale.</p>
+          <p class="cs-label">Quality</p>
+          <div class="cs-seg" role="radiogroup" aria-label="Quality">
+            <button type="button" data-cs-quality="110">Draft</button>
+            <button type="button" data-cs-quality="150">Standard</button>
+            <button type="button" data-cs-quality="220">High</button>
+          </div>
+          <label class="cs-field">File name
+            <input type="text" data-cs-filename maxlength="80" />
+          </label>
+        </div>
+
+        <div class="cs-summary">
+          <div>
+            <strong data-cs-summary>—</strong>
+            <span data-cs-summary-sub>—</span>
+          </div>
+          <button type="button" class="cs-btn cs-btn--primary" data-cs-download>Download PDF</button>
+        </div>
+      </aside>
+
+      <main class="cs-stage">
+        <div class="cs-stage__bar">
+          <div class="cs-seg cs-seg--sm" role="radiogroup" aria-label="Preview">
+            <button type="button" data-cs-view="page">Page</button>
+            <button type="button" data-cs-view="sheet">Printed sheet</button>
+          </div>
+          <button type="button" class="cs-btn cs-btn--ghost cs-btn--sm" data-cs-original>Hold to see original</button>
+        </div>
+        <div class="cs-preview" data-cs-preview-wrap>
+          <canvas data-cs-preview></canvas>
+          <p class="cs-preview__label" data-cs-preview-label></p>
+        </div>
+        <div class="cs-pages__bar">
+          <span data-cs-selected>—</span>
+          <div>
+            <button type="button" class="cs-link" data-cs-all>All</button>
+            <button type="button" class="cs-link" data-cs-none>None</button>
+          </div>
+        </div>
+        <ol class="cs-thumbs" role="list" data-cs-thumbs></ol>
+      </main>
+    </div>
+
+    <div class="cs-busy" data-cs-busy hidden>
+      <div class="cs-busy__card">
+        <div class="cs-busy__bar"><div data-cs-busy-bar></div></div>
+        <p data-cs-busy-text>Preparing…</p>
+        <div class="cs-busy__done" data-cs-done hidden>
+          <strong>✓ Your PDF is ready</strong>
+          <span data-cs-done-msg></span>
+          <div>
+            <button type="button" class="cs-btn cs-btn--primary" data-cs-again>Download again</button>
+            <button type="button" class="cs-btn cs-btn--ghost" data-cs-back>Keep editing</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { mountStudio } from '~/lib/studio';
+  document.querySelectorAll<HTMLElement>('[data-studio]').forEach(mountStudio);
+</script>
+
+<style>
+  /* ---------- Drop zone ---------- */
+  .cs-drop {
+    border: 2.5px dashed color-mix(in srgb, var(--accent) 45%, var(--border-strong));
+    background: color-mix(in srgb, var(--accent) 5%, var(--bg-elev));
+    border-radius: 18px;
+    padding: var(--space-9) var(--space-5);
+    text-align: center;
+    cursor: pointer;
+    transition: background 150ms ease, transform 150ms ease;
+  }
+  .cs-drop:hover { background: color-mix(in srgb, var(--accent) 9%, var(--bg-elev)); }
+  .cs-drop.is-over { transform: scale(1.01); background: color-mix(in srgb, var(--accent) 12%, var(--bg-elev)); }
+  .cs-drop__icon { color: var(--accent); display: block; margin: 0 auto var(--space-3); }
+  .cs-drop__title { font-family: var(--font-ui); font-size: 1.25rem; font-weight: 800; color: var(--fg); margin: 0 0 var(--space-4); letter-spacing: -0.01em; }
+  .cs-drop__button {
+    display: inline-block; background: var(--accent); color: var(--accent-fg);
+    font-family: var(--font-ui); font-weight: 700; font-size: 1.125rem;
+    padding: 0.95rem 2.2rem; border-radius: var(--radius); cursor: pointer;
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+  .cs-drop__button:hover { background: var(--accent-hover); }
+  .cs-drop input:focus-visible + .cs-drop__icon + .cs-drop__title + .cs-drop__button { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .cs-drop__hint { font-family: var(--font-ui); font-size: 0.875rem; color: var(--fg-muted); margin: var(--space-3) 0 0; }
+  .cs-drop__sample { margin-top: var(--space-4); border: 0; background: none; cursor: pointer; font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--accent); }
+  .cs-drop__error { margin: var(--space-4) auto 0; max-width: 32rem; font-family: var(--font-ui); font-size: 0.9375rem; color: #B91C1C; }
+  :global(html[data-theme='dark']) .cs-drop__error { color: #FCA5A5; }
+  @media (prefers-reduced-motion: no-preference) {
+    .cs-drop__icon { animation: pb-float 2.8s ease-in-out infinite; }
+    .cs-drop__button { animation: pb-breathe 2.6s ease-in-out infinite; }
+  }
+
+  /* ---------- Workspace ---------- */
+  .cs-ws {
+    position: fixed; inset: 0; z-index: 200;
+    display: grid; grid-template-rows: auto 1fr;
+    background: var(--bg);
+    color: var(--fg);
+    text-align: left;
+  }
+  .cs-ws[hidden] { display: none; }
+  @media (prefers-reduced-motion: no-preference) { .cs-ws:not([hidden]) { animation: pb-pop 260ms var(--ease-out) both; } }
+  .cs-top {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+    padding: 0.7rem var(--space-5); border-bottom: 1px solid var(--border); background: var(--bg-elev);
+  }
+  .cs-top__title { display: grid; min-width: 0; font-family: var(--font-ui); }
+  .cs-top__title strong { font-size: 1rem; }
+  .cs-top__title span { font-size: 0.8125rem; color: var(--fg-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cs-top__actions { display: flex; gap: var(--space-2); flex-shrink: 0; }
+
+  .cs-body { display: grid; grid-template-columns: 360px 1fr; min-height: 0; }
+  .cs-panel {
+    display: grid; grid-template-rows: auto 1fr auto; min-height: 0;
+    border-right: 1px solid var(--border); background: var(--bg-elev);
+  }
+  .cs-tabs { display: flex; gap: 4px; padding: var(--space-3); border-bottom: 1px solid var(--border); }
+  .cs-tabs button {
+    flex: 1; border: 0; border-radius: 10px; padding: 0.55rem; cursor: pointer;
+    font-family: var(--font-ui); font-weight: 700; font-size: 0.875rem;
+    background: transparent; color: var(--fg-muted);
+  }
+  .cs-tabs button[aria-selected='true'] { background: var(--accent); color: var(--accent-fg); }
+  .cs-pane { overflow-y: auto; padding: var(--space-5); display: grid; gap: var(--space-4); align-content: start; }
+  .cs-pane[hidden] { display: none; }
+  .cs-pane hr { border: 0; border-top: 1px solid var(--border); margin: 0; }
+
+  .cs-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); font-family: var(--font-ui); }
+  .cs-row strong { display: block; font-size: 0.9375rem; }
+  .cs-row span { display: block; font-size: 0.8125rem; color: var(--fg-muted); }
+  .cs-toggle { cursor: pointer; }
+  .cs-toggle input {
+    appearance: none; width: 42px; height: 24px; border-radius: 999px; flex-shrink: 0;
+    background: var(--border-strong); position: relative; cursor: pointer; transition: background 150ms ease;
+  }
+  .cs-toggle input::after {
+    content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; transition: transform 150ms var(--ease-out); box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  }
+  .cs-toggle input:checked { background: var(--accent); }
+  .cs-toggle input:checked::after { transform: translateX(18px); }
+  .cs-toggle input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .cs-seg { display: flex; gap: 3px; padding: 3px; border-radius: 12px; background: var(--bg-soft); border: 1px solid var(--border); }
+  .cs-seg button {
+    flex: 1; border: 0; border-radius: 9px; padding: 0.5rem 0.4rem; cursor: pointer; white-space: nowrap;
+    font-family: var(--font-ui); font-weight: 600; font-size: 0.8125rem; background: transparent; color: var(--fg-muted);
+  }
+  .cs-seg button[aria-checked='true'] { background: var(--bg-elev); color: var(--fg); box-shadow: var(--shadow-sm); }
+  .cs-seg--sm button { padding: 0.35rem 0.7rem; }
+  .cs-note { margin: -0.4rem 0 0; font-family: var(--font-ui); font-size: 0.8125rem; color: var(--fg-muted); }
+  .cs-label { margin: 0 0 -0.4rem; font-family: var(--font-ui); font-size: 0.8125rem; font-weight: 700; color: var(--fg-muted); }
+
+  .cs-slider { display: grid; gap: 0.35rem; font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; }
+  .cs-slider span { display: flex; justify-content: space-between; }
+  .cs-slider output { color: var(--fg-muted); font-variant-numeric: tabular-nums; font-weight: 500; }
+  .cs-slider small { color: var(--fg-muted); font-weight: 400; font-size: 0.75rem; }
+  .cs-slider input { width: 100%; accent-color: var(--accent); }
+  .cs-erase { display: grid; gap: var(--space-3); padding-left: var(--space-3); border-left: 2px solid var(--border); }
+  .cs-erase[hidden] { display: none; }
+
+  .cs-presets { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .cs-presets button {
+    border: 1px solid var(--border); background: var(--bg-soft); border-radius: 10px; padding: 0.55rem 0; cursor: pointer;
+    font-family: var(--font-ui); font-weight: 800; color: var(--fg);
+  }
+  .cs-presets button[aria-pressed='true'] { border-color: var(--accent); background: var(--accent-soft); color: var(--saffron-700); }
+  :global(html[data-theme='dark']) .cs-presets button[aria-pressed='true'] { color: var(--saffron-400); }
+  .cs-two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+  .cs-field { display: grid; gap: 0.35rem; font-family: var(--font-ui); font-size: 0.8125rem; font-weight: 700; color: var(--fg-muted); }
+  .cs-field select, .cs-field input {
+    padding: 0.55rem 0.7rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-soft);
+    font-family: var(--font-ui); font-size: 0.9375rem; color: var(--fg); min-width: 0;
+  }
+
+  .cs-summary {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+    padding: var(--space-4) var(--space-5); border-top: 1px solid var(--border);
+    font-family: var(--font-ui);
+  }
+  .cs-summary strong { display: block; font-size: 0.9375rem; }
+  .cs-summary span { display: block; font-size: 0.8125rem; color: var(--fg-muted); }
+
+  .cs-btn {
+    border: 1px solid transparent; border-radius: 10px; padding: 0.55rem 1rem; cursor: pointer;
+    font-family: var(--font-ui); font-weight: 700; font-size: 0.875rem; white-space: nowrap;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .cs-btn--primary { background: var(--accent); color: var(--accent-fg); padding: 0.75rem 1.3rem; font-size: 0.9375rem; box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 35%, transparent); }
+  .cs-btn--primary:hover { background: var(--accent-hover); }
+  .cs-btn--primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+  .cs-btn--ghost { background: var(--bg-soft); border-color: var(--border); color: var(--fg); }
+  .cs-btn--ghost:hover { border-color: var(--accent); }
+  .cs-btn--icon { background: transparent; color: var(--fg-muted); font-size: 1.1rem; padding: 0.4rem 0.7rem; }
+  .cs-btn--sm { padding: 0.35rem 0.7rem; font-size: 0.8125rem; }
+  .cs-link { border: 0; background: none; cursor: pointer; font-family: var(--font-ui); font-weight: 700; font-size: 0.8125rem; color: var(--accent); padding: 0.2rem 0.4rem; justify-self: start; }
+
+  /* ---------- Stage ---------- */
+  .cs-stage { display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; min-height: 0; min-width: 0; background: var(--bg-soft); }
+  .cs-stage__bar, .cs-pages__bar {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+    padding: var(--space-3) var(--space-5); font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600;
+  }
+  .cs-preview { position: relative; min-height: 0; display: grid; place-items: center; padding: var(--space-3) var(--space-5); overflow: hidden; }
+  .cs-preview canvas {
+    background: #fff; border-radius: 4px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  }
+  .cs-preview__label {
+    position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); margin: 0;
+    padding: 0.25rem 0.7rem; border-radius: 999px; background: rgba(0, 0, 0, 0.6); color: #fff;
+    font-family: var(--font-ui); font-size: 0.75rem; font-weight: 600; pointer-events: none;
+  }
+  .cs-pages__bar { border-top: 1px solid var(--border); background: var(--bg-elev); }
+  .cs-thumbs {
+    list-style: none; margin: 0; padding: var(--space-3) var(--space-5) var(--space-4);
+    display: flex; gap: var(--space-3); overflow-x: auto; background: var(--bg-elev);
+  }
+  .cs-thumbs :global(li) {
+    position: relative; flex: 0 0 auto; width: 132px; padding: 5px; border-radius: 10px;
+    border: 2px solid transparent; background: var(--bg-soft); cursor: pointer;
+  }
+  .cs-thumbs :global(li.is-current) { border-color: var(--accent); }
+  .cs-thumbs :global(li.is-excluded) { opacity: 0.4; }
+  .cs-thumbs :global(li.is-dragging) { outline: 2px dashed var(--accent); }
+  .cs-thumbs :global(canvas) { display: block; width: 100%; height: auto; border-radius: 4px; background: #fff; }
+  .cs-thumbs :global(.cs-t__foot) { display: flex; align-items: center; justify-content: space-between; margin-top: 5px; font-family: var(--font-ui); font-size: 0.75rem; font-weight: 600; color: var(--fg-muted); }
+  .cs-thumbs :global(.cs-t__inc) { position: absolute; top: 9px; right: 9px; width: 20px; height: 20px; accent-color: var(--accent); cursor: pointer; }
+  .cs-thumbs :global(.cs-t__inv) {
+    border: 1px solid var(--border); background: var(--bg-elev); color: var(--fg); border-radius: 6px;
+    font-size: 0.875rem; line-height: 1; font-weight: 700; padding: 0.25rem 0.45rem; cursor: pointer; font-family: var(--font-ui);
+  }
+  .cs-thumbs :global(.cs-t__inv[aria-pressed='true']) { background: var(--fg); color: var(--bg); }
+
+  /* ---------- Busy / done ---------- */
+  .cs-busy { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; background: color-mix(in srgb, var(--bg) 70%, transparent); backdrop-filter: blur(4px); }
+  .cs-busy[hidden] { display: none; }
+  .cs-busy__card {
+    width: min(92vw, 440px); padding: var(--space-6); border-radius: 18px; background: var(--bg-elev);
+    border: 1px solid var(--border); box-shadow: var(--shadow-xl); font-family: var(--font-ui); text-align: center;
+  }
+  .cs-busy__bar { height: 8px; border-radius: 999px; background: var(--border); overflow: hidden; }
+  .cs-busy__bar div { height: 100%; width: 0%; background: var(--accent); transition: width 200ms ease; }
+  .cs-busy__card p { margin: var(--space-3) 0 0; color: var(--fg-muted); font-size: 0.875rem; }
+  .cs-busy__done { display: grid; gap: var(--space-2); margin-top: var(--space-2); }
+  .cs-busy__done[hidden] { display: none; }
+  .cs-busy__done strong { font-size: 1.25rem; color: var(--fg); }
+  .cs-busy__done span { color: var(--fg-muted); font-size: 0.875rem; overflow-wrap: anywhere; }
+  .cs-busy__done div { display: flex; gap: var(--space-2); justify-content: center; flex-wrap: wrap; margin-top: var(--space-3); }
+
+  /* ---------- Mobile ---------- */
+  @media (max-width: 860px) {
+    .cs-body { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; }
+    .cs-stage { grid-row: 1; grid-template-rows: auto minmax(160px, 1fr) auto auto; }
+    .cs-panel { grid-row: 2; border-right: 0; border-top: 1px solid var(--border); max-height: 44vh; }
+    .cs-pane { padding: var(--space-4); }
+    .cs-thumbs :global(li) { width: 96px; }
+    .cs-top__actions .cs-btn--ghost:first-of-type { display: none; }
+    .cs-stage__bar, .cs-pages__bar { padding: var(--space-2) var(--space-4); }
+    .cs-summary { padding: var(--space-3) var(--space-4); }
+  }
+</style>
