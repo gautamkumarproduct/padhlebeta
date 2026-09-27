@@ -2,7 +2,6 @@
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import FeatureCard from '~/components/FeatureCard.astro';
 import FAQ from '~/components/FAQ.astro';
-import InkSavingsCalculator from '~/components/InkSavingsCalculator.astro';
 import ToolIcon from '~/components/ToolIcon.astro';
 import PrivacyDiagram from '~/components/PrivacyDiagram.astro';
 import { site, tools, type Tool } from '~/data/site';
@@ -85,44 +84,82 @@ const webAppJsonLd = {
 >
   {/* HERO */}
   <section class="hero">
-    <div class="atmos-blob atmos-blob--1" aria-hidden="true"></div>
-    <div class="atmos-blob atmos-blob--2" aria-hidden="true"></div>
-
     <div class="container hero__grid">
       <div class="hero__copy">
-        <span class="eyebrow fade-up">Free forever · No signup · Nothing uploaded</span>
-        <h1 class="fade-up fade-up--1">
-          Black notes to white PDF,<br />
-          <span class="hero__highlight">A4 &amp; ready to print.</span>
+        <p class="hero__badge fade-up">
+          <span class="hero__badge-dot" aria-hidden="true"></span>
+          Free for every student · No signup
+        </p>
+        <h1 class="hero__title fade-up fade-up--1">
+          Black notes to white PDF,
+          <span class="hero__accent">A4 &amp; ready to print.</span>
         </h1>
         <p class="hero__lede fade-up fade-up--2">
-          Convert dark-background coaching notes from PW, Unacademy, ALLEN, Vedantu and
-          any other platform into clean black-on-white, A4 printable pages. Save up to 60%
-          ink, fit 2–6 slides per sheet, and keep your files on your own device.
+          Choose the dark-background PDF from PW, Unacademy, ALLEN or any coaching app.
+          In a few seconds you get clean black-on-white A4 pages — ready for your printer or the Xerox shop.
         </p>
-        <ul class="hero__points fade-up fade-up--3" role="list">
-          <li>✓ Auto-detects dark pages — white pages stay as they are</li>
-          <li>✓ Fitted to A4, portrait or landscape, with clean margins</li>
-          <li>✓ Removes grey haze so the background prints pure white</li>
+
+        <figure class="compare fade-up fade-up--3" aria-label="Example: a dark lecture slide converted to a white A4 page">
+          <div class="compare__item">
+            <div class="compare__dark" aria-hidden="true">
+              <span class="compare__h"></span>
+              <span class="compare__l compare__l--y" style="width:78%"></span>
+              <span class="compare__l" style="width:64%"></span>
+              <span class="compare__l compare__l--p" style="width:70%"></span>
+              <span class="compare__l" style="width:52%"></span>
+            </div>
+            <figcaption>Your coaching PDF</figcaption>
+          </div>
+          <svg class="compare__arrow" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          <div class="compare__item">
+            <div class="compare__a4" aria-hidden="true">
+              <div class="compare__slide">
+                <span class="compare__h"></span>
+                <span class="compare__l compare__l--y" style="width:78%"></span>
+                <span class="compare__l" style="width:64%"></span>
+                <span class="compare__l compare__l--p" style="width:70%"></span>
+                <span class="compare__l" style="width:52%"></span>
+              </div>
+              <div class="compare__slide">
+                <span class="compare__h"></span>
+                <span class="compare__l" style="width:70%"></span>
+                <span class="compare__l compare__l--y" style="width:58%"></span>
+                <span class="compare__l" style="width:74%"></span>
+              </div>
+            </div>
+            <figcaption>White A4, 2 slides per page</figcaption>
+          </div>
+        </figure>
+
+        <ul class="trust fade-up fade-up--4" role="list">
+          <li>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <div><strong>Stays on your device</strong><span>Converted in your browser. Nothing is uploaded.</span></div>
+          </li>
+          <li>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg>
+            <div><strong>Prints like normal notes</strong><span>Pure white background, sharp text, A4 margins.</span></div>
+          </li>
+          <li>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            <div><strong>No catch</strong><span>No login, no watermark, no page limit.</span></div>
+          </li>
         </ul>
-        <div class="hero__stats fade-up fade-up--4">
-          <div>
-            <span class="hero__stat-num">{tools.length}</span>
-            <span class="hero__stat-label">PDF tools</span>
-          </div>
-          <div>
-            <span class="hero__stat-num" data-count="~60">~60%</span>
-            <span class="hero__stat-label">Ink savings, on average</span>
-          </div>
-          <div>
-            <span class="hero__stat-num" data-count="0">0</span>
-            <span class="hero__stat-label">Files uploaded. Ever.</span>
-          </div>
-        </div>
       </div>
 
       <div class="hero__tool fade-up fade-up--2" id="convert">
-        <ToolShell tool={converter} runLabel="Convert to white PDF" />
+        <div class="converter">
+          <div class="converter__head">
+            <h2 class="converter__title">Convert your notes</h2>
+            <ol class="converter__steps" role="list">
+              <li><span>1</span>Choose PDF</li>
+              <li><span>2</span>Convert</li>
+              <li><span>3</span>Print</li>
+            </ol>
+          </div>
+          <ToolShell tool={converter} runLabel="Convert to white PDF" />
+        </div>
+        <p class="hero__works">Works with notes from PW · Unacademy · ALLEN · Vedantu · Aakash · any dark PDF</p>
       </div>
     </div>
   </section>
@@ -160,23 +197,23 @@ const webAppJsonLd = {
     <div class="container">
       <header class="section-head reveal">
         <span class="eyebrow">How it works</span>
-        <h2>Three steps.<br/>Zero friction.</h2>
+        <h2>From dark slides to printed notes<br/>in under a minute.</h2>
       </header>
       <ol class="steps reveal" role="list">
         <li class="step">
           <span class="step__num">01</span>
-          <h3>Pick a tool</h3>
-          <p>Choose from the free tools above. Each one solves a single, specific problem with coaching notes.</p>
+          <h3>Choose your PDF</h3>
+          <p>Download the notes PDF from your coaching app, then choose it above. Phones and laptops both work.</p>
         </li>
         <li class="step">
           <span class="step__num">02</span>
-          <h3>Drop your file</h3>
-          <p>Drag your PDF or images into the browser. They never leave your device — processing happens locally.</p>
+          <h3>We make it print-ready</h3>
+          <p>Dark pages become white with dark text. Pages that are already white are left alone. Everything is fitted to A4.</p>
         </li>
         <li class="step">
           <span class="step__num">03</span>
-          <h3>Download the result</h3>
-          <p>Click download. The converted, merged, or compressed file is on your machine in seconds. Print or share.</p>
+          <h3>Print or share</h3>
+          <p>The new PDF downloads straight away. Print it at home, or send it to the Xerox shop at 100% scale.</p>
         </li>
       </ol>
     </div>
@@ -205,9 +242,6 @@ const webAppJsonLd = {
       </div>
     </div>
   </section>
-
-  {/* INK SAVINGS CALCULATOR */}
-  <InkSavingsCalculator />
 
   {/* WHY PADHLE BETA */}
   <section class="section">
@@ -310,219 +344,166 @@ const webAppJsonLd = {
     // Fallback for ancient browsers
     reveals.forEach((el) => el.classList.add('is-visible'));
   }
-
-  // Animated stat counters
-  const animate = (el: HTMLElement, target: number, suffix = '') => {
-    const start = performance.now();
-    const duration = 1200;
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / duration);
-      const eased = 1 - Math.pow(1 - t, 3);
-      el.textContent = Math.round(target * eased) + suffix;
-      if (t < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  };
-
-  const nums = document.querySelectorAll<HTMLElement>('.hero__stat-num');
-  const numIo = new IntersectionObserver((entries) => {
-    entries.forEach((e) => {
-      if (e.isIntersecting) {
-        const el = e.target as HTMLElement;
-        const raw = el.dataset.count ?? el.textContent ?? '0';
-        const match = raw.match(/^([^0-9]*)(\d+)(.*)$/);
-        if (match) {
-          const [, prefix, n, suffix] = match;
-          const target = parseInt(n, 10);
-          animate(el, target, prefix + suffix);
-        }
-        numIo.unobserve(el);
-      }
-    });
-  }, { threshold: 0.5 });
-  nums.forEach((n) => numIo.observe(n));
 </script>
 
 <style>
   .hero {
     position: relative;
-    padding-block: clamp(2.5rem, 8vw, 7rem);
-    overflow: hidden;
-    isolation: isolate;
+    padding-block: clamp(2rem, 6vw, 5rem) clamp(3rem, 7vw, 6rem);
+    background:
+      radial-gradient(60% 50% at 85% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%),
+      var(--bg);
+    border-bottom: 1px solid var(--border);
   }
-
   .hero__grid {
     display: grid;
-    grid-template-columns: 1.1fr 1fr;
-    gap: clamp(2rem, 5vw, 5rem);
+    grid-template-columns: 1.05fr 1fr;
+    gap: clamp(2rem, 5vw, 4.5rem);
     align-items: start;
-    position: relative;
   }
+  .hero__grid > * { min-width: 0; }
   @media (max-width: 960px) {
     .hero__grid { grid-template-columns: 1fr; gap: var(--space-5); }
-    /* Phones/tablets: put the converter right under the headline. */
+    /* Phones/tablets: converter right under the headline. */
     .hero__copy { display: contents; }
     .hero__copy > * { order: 1; }
     .hero__tool { order: 2; }
-    .hero__copy > .hero__lede, .hero__copy > .hero__points, .hero__copy > .hero__stats { order: 3; }
+    .hero__copy > .hero__lede, .hero__copy > .compare, .hero__copy > .trust { order: 3; }
   }
 
-  .hero__highlight {
-    background: linear-gradient(135deg, var(--saffron-500) 0%, var(--saffron-700) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    display: inline-block;
+  .hero__badge {
+    display: inline-flex;
+    justify-self: start;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 var(--space-5);
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-elev);
+    font-family: var(--font-ui);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--fg-muted);
   }
+  .hero__badge-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green-600); box-shadow: 0 0 0 3px color-mix(in srgb, var(--green-600) 20%, transparent); }
+
+  .hero__title {
+    font-size: clamp(2.25rem, 4.6vw, 3.75rem);
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .hero__accent { display: block; color: var(--accent); }
 
   .hero__lede {
-    font-family: var(--font-body);
-    font-size: var(--text-lg);
-    line-height: 1.55;
-    color: var(--fg-muted);
-    max-width: 560px;
-    margin-block: var(--space-6) var(--space-7);
-  }
-
-  .hero__ctas { display: flex; flex-wrap: wrap; gap: var(--space-3); }
-
-  .hero__stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-5);
-    margin-top: var(--space-10);
-    padding-top: var(--space-6);
-    border-top: 1px solid var(--border);
-  }
-  .hero__stat-num {
     font-family: var(--font-ui);
-    font-weight: 800;
-    font-size: 2.25rem;
-    color: var(--fg);
-    display: block;
-    letter-spacing: -0.03em;
-    line-height: 1;
-  }
-  .hero__stat-label {
-    font-size: 0.875rem;
+    font-size: 1.125rem;
+    line-height: 1.6;
     color: var(--fg-muted);
-    margin-top: 6px;
-    display: block;
+    max-width: 34rem;
+    margin: var(--space-5) 0 0;
   }
 
-  /* Hero visual — browser-tab demo */
-  .hero__grid > * { min-width: 0; }
-  .hero__tool { position: relative; z-index: 1; }
-  .hero__points { list-style: none; padding: 0; margin: var(--space-5) 0 0; display: grid; gap: 0.5rem; font-family: var(--font-ui); font-size: 0.9375rem; font-weight: 600; color: var(--fg); }
-  .hero__visual { display: flex; justify-content: center; }
-  .hero__demo {
+  /* Before → after preview */
+  .compare {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin: var(--space-7) 0 0;
+    padding: var(--space-5);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--bg-soft);
+    max-width: 34rem;
+  }
+  .compare__item { flex: 1; display: grid; gap: 0.6rem; justify-items: center; margin: 0; }
+  .compare__item figcaption { font-family: var(--font-ui); font-size: 0.8125rem; font-weight: 600; color: var(--fg-muted); text-align: center; }
+  .compare__arrow { color: var(--accent); flex-shrink: 0; }
+  .compare__dark {
     width: 100%;
-    max-width: 480px;
+    aspect-ratio: 16 / 9;
+    background: #0d0f14;
+    border-radius: 6px;
+    padding: 10% 9%;
+    display: grid;
+    align-content: start;
+    gap: 7%;
+    box-shadow: var(--shadow-sm);
+  }
+  .compare__a4 {
+    height: 100%;
+    width: 62%;
+    aspect-ratio: 210 / 297;
+    background: #fff;
+    border-radius: 3px;
+    padding: 7% 8%;
+    display: grid;
+    gap: 6%;
+    align-content: start;
+    box-shadow: var(--shadow);
+    border: 1px solid #e7e5e0;
+  }
+  .compare__slide {
+    aspect-ratio: 16 / 9;
+    border: 1px solid #d9d7d2;
+    padding: 8% 9%;
+    display: grid;
+    align-content: start;
+    gap: 9%;
+  }
+  .compare__h, .compare__l { display: block; height: 5px; border-radius: 3px; }
+  .compare__h { width: 45%; height: 7px; background: #f5f5f4; }
+  .compare__l { background: #cbd5e1; }
+  .compare__l--y { background: #fcd34d; }
+  .compare__l--p { background: #f9a8d4; }
+  .compare__slide .compare__h { background: #111; height: 4px; }
+  .compare__slide .compare__l { background: #334155; height: 3px; }
+  .compare__slide .compare__l--y { background: #3b5bdb; }
+  .compare__slide .compare__l--p { background: #0f8a4a; }
+
+  /* Trust points */
+  .trust { list-style: none; padding: 0; margin: var(--space-7) 0 0; display: grid; gap: var(--space-4); max-width: 34rem; }
+  .trust li { display: grid; grid-template-columns: auto 1fr; gap: var(--space-3); align-items: start; }
+  .trust svg { color: var(--accent); margin-top: 2px; }
+  .trust strong { display: block; font-family: var(--font-ui); font-size: 0.9375rem; color: var(--fg); }
+  .trust span { display: block; font-family: var(--font-ui); font-size: 0.875rem; color: var(--fg-muted); margin-top: 1px; }
+
+  /* Converter card */
+  .converter {
     background: var(--bg-elev);
     border: 1px solid var(--border);
-    border-radius: var(--radius-2xl);
+    border-radius: calc(var(--radius-lg) + 4px);
+    box-shadow: var(--shadow-lg);
     overflow: hidden;
-    box-shadow: var(--shadow-xl);
-    position: relative;
   }
-  .hero__demo-tab {
+  .converter__head {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 14px 18px;
-    background: var(--bg-soft);
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    padding: var(--space-4) var(--space-6);
     border-bottom: 1px solid var(--border);
   }
-  .hero__demo-tab span:nth-child(-n+3) {
-    width: 11px; height: 11px; border-radius: 50%;
-    background: var(--ink-300);
+  .converter__title { font-size: 1.0625rem; margin: 0; letter-spacing: -0.01em; }
+  .converter__steps { list-style: none; margin: 0; padding: 0; display: flex; gap: var(--space-4); font-family: var(--font-ui); font-size: 0.8125rem; font-weight: 600; color: var(--fg-muted); }
+  .converter__steps li { display: inline-flex; align-items: center; gap: 0.4rem; }
+  .converter__steps span {
+    width: 20px; height: 20px; border-radius: 50%;
+    display: inline-grid; place-items: center;
+    background: var(--accent-soft); color: var(--saffron-700);
+    font-size: 0.75rem; font-weight: 800;
   }
-  .hero__demo-tab-label {
-    margin-left: var(--space-3);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--fg-muted);
+  :global(html[data-theme='dark']) .converter__steps span { color: var(--saffron-400); }
+  /* The shell is already a card; flatten it inside ours. */
+  .converter :global(.tool-shell) { border: 0; border-radius: 0; background: transparent; }
+  @media (max-width: 600px) {
+    .converter__head { padding: var(--space-4); }
+    .converter__steps { gap: var(--space-3); }
   }
-
-  .hero__demo-body {
-    padding: var(--space-6);
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: var(--space-4);
-    align-items: center;
-  }
-  .hero__demo-before, .hero__demo-after {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-  }
-  .hero__demo-arrow {
-    color: var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .hero__demo-slide {
-    background: #0F172A;
-    border-radius: var(--radius);
-    padding: var(--space-4);
-    aspect-ratio: 3/4;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .hero__demo-slide--light {
-    background: #FFFCF7;
-    border: 1px solid var(--ink-200);
-  }
-  .hero__demo-slide-bar {
-    height: 6px;
-    width: 30%;
-    background: var(--accent-soft);
-    border-radius: 999px;
-    margin-bottom: 6px;
-  }
-  .hero__demo-slide--light .hero__demo-slide-bar { background: rgba(255, 107, 26, 0.18); }
-  .hero__demo-slide-line {
-    height: 4px;
-    background: rgba(250, 247, 242, 0.18);
-    border-radius: 999px;
-  }
-  .hero__demo-slide--light .hero__demo-slide-line {
-    background: var(--ink-200);
-  }
-  .hero__demo-tag {
-    font-family: var(--font-ui);
-    font-weight: 600;
-    font-size: 0.75rem;
-    color: var(--fg-muted);
-    text-align: center;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-  .hero__demo-tag--accent { color: var(--saffron-700); }
-
-  .hero__demo-footer {
-    padding: var(--space-4) var(--space-5);
-    background: var(--accent-soft);
-    border-top: 1px solid var(--border);
-    text-align: center;
-  }
-  .hero__demo-save {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-family: var(--font-ui);
-    font-weight: 700;
-    font-size: 0.875rem;
-    color: var(--saffron-700);
-  }
-  .hero__demo-save-dot {
-    width: 8px; height: 8px;
-    background: var(--green-600);
-    border-radius: 50%;
-    box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.2);
-  }
+  .hero__works { margin: var(--space-4) 0 0; text-align: center; font-family: var(--font-ui); font-size: 0.8125rem; color: var(--fg-muted); }
 
   /* Section heads */
   .section-head {

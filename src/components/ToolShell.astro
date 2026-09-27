@@ -33,38 +33,49 @@ const valueOf = (name: string, fallback: unknown) => (name in defaults ? default
 
   {tool.customUi && <div class="tool-shell__custom is-hidden" data-custom></div>}
 
-  {tool.options.length > 0 && (
-    <fieldset class="tool-shell__options">
-      <legend class="sr-only">Options</legend>
-      {tool.options.map((o) => {
-        const fid = `${id}-${o.name}`;
-        if (o.type === 'checkbox') {
-          return (
-            <label class="opt opt--check" for={fid}>
-              <input type="checkbox" id={fid} name={o.name} checked={Boolean(valueOf(o.name, o.default))} />
-              <span>{o.label}</span>
-            </label>
-          );
-        }
+  {tool.options.length > 0 && (() => {
+    const renderOpt = (o: (typeof tool.options)[number]) => {
+      const fid = `${id}-${o.name}`;
+      if (o.type === 'checkbox') {
         return (
-          <label class="opt" for={fid}>
+          <label class="opt opt--check" for={fid}>
+            <input type="checkbox" id={fid} name={o.name} checked={Boolean(valueOf(o.name, o.default))} />
             <span>{o.label}</span>
-            {o.type === 'select' ? (
-              <select id={fid} name={o.name}>
-                {o.choices.map((c) => (
-                  <option value={c.value} selected={String(valueOf(o.name, o.default)) === c.value}>{c.label}</option>
-                ))}
-              </select>
-            ) : o.type === 'number' ? (
-              <input type="number" id={fid} name={o.name} value={String(valueOf(o.name, o.default))} min={o.min} max={o.max} step={o.step} inputmode="numeric" />
-            ) : (
-              <input type="text" id={fid} name={o.name} value={String(valueOf(o.name, o.default ?? ''))} placeholder={o.placeholder} autocomplete="off" />
-            )}
           </label>
         );
-      })}
-    </fieldset>
-  )}
+      }
+      return (
+        <label class="opt" for={fid}>
+          <span>{o.label}</span>
+          {o.type === 'select' ? (
+            <select id={fid} name={o.name}>
+              {o.choices.map((c) => (
+                <option value={c.value} selected={String(valueOf(o.name, o.default)) === c.value}>{c.label}</option>
+              ))}
+            </select>
+          ) : o.type === 'number' ? (
+            <input type="number" id={fid} name={o.name} value={String(valueOf(o.name, o.default))} min={o.min} max={o.max} step={o.step} inputmode="numeric" />
+          ) : (
+            <input type="text" id={fid} name={o.name} value={String(valueOf(o.name, o.default ?? ''))} placeholder={o.placeholder} autocomplete="off" />
+          )}
+        </label>
+      );
+    };
+    const basic = tool.options.filter((o) => !o.advanced);
+    const advanced = tool.options.filter((o) => o.advanced);
+    return (
+      <fieldset class="tool-shell__options">
+        <legend class="sr-only">Options</legend>
+        {basic.map(renderOpt)}
+        {advanced.length > 0 && (
+          <details class="opt-more">
+            <summary>More options</summary>
+            <div class="opt-more__body">{advanced.map(renderOpt)}</div>
+          </details>
+        )}
+      </fieldset>
+    );
+  })()}
 
   <div class="tool-shell__actions">
     <button type="submit" class="btn btn--primary btn--lg" data-run>{runLabel ?? `Run: ${tool.shortName}`}</button>
@@ -284,6 +295,22 @@ const valueOf = (name: string, fallback: unknown) => (name in defaults ? default
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: var(--space-4);
+  }
+  .opt-more { grid-column: 1 / -1; }
+  .opt-more summary {
+    cursor: pointer;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fg-muted);
+    width: max-content;
+  }
+  .opt-more summary:hover { color: var(--fg); }
+  .opt-more__body {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-4);
   }
   .opt {
     display: grid;

@@ -6,11 +6,13 @@
  * `name` is the on-page H1.
  */
 
-export type ToolOption =
+/** `advanced` options are tucked under "More options" to keep the tool simple. */
+export type ToolOption = { advanced?: boolean } & (
   | { type: 'select'; name: string; label: string; default: string; choices: readonly { value: string; label: string }[] }
   | { type: 'text'; name: string; label: string; placeholder?: string; default?: string; hint?: string }
   | { type: 'number'; name: string; label: string; default: number; min?: number; max?: number; step?: number }
-  | { type: 'checkbox'; name: string; label: string; default: boolean };
+  | { type: 'checkbox'; name: string; label: string; default: boolean }
+);
 
 export type ToolCategory = 'print' | 'organize' | 'convert' | 'optimize';
 
@@ -67,6 +69,7 @@ export const tools: readonly Tool[] = [
       {
         type: 'select',
         name: 'mode',
+        advanced: true,
         label: 'Which pages to invert',
         default: 'auto',
         choices: [
@@ -90,17 +93,18 @@ export const tools: readonly Tool[] = [
         label: 'Slides per A4 sheet',
         default: '1',
         choices: [
-          { value: '1', label: '1 (original size)' },
+          { value: '1', label: '1 — one slide per page' },
           { value: '2', label: '2 per sheet — half the paper' },
           { value: '4', label: '4 per sheet — quarter the paper' },
           { value: '6', label: '6 per sheet' },
         ],
       },
-      { type: 'checkbox', name: 'clean', label: 'Clean background (remove grey haze → pure white)', default: true },
-      { type: 'checkbox', name: 'grayscale', label: 'Black & white output (no colour ink)', default: false },
+      { type: 'checkbox', name: 'grayscale', label: 'Black & white (uses no colour ink)', default: false },
+      { type: 'checkbox', name: 'clean', advanced: true, label: 'Clean background (remove grey haze → pure white)', default: true },
       {
         type: 'select',
         name: 'quality',
+        advanced: true,
         label: 'Print quality',
         default: '150',
         choices: [
