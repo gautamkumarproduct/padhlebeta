@@ -21,7 +21,7 @@ const year = new Date().getFullYear();
     </div>
 
     <div class="site-footer__col">
-      <h4>Tools</h4>
+      <h2 class="site-footer__heading">Tools</h2>
       <ul role="list">
         {tools.map((t) => (
           <li><a href={`${site.basePath}/tools/${t.slug}/`}>{t.shortName}</a></li>
@@ -30,7 +30,7 @@ const year = new Date().getFullYear();
     </div>
 
     <div class="site-footer__col">
-      <h4>Print guides</h4>
+      <h2 class="site-footer__heading">Print guides</h2>
       <ul role="list">
         {platforms.slice(0, 8).map((p) => (
           <li><a href={`${site.basePath}/print/${p.slug}/`}>{p.slug.endsWith('-notes') ? `${p.name} notes` : p.name}</a></li>
@@ -43,7 +43,7 @@ const year = new Date().getFullYear();
     </div>
 
     <div class="site-footer__col">
-      <h4>Resources</h4>
+      <h2 class="site-footer__heading">Resources</h2>
       <ul role="list">
         <li><a href={`${site.basePath}/focus-timer/`}>Focus timer</a></li>
         <li><a href={`${site.basePath}/blog/`}>Blog</a></li>
@@ -54,7 +54,7 @@ const year = new Date().getFullYear();
     </div>
 
     <div class="site-footer__col">
-      <h4>Legal</h4>
+      <h2 class="site-footer__heading">Legal</h2>
       <ul role="list">
         <li><a href={`${site.basePath}/privacy/`}>Privacy</a></li>
         <li><a href={`${site.basePath}/terms/`}>Terms</a></li>
@@ -108,7 +108,11 @@ const year = new Date().getFullYear();
   .site-footer__brand p { color: var(--ink-300); font-size: 0.9375rem; line-height: 1.6; max-width: 320px; margin-bottom: var(--space-2); }
   .site-footer__small { color: var(--ink-400) !important; font-size: 0.8125rem !important; }
 
-  .site-footer__col h4 {
+  .site-footer__mark strong { color: #FAF7F2; }
+  .site-footer__col .site-footer__heading {
+    font-family: var(--font-ui);
+    line-height: 1.3;
+    margin-top: 0;
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.12em;

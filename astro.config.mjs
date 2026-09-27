@@ -29,6 +29,8 @@ export default defineConfig({
   trailingSlash: 'ignore',
   build: {
     format: 'directory',
+    // Inline page CSS: removes render-blocking stylesheet requests.
+    inlineStylesheets: 'always',
     assets: '_astro',
   },
   markdown: {

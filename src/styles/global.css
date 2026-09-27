@@ -56,8 +56,8 @@
   --shadow-xl: 0 40px 100px rgba(var(--shadow-color), 0.10), 0 8px 16px rgba(var(--shadow-color), 0.04);
 
   /* Typography */
-  --font-ui: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
-  --font-body: 'Source Serif 4', 'Iowan Old Style', 'Charter', Georgia, serif;
+  --font-ui: 'Manrope Variable', 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Source Serif 4 Variable', 'Source Serif 4', 'Iowan Old Style', 'Charter', Georgia, serif;
   --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
 
   /* Type scale — Apple-style */
@@ -625,8 +625,10 @@ a.sr-only:focus {
    - Below-the-fold content reveals on scroll (BaseLayout script adds .ar).
    - Everything is disabled for prefers-reduced-motion.
    --------------------------------------------------------- */
+/* Transform-only so hero text is visible from the first frame (good LCP). */
+@keyframes pb-rise { from { transform: translateY(14px); } to { transform: none; } }
 main > section:first-child .container > * {
-  animation: pb-fade-up 700ms var(--ease-out) both;
+  animation: pb-rise 650ms var(--ease-out) both;
 }
 main > section:first-child .container > :nth-child(2) { animation-delay: 70ms; }
 main > section:first-child .container > :nth-child(3) { animation-delay: 140ms; }
