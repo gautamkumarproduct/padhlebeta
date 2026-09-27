@@ -3,6 +3,7 @@ import BaseLayout from '~/layouts/BaseLayout.astro';
 import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import ToolIcon from '~/components/ToolIcon.astro';
 import { site, tools } from '~/data/site';
+import { url } from '~/lib/url';
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -39,7 +40,7 @@ const jsonLd = {
 
       <div class="tools-grid">
         {tools.map((t) => (
-          <a href={`/tools/${t.slug}/`} class="tool-card">
+          <a href={url(`/tools/${t.slug}/`)} class="tool-card">
             <span class="tool-card__icon" aria-hidden="true">
               <ToolIcon name={t.slug as any} size={26} />
             </span>

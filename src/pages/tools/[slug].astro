@@ -6,6 +6,8 @@ import RelatedTools from '~/components/RelatedTools.astro';
 import ToolShell from '~/components/ToolShell.astro';
 import ToolIcon from '~/components/ToolIcon.astro';
 import { site, tools } from '~/data/site';
+import { platforms } from '~/data/platforms';
+import { url, absUrl } from '~/lib/url';
 import type { GetStaticPaths } from 'astro';
 
 export const getStaticPaths: GetStaticPaths = () => {
@@ -16,52 +18,50 @@ export const getStaticPaths: GetStaticPaths = () => {
 };
 
 const { tool } = Astro.props;
+const pageUrl = absUrl(`/tools/${tool.slug}/`);
 
 const howToJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'HowTo',
-  name: `How to ${tool.name.toLowerCase()}`,
+  name: `How to use ${tool.name}`,
   description: tool.description,
   totalTime: 'PT1M',
+  tool: { '@type': 'HowToTool', name: `${site.name} ${tool.name}` },
   step: tool.steps.map((text, i) => ({
     '@type': 'HowToStep',
     position: i + 1,
     name: text,
     text,
+    url: `${pageUrl}#tool`,
   })),
 };
 
 const softwareJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
-  name: `${tool.name} · ${site.name}`,
-  description: tool.description,
+  name: `${tool.name} – ${site.name}`,
+  description: tool.metaDescription,
   applicationCategory: 'UtilitiesApplication',
-  operatingSystem: 'Any (browser-based)',
+  applicationSubCategory: 'PDF tool',
+  operatingSystem: 'Any (web browser)',
+  browserRequirements: 'Requires JavaScript. Works in Chrome, Safari, Firefox and Edge.',
+  isAccessibleForFree: true,
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
-  url: site.siteUrl + site.basePath + '/tools/' + tool.slug + '/',
+  featureList: tool.benefits.join(', '),
+  keywords: tool.keywords.join(', '),
+  url: pageUrl,
+  image: absUrl(`/og/${tool.slug}.png`),
 };
 
-const breadcrumbJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'BreadcrumbList',
-  itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Home', item: site.siteUrl + site.basePath + '/' },
-    { '@type': 'ListItem', position: 2, name: 'Tools', item: site.siteUrl + site.basePath + '/tools/' },
-    { '@type': 'ListItem', position: 3, name: tool.name, item: site.siteUrl + site.basePath + '/tools/' + tool.slug + '/' },
-  ],
-};
-
-// Tool-specific config
-const accept = tool.slug === 'image-to-pdf' ? 'image/jpeg,image/png,image/heic,image/heif' : 'application/pdf,.pdf';
-const multiple = tool.slug === 'merge' || tool.slug === 'image-to-pdf';
-const extraControls = tool.slug === 'extract-pages';
+const guides = tool.category === 'print' ? platforms.slice(0, 8) : [];
 ---
 
 <BaseLayout
-  title={tool.name}
-  description={tool.description}
-  jsonLd={[howToJsonLd, softwareJsonLd, breadcrumbJsonLd]}
+  title={tool.seoTitle}
+  rawTitle
+  description={tool.metaDescription}
+  ogImage={`/og/${tool.slug}.png`}
+  jsonLd={[howToJsonLd, softwareJsonLd]}
 >
   <section class="section tool-hero">
     <div class="container">
@@ -76,26 +76,14 @@ const extraControls = tool.slug === 'extract-pages';
           <span class="tool-hero__icon" aria-hidden="true">
             <ToolIcon name={tool.slug as any} size={28} />
           </span>
-          <span class="eyebrow">Free tool · No signup</span>
+          <span class="eyebrow">Free · No signup · No upload</span>
           <h1>{tool.name}</h1>
           <p class="tool-hero__lede">{tool.longDescription}</p>
         </div>
 
-        <ToolShell
-          tool={tool.slug}
-          accept={accept}
-          multiple={multiple}
-          extraControls={extraControls}
-        >
-          {tool.slug === 'extract-pages' && (
-            <Fragment slot="options">
-              <label>
-                <span>Pages to extract (e.g. <code>1-5, 12, 18-22</code>)</span>
-                <input type="text" name="ranges" placeholder="1-5, 10, 15-20" data-ranges />
-              </label>
-            </Fragment>
-          )}
-        </ToolShell>
+        <div id="tool">
+          <ToolShell tool={tool} />
+        </div>
       </div>
     </div>
   </section>
@@ -133,7 +121,7 @@ const extraControls = tool.slug === 'extract-pages';
           <div class="tool-aside__card">
             <h3>Privacy guarantee</h3>
             <p>This tool runs entirely in your browser. Your file is never uploaded, logged, or shared.</p>
-            <a href="/privacy/">Read our privacy policy →</a>
+            <a href={url('/privacy/')}>Read our privacy policy →</a>
           </div>
           <div class="tool-aside__card">
             <h3>No account needed</h3>
@@ -148,110 +136,64 @@ const extraControls = tool.slug === 'extract-pages';
     </div>
   </section>
 
+  {guides.length > 0 && (
+    <section class="section section--tight">
+      <div class="container">
+        <span class="eyebrow">Step-by-step guides</span>
+        <h2>Printing notes from a specific platform?</h2>
+        <ul class="guide-links" role="list">
+          {guides.map((p) => (
+            <li><a href={url(`/print/${p.slug}/`)}>How to print {p.name} notes →</a></li>
+          ))}
+          <li><a href={url('/print/')}>All platforms →</a></li>
+        </ul>
+      </div>
+    </section>
+  )}
+
   <FAQ items={tool.faq} id={`${tool.slug}-faq`} />
 
   <RelatedTools currentSlug={tool.slug} />
 </BaseLayout>
 
-<script>
-  // Generic tool wiring — dispatches to the correct lib based on data-tool.
-  type AnyFile = File;
 
-  const forms = document.querySelectorAll<HTMLFormElement>('.tool-shell');
-  forms.forEach((form) => {
-    const tool = form.dataset.tool!;
-    const multiple = form.dataset.multiple === 'true';
-    const drop = form.querySelector<HTMLElement>('[data-drop]')!;
-    const fileInput = form.querySelector<HTMLInputElement>('[data-file-input]')!;
-    const fileList = form.querySelector<HTMLElement>('[data-filelist]')!;
-    const status = form.querySelector<HTMLElement>('[data-status]')!;
-    const errEl = form.querySelector<HTMLElement>('[data-error]')!;
-    const reset = form.querySelector<HTMLButtonElement>('[data-reset]')!;
-
-    function showError(msg: string) {
-      errEl.textContent = msg;
-      errEl.classList.remove('is-hidden');
-    }
-    function clearError() {
-      errEl.textContent = '';
-      errEl.classList.add('is-hidden');
-    }
-    function updateFileList() {
-      const files = Array.from(fileInput.files ?? []);
-      if (files.length === 0) {
-        fileList.textContent = '';
-      } else {
-        fileList.textContent = files.map((f) => `• ${f.name} (${(f.size / 1024).toFixed(1)} KB)`).join('\n');
-      }
-    }
-
-    drop.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      drop.classList.add('dropzone--active');
-    });
-    drop.addEventListener('dragleave', () => drop.classList.remove('dropzone--active'));
-    drop.addEventListener('drop', (e) => {
-      e.preventDefault();
-      drop.classList.remove('dropzone--active');
-      if (!e.dataTransfer) return;
-      // Sync the input's FileList (via DataTransfer)
-      const dt = new DataTransfer();
-      Array.from(e.dataTransfer.files).forEach((f) => dt.items.add(f));
-      fileInput.files = dt.files;
-      updateFileList();
-    });
-    fileInput.addEventListener('change', updateFileList);
-
-    reset.addEventListener('click', (e) => {
-      e.preventDefault();
-      form.reset();
-      fileList.textContent = '';
-      status.classList.add('is-hidden');
-      clearError();
-    });
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      clearError();
-      const files = Array.from(fileInput.files ?? []);
-      if (files.length === 0) { showError('Please choose at least one file.'); return; }
-      if (!multiple && files.length > 1) { showError('This tool accepts only one file at a time.'); return; }
-
-      try {
-        if (tool === 'dark-to-light') {
-          const { runDarkToLight } = await import('~/lib/pdf-dark-to-light');
-          await runDarkToLight(files[0], status);
-        } else if (tool === 'merge') {
-          const { runMerge } = await import('~/lib/pdf-merge');
-          await runMerge(files, status);
-        } else if (tool === 'compress') {
-          const { runCompress } = await import('~/lib/pdf-compress');
-          await runCompress(files[0], status);
-        } else if (tool === 'image-to-pdf') {
-          const { runImageToPdf } = await import('~/lib/pdf-image-to-pdf');
-          await runImageToPdf(files, status);
-        } else if (tool === 'extract-pages') {
-          const rangesInput = form.querySelector<HTMLInputElement>('[data-ranges]')?.value ?? '';
-          if (!rangesInput.trim()) { showError('Enter page ranges (e.g. 1-5, 12, 18-22).'); return; }
-          const { runExtract } = await import('~/lib/pdf-extract-pages');
-          await runExtract(files[0], rangesInput, status);
-        }
-      } catch (err: any) {
-        showError(err?.message ?? 'Something went wrong. Try again or use a different file.');
-        status.classList.add('is-hidden');
-      }
-    });
-  });
-</script>
 
 <style>
+  .guide-links {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-5) 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--space-3);
+  }
+  .guide-links a {
+    display: block;
+    padding: var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+    font-family: var(--font-ui);
+    font-weight: 600;
+    color: var(--fg);
+  }
+  .guide-links a:hover { border-color: var(--accent); text-decoration: none; }
+
   .tool-hero__inner {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-7);
     align-items: start;
   }
-  @media (max-width: 900px) { .tool-hero__inner { grid-template-columns: 1fr; } }
+  .tool-hero__inner > * { min-width: 0; }
+  @media (max-width: 900px) {
+    .tool-hero__inner { grid-template-columns: 1fr; gap: var(--space-5); }
+    .tool-hero__copy { display: contents; }
+    .tool-hero__copy > * { order: 1; }
+    #tool { order: 2; }
+    .tool-hero__copy > .tool-hero__lede { order: 3; }
+    .tool-hero__icon { display: none; }
+  }
 
   .tool-hero__icon {
     display: inline-flex;

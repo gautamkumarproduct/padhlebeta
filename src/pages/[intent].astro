@@ -1,0 +1,112 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import FAQ from '~/components/FAQ.astro';
+import ToolShell from '~/components/ToolShell.astro';
+import { getTool, site } from '~/data/site';
+import { intents, type Intent } from '~/data/intents';
+import { platforms } from '~/data/platforms';
+import { url, absUrl } from '~/lib/url';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = () =>
+  intents.map((i) => ({ params: { intent: i.slug }, props: { intent: i } }));
+
+const { intent: it } = Astro.props as { intent: Intent };
+const tool = getTool('dark-to-light')!;
+const hi = it.lang === 'hi-IN';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: it.h1,
+  description: it.description,
+  url: absUrl(`/${it.slug}/`),
+  inLanguage: it.lang,
+  applicationCategory: 'UtilitiesApplication',
+  operatingSystem: 'Any (web browser)',
+  isAccessibleForFree: true,
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+  isPartOf: { '@type': 'WebSite', name: site.name, url: absUrl('/') },
+};
+const related = intents.filter((o) => o.slug !== it.slug && o.lang === it.lang).slice(0, 8);
+---
+
+<BaseLayout title={it.title} rawTitle description={it.description} lang={it.lang} ogImage="/og/dark-to-light.png" jsonLd={jsonLd}>
+  <section class="section">
+    <div class="container">
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: it.linkText }]} />
+      <div class="intent-grid">
+        <div>
+          <span class="eyebrow">{it.eyebrow}</span>
+          <h1>{it.h1}</h1>
+          <p class="lede">{it.intro}</p>
+        </div>
+        <div id="tool">
+          <ToolShell tool={tool} defaults={it.defaults} runLabel={hi ? 'White PDF banayein' : 'Convert to white PDF'} />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container body">
+      {it.sections.map((sec) => (
+        <>
+          <h2>{sec.h2}</h2>
+          {sec.body.map((para) => <p>{para}</p>)}
+        </>
+      ))}
+
+      <h2>{hi ? 'Kis platform ke notes?' : 'Notes from a specific platform?'}</h2>
+      <p class="chips">
+        {platforms.map((p) => (
+          <a href={url(`/print/${p.slug}/`)}>{p.slug.endsWith('-notes') ? `${p.name} notes` : p.name}</a>
+        ))}
+      </p>
+    </div>
+  </section>
+
+  <FAQ items={it.faq} id={`${it.slug}-faq`} />
+
+  <section class="section section--tight">
+    <div class="container body">
+      <h2>{hi ? 'Aur bhi guides' : 'Related'}</h2>
+      <p class="chips">
+        {related.map((o) => <a href={url(`/${o.slug}/`)}>{o.linkText}</a>)}
+        <a href={url('/tools/pages-per-sheet/')}>Pages per sheet</a>
+        <a href={url('/tools/grayscale-pdf/')}>Grayscale PDF</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .intent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-7); align-items: start; }
+  .intent-grid > * { min-width: 0; }
+  .intent-grid h1 { font-size: clamp(2rem, 4.2vw, 3.25rem); }
+  @media (max-width: 900px) {
+    .intent-grid { grid-template-columns: 1fr; gap: var(--space-5); }
+    .intent-grid > div:first-child { display: contents; }
+    .intent-grid > div:first-child > * { order: 1; }
+    #tool { order: 2; }
+    .intent-grid > div:first-child > .lede { order: 3; }
+  }
+  .lede { font-family: var(--font-body); font-size: var(--text-lg); line-height: 1.6; color: var(--fg-muted); margin-top: var(--space-4); }
+  .body { max-width: 820px; }
+  .body h2 { margin: var(--space-7) 0 var(--space-3); }
+  .body h2:first-child { margin-top: 0; }
+  .body p { font-family: var(--font-body); font-size: 1.0625rem; line-height: 1.65; }
+  .chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .chips a {
+    padding: 0.4rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fg);
+    background: var(--bg-elev);
+  }
+  .chips a:hover { border-color: var(--accent); text-decoration: none; }
+</style>

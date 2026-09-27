@@ -119,8 +119,13 @@ const here = Astro.url.pathname;
   @media (max-width: 760px) {
     .site-header__cta { display: none; }
   }
-  @media (max-width: 520px) {
-    .site-nav__list { gap: var(--space-4); }
-    .site-nav a { font-size: 0.875rem; }
+  .site-nav a { white-space: nowrap; }
+  @media (max-width: 640px) {
+    /* Phones: brand + actions on row one, nav as a scrollable row two. */
+    .site-header__inner { flex-wrap: wrap; row-gap: 0; padding-block: var(--space-3) 0; }
+    .site-nav { order: 3; width: 100%; overflow-x: auto; scrollbar-width: none; }
+    .site-nav::-webkit-scrollbar { display: none; }
+    .site-nav__list { gap: var(--space-5); padding-bottom: 0.25rem; }
+    .site-nav a { font-size: 0.875rem; display: inline-block; }
   }
 </style>

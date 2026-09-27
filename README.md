@@ -2,13 +2,17 @@
 
 > Free PDF tools for Indian students. Print coaching notes without burning ink.
 
-Five browser-based PDF utilities built for NEET/JEE/Boards students. Every file stays on your device — no upload, no signup, no watermarks.
+The core product: convert black-background coaching notes (PW, Unacademy, ALLEN…) into white, A4 printable PDFs — right on the homepage. Plus 12 more browser-based PDF tools. Every file stays on your device — no upload, no signup, no watermarks.
 
 ## What's in here
 
-- **5 PDF tools** — dark → light, merge, compress, image → PDF, extract pages
+- **Dark → Light converter** on the homepage — auto-detects dark pages, cleans grey haze, A4 output, 1/2/4/6 slides per sheet, B&W option
+- **12 more tools** — pages per sheet, grayscale, merge, split, extract, organise (thumbnails), rotate, crop, page numbers, compress, PDF → JPG, image → PDF
+- **Focus timer** (Pomodoro) at `/focus-timer/`
+- **Print guides** per platform at `/print/<platform>/` (`src/data/platforms.ts`) — converter embedded, tuned defaults
+- **Search-intent pages** at `/<slug>/` (`src/data/intents.ts`) — e.g. black-background-pdf-to-white, invert-pdf-colors, Hindi/Hinglish guides
 - **Blog** with SEO-targeted study guides and PDF tips
-- **Programmatic landing pages** for high-intent queries (`/neet-notes-pdf`, `/jee-notes-pdf`)
+- **Exam pages** (`/neet-notes-pdf`, `/jee-notes-pdf`)
 - **Full structured data** (WebApplication, FAQPage, HowTo, SoftwareApplication, BreadcrumbList, BlogPosting)
 - **Privacy-first by design** — zero server-side processing
 - **Open source** under MIT
@@ -40,8 +44,13 @@ This repo is configured to auto-deploy on push to `main`.
 2. GitHub Actions builds and deploys to `https://gautamkumarproduct.github.io/padhlebeta/`
 3. To attach a custom domain (e.g. `padhlebeta.in`):
    - Add a `CNAME` file in `public/` containing the domain
-   - Point your DNS to GitHub Pages
-   - Enable "Enforce HTTPS" in repo Settings → Pages
+   - In `.github/workflows/deploy.yml`, set `SITE_URL=https://padhlebeta.in` and `BASE_PATH=/` on the build step
+   - Update `public/robots.txt`, then run `BASE_PATH=/ node scripts/generate-assets.mjs` (manifest paths)
+   - Point your DNS to GitHub Pages and enable "Enforce HTTPS" in repo Settings → Pages
+
+Search Console / Bing verification: set `PUBLIC_GOOGLE_SITE_VERIFICATION` / `PUBLIC_BING_SITE_VERIFICATION` as env vars on the build step.
+
+Regenerate OG images and icons after renaming tools: `node scripts/generate-assets.mjs`.
 
 ## Project structure
 

@@ -1,4 +1,5 @@
 ---
+import { url } from '~/lib/url';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import { site } from '~/data/site';
@@ -45,7 +46,7 @@ const jsonLd = {
 
       <div class="blog-grid">
         {posts.map((post) => (
-          <a class="blog-card-lg" href={`/blog/${post.id}/`}>
+          <a class="blog-card-lg" href={url(`/blog/${post.id}/`)}>
             <div class="blog-card-lg__meta">
               <span class="tag">{post.data.category}</span>
               <time datetime={post.data.pubDate.toISOString()}>

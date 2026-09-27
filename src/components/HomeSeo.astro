@@ -1,0 +1,102 @@
+---
+/**
+ * Homepage content block for the core query cluster: black/dark notes →
+ * white, A4 printable PDF. Links out to every intent, platform and exam page
+ * so the homepage is the hub of the internal link graph.
+ */
+import { intents } from '~/data/intents';
+import { platforms } from '~/data/platforms';
+import { url } from '~/lib/url';
+
+const exams = [
+  { label: 'NEET notes', href: '/neet-notes-pdf/' },
+  { label: 'JEE notes', href: '/jee-notes-pdf/' },
+];
+const layouts = [
+  { n: '1', use: 'Diagrams, small labels', paper: '100 sheets' },
+  { n: '2', use: 'Board notes & slides (best balance)', paper: '50 sheets' },
+  { n: '4', use: 'Revision booklets', paper: '25 sheets' },
+  { n: '6', use: 'Formula sheets, quick recap', paper: '17 sheets' },
+];
+---
+
+<section class="section section--soft home-seo">
+  <div class="container">
+    <div class="home-seo__grid">
+      <div>
+        <span class="eyebrow">Black to white, explained</span>
+        <h2>Why convert dark coaching notes before printing?</h2>
+        <p>
+          Most online coaching notes — PW class notes, Unacademy slides, ALLEN and Aakash digital lectures — are
+          exported from a dark digital board: white writing on a black page. On paper that means nearly the whole
+          sheet is covered in toner. Converting the PDF to a <strong>white background with dark text</strong> keeps
+          every word, formula and diagram, but prints only the writing.
+        </p>
+        <p>
+          Padhle Beta measures every page, inverts only the dark ones, cleans the leftover grey to pure white, and
+          fits the result onto <strong>A4</strong> — portrait or landscape, whichever makes your slides biggest.
+          The file you download is ready for your home printer or the Xerox shop at 100% scale.
+        </p>
+      </div>
+      <div>
+        <h3>A4 layouts for a 100-slide chapter</h3>
+        <table class="layout-table">
+          <thead><tr><th>Slides per A4</th><th>Best for</th><th>Paper</th></tr></thead>
+          <tbody>
+            {layouts.map((l) => (
+              <tr><td>{l.n}</td><td>{l.use}</td><td>{l.paper}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="home-seo__links">
+      <div>
+        <h3>Guides by platform</h3>
+        <p class="chips">
+          {platforms.map((p) => (
+            <a href={url(`/print/${p.slug}/`)}>{p.slug.endsWith('-notes') ? `Print ${p.name} notes` : p.name}</a>
+          ))}
+        </p>
+      </div>
+      <div>
+        <h3>However you search for it</h3>
+        <p class="chips">
+          {intents.map((i) => <a href={url(`/${i.slug}/`)} lang={i.lang}>{i.linkText}</a>)}
+          {exams.map((e) => <a href={url(e.href)}>{e.label}</a>)}
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .home-seo__grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: var(--space-8); align-items: start; }
+  .home-seo__grid > * { min-width: 0; }
+  @media (max-width: 900px) { .home-seo__grid { grid-template-columns: 1fr; gap: var(--space-6); } }
+  .home-seo h2 { margin: var(--space-3) 0 var(--space-4); }
+  .home-seo p { font-family: var(--font-body); font-size: 1.0625rem; line-height: 1.65; color: var(--fg); margin-bottom: var(--space-4); }
+  .home-seo h3 { font-size: 1.0625rem; margin-bottom: var(--space-3); }
+
+  .layout-table { width: 100%; border-collapse: collapse; font-family: var(--font-ui); font-size: 0.9375rem; background: var(--bg-elev); border-radius: var(--radius); overflow: hidden; }
+  .layout-table th, .layout-table td { text-align: left; padding: 0.65rem 0.8rem; border-bottom: 1px solid var(--border); }
+  .layout-table th { font-size: 0.8125rem; color: var(--fg-muted); font-weight: 700; }
+  .layout-table td:first-child { font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .layout-table td:last-child { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .home-seo__links { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-7); margin-top: var(--space-8); }
+  @media (max-width: 900px) { .home-seo__links { grid-template-columns: 1fr; } }
+  .chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .chips a {
+    padding: 0.4rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-family: var(--font-ui);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--fg);
+    background: var(--bg-elev);
+  }
+  .chips a:hover { border-color: var(--accent); text-decoration: none; }
+</style>

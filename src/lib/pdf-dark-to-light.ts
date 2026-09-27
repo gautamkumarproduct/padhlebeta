@@ -1,90 +1,57 @@
 /**
- * Dark PDF → Light PDF
+ * Dark PDF → Light PDF.
  *
- * Approach: render every page of the source PDF to a high-DPI canvas,
- * apply a per-pixel colour inversion, then embed each inverted canvas
- * as a JPEG into a brand-new PDF. The result preserves layout and
- * is far cheaper to print (white background, dark content).
+ * Renders each page, measures it, inverts dark pages (auto) or all pages,
+ * optionally whitens grey haze and drops colour, then rebuilds a PDF of
+ * JPEG pages. Optionally lays the result out N-up.
  *
- * Trade-off: the output is image-based and not text-searchable. For
- * printed coaching notes this is fine.
+ * Trade-off: output is image-based (not text-searchable). For printing
+ * coaching notes that is fine.
  */
 
-import { getPdfJs, getPdfLib, downloadBlob, progressBar } from './pdf-runtime';
+import { getPdfLib, forEachRenderedPage, canvasToBytes, downloadBlob, progressBar, pdfBlob, baseName, num, type ToolRunner } from './pdf-runtime';
+import { meanLuminance, transformPixels } from './pdf-pixels';
+import { nUp } from './pdf-pages-per-sheet';
 
-const TARGET_DPI = 144; // print-quality balance between sharpness and file size
+/** Pages darker than this (mean luminance 0–255) count as "dark". */
+const DARK_THRESHOLD = 110;
 
-export async function runDarkToLight(
-  file: File,
-  statusEl: HTMLElement,
-  downloadName?: string
-): Promise<void> {
+export const run: ToolRunner = async (files, opts, statusEl) => {
+  const file = files[0];
+  const dpi = num(opts.quality, 150);
+  const perSheet = num(opts.perSheet, 1);
+  const fitA4 = opts.paper !== 'original';
+  const invertAll = opts.mode === 'all';
+  const clean = opts.clean !== false;
+  const grayscale = opts.grayscale === true;
+
   statusEl.classList.remove('is-hidden');
   progressBar(statusEl, 0, 'Loading PDF…');
 
-  const pdfjs = await getPdfJs();
-  const { PDFDocument, rgb } = await getPdfLib();
-
-  const buf = await file.arrayBuffer();
-  const src = await pdfjs.getDocument({ data: buf }).promise;
+  const { PDFDocument } = await getPdfLib();
   const out = await PDFDocument.create();
+  let inverted = 0;
 
-  for (let i = 1; i <= src.numPages; i++) {
-    progressBar(statusEl, (i - 1) / src.numPages * 90, `Converting page ${i} of ${src.numPages}…`);
+  await forEachRenderedPage(await file.arrayBuffer(), dpi, async (pg, i, total) => {
+    progressBar(statusEl, (i / total) * (perSheet > 1 ? 80 : 92), `Converting page ${i + 1} of ${total}…`);
+    const img = pg.ctx.getImageData(0, 0, pg.canvas.width, pg.canvas.height);
+    const invert = invertAll || meanLuminance(img) < DARK_THRESHOLD;
+    if (invert) inverted++;
+    // Only whiten pages we inverted, so light pages with shaded boxes stay as designed.
+    transformPixels(img, { invert, grayscale, whitePoint: clean && invert ? 215 : 0 });
+    pg.ctx.putImageData(img, 0, 0);
+    const jpg = await out.embedJpg(await canvasToBytes(pg.canvas, 'image/jpeg', 0.85));
+    out.addPage([pg.widthPt, pg.heightPt]).drawImage(jpg, { x: 0, y: 0, width: pg.widthPt, height: pg.heightPt });
+  });
 
-    const page = await src.getPage(i);
-    const baseViewport = page.getViewport({ scale: 1 });
-    const scale = TARGET_DPI / 72; // PDF native is 72 DPI
-    const viewport = page.getViewport({ scale });
-
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.ceil(viewport.width);
-    canvas.height = Math.ceil(viewport.height);
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Could not get canvas context');
-
-    // Fill white first (PDF.js renders transparent background by default)
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    await page.render({ canvasContext: ctx, viewport, background: 'white' }).promise;
-
-    // Per-pixel colour inversion
-    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const d = img.data;
-    for (let p = 0; p < d.length; p += 4) {
-      // Skip fully-transparent pixels
-      if (d[p + 3] === 0) continue;
-      d[p] = 255 - d[p];
-      d[p + 1] = 255 - d[p + 1];
-      d[p + 2] = 255 - d[p + 2];
-    }
-    ctx.putImageData(img, 0, 0);
-
-    const blob: Blob | null = await new Promise((resolve) => canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.88));
-    if (!blob) throw new Error('Could not encode page');
-
-    const bytes = new Uint8Array(await blob.arrayBuffer());
-    const jpg = await out.embedJpg(bytes);
-
-    const newPage = out.addPage([baseViewport.width, baseViewport.height]);
-    newPage.drawImage(jpg, {
-      x: 0,
-      y: 0,
-      width: baseViewport.width,
-      height: baseViewport.height,
-    });
-
-    // Hint for accessibility / future-proofing (cosmetic — page has no text)
-    void rgb; // silence unused
-    page.cleanup();
+  progressBar(statusEl, 92, 'Saving PDF…');
+  let bytes = await out.save();
+  if (perSheet > 1 || fitA4) {
+    progressBar(statusEl, 94, perSheet > 1 ? `Placing ${perSheet} slides per A4 sheet…` : 'Fitting pages to A4…');
+    bytes = await nUp(bytes, perSheet, { border: perSheet > 1, marginMm: perSheet > 1 ? 8 : 6 });
   }
-
-  progressBar(statusEl, 95, 'Saving PDF…');
-  const outBytes = await out.save();
   progressBar(statusEl, 100, 'Done!');
-  downloadBlob(
-    new Blob([outBytes], { type: 'application/pdf' }),
-    downloadName ?? `padhlebeta-light-${file.name.replace(/\.pdf$/i, '')}.pdf`
-  );
-}
+  downloadBlob(pdfBlob(bytes), `${baseName(file)}-light.pdf`);
+  const total = out.getPageCount();
+  return `Done! Inverted ${inverted} of ${total} pages${perSheet > 1 ? `, ${perSheet} per A4 sheet` : fitA4 ? ', fitted to A4' : ''}. Your download has started.`;
+};

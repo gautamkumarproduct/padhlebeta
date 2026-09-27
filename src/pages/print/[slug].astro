@@ -1,0 +1,194 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import FAQ from '~/components/FAQ.astro';
+import ToolShell from '~/components/ToolShell.astro';
+import { getTool, site } from '~/data/site';
+import { platforms, type Platform } from '~/data/platforms';
+import { url, absUrl } from '~/lib/url';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = () =>
+  platforms.map((p) => ({ params: { slug: p.slug }, props: { platform: p } }));
+
+const { platform: p } = Astro.props as { platform: Platform };
+const tool = getTool('dark-to-light')!;
+const label = p.slug.endsWith('-notes') ? `${p.name} Notes` : p.name;
+const longTitle = `Print ${label} Without Wasting Ink – Free Dark to Light`;
+const title = longTitle.length <= 60 ? longTitle : `Print ${label} Without Wasting Ink`;
+const longDesc = `Convert ${p.fullName} dark PDFs to white, print-ready pages in seconds. For ${p.exams.slice(0, 2).join(' & ')} students. Free, no signup, nothing uploaded.`;
+const description = longDesc.length <= 158 ? longDesc : `Convert ${p.name} dark PDFs to white, A4 print-ready pages in seconds. Free, no signup, nothing uploaded.`;
+
+const steps = [
+  `Download your ${p.name} PDF to your phone or laptop.`,
+  'Choose it in the converter at the top of this page.',
+  `Keep the recommended settings (${p.defaults.perSheet} per sheet${p.defaults.grayscale ? ', black & white' : ''}) or adjust them.`,
+  'Click Convert — the light PDF downloads automatically.',
+  'Print the new file at 100% scale.',
+];
+
+const howToJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'HowTo',
+  name: `How to print ${p.fullName} notes without wasting ink`,
+  description,
+  totalTime: 'PT2M',
+  supply: [{ '@type': 'HowToSupply', name: `${p.name} PDF notes` }],
+  tool: [{ '@type': 'HowToTool', name: 'Padhle Beta Dark PDF to Light PDF converter' }],
+  step: steps.map((text, i) => ({ '@type': 'HowToStep', position: i + 1, name: text, text })),
+};
+
+const webPageJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: title,
+  description,
+  url: absUrl(`/print/${p.slug}/`),
+  about: { '@type': 'Thing', name: p.fullName, alternateName: p.aliases },
+  audience: { '@type': 'EducationalAudience', educationalRole: 'student' },
+  isPartOf: { '@type': 'WebSite', name: site.name, url: absUrl('/') },
+};
+
+const faq = [
+  ...p.faq,
+  {
+    q: `How much ink does converting ${p.name} notes save?`,
+    a: 'A dark page covers most of the sheet in toner; the converted page only prints the writing. For typical board-style notes that is roughly 50–70% less ink per page, and printing 2 or 4 per sheet cuts paper by half or more on top of that.',
+  },
+  {
+    q: 'Does it work on my phone?',
+    a: 'Yes. It runs in Chrome on Android and Safari on iPhone. Large PDFs (300+ pages) are faster on a laptop.',
+  },
+];
+
+const others = platforms.filter((o) => o.slug !== p.slug);
+---
+
+<BaseLayout title={title} rawTitle description={description} ogImage="/og/dark-to-light.png" jsonLd={[howToJsonLd, webPageJsonLd]}>
+  <section class="section print-hero">
+    <div class="container">
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Print guides', href: '/print/' }, { label: label }]} />
+      <div class="print-hero__grid">
+        <div>
+          <span class="eyebrow">{p.exams.join(' · ')}</span>
+          <h1>How to print {p.fullName} {p.slug.endsWith('-notes') ? 'notes' : ''} without wasting ink</h1>
+          <p class="lede">{p.intro}</p>
+          <p class="aka">Also searched as: {p.aliases.join(', ')}</p>
+        </div>
+        <div id="tool">
+          <ToolShell tool={tool} defaults={{ perSheet: p.defaults.perSheet, grayscale: p.defaults.grayscale }} runLabel="Convert to light PDF" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container prose-wrap">
+      <h2>What you’ll print from {p.name}</h2>
+      <div class="materials">
+        {p.materials.map((m) => (
+          <div class="material">
+            <h3>{m.title}</h3>
+            <p>{m.note}</p>
+          </div>
+        ))}
+      </div>
+
+      <h2>Recommended settings for {p.name} PDFs</h2>
+      <ul class="settings" role="list">
+        <li><strong>Which pages:</strong> Auto (only dark pages are inverted)</li>
+        <li><strong>Slides per sheet:</strong> {p.defaults.perSheet}</li>
+        <li><strong>Colour:</strong> {p.defaults.grayscale ? 'Black & white' : 'Keep colour'}</li>
+        <li><strong>Clean background:</strong> On</li>
+      </ul>
+      <p>{p.settingsWhy}</p>
+
+      <h2>Step by step</h2>
+      <ol class="howto">
+        {steps.map((s) => <li>{s}</li>)}
+      </ol>
+
+      <h2>Tips from students who print a lot</h2>
+      <ul>
+        {p.tips.map((t) => <li>{t}</li>)}
+      </ul>
+
+      <h2>Other free tools for your {p.name} notes</h2>
+      <p>
+        <a href={url('/tools/merge/')}>Merge</a> a chapter into one file,
+        <a href={url('/tools/organize-pdf/')}> remove promo pages</a>,
+        <a href={url('/tools/pages-per-sheet/')}> print 4 pages per sheet</a>,
+        <a href={url('/tools/add-page-numbers/')}> add page numbers</a>, or
+        <a href={url('/tools/compress/')}> compress</a> the result to share on WhatsApp.
+      </p>
+
+      <p class="disclaimer">
+        {site.name} is an independent tool and is not affiliated with, endorsed by, or sponsored by {p.fullName}.
+        All trademarks belong to their owners. We do not host or distribute any course material — the tool only
+        converts files already on your device.
+      </p>
+    </div>
+  </section>
+
+  <FAQ items={faq} id={`${p.slug}-faq`} />
+
+  <section class="section section--tight">
+    <div class="container">
+      <h2>Guides for other platforms</h2>
+      <ul class="other-links" role="list">
+        {others.map((o) => (
+          <li><a href={url(`/print/${o.slug}/`)}>{o.slug.endsWith('-notes') ? `${o.name} notes` : o.name}</a></li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .print-hero__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-7);
+    align-items: start;
+  }
+  .print-hero__grid > * { min-width: 0; }
+  .print-hero h1 { font-size: clamp(2rem, 4.2vw, 3.25rem); }
+  @media (max-width: 900px) {
+    .print-hero__grid { grid-template-columns: 1fr; gap: var(--space-5); }
+    .print-hero__grid > div:first-child { display: contents; }
+    .print-hero__grid > div:first-child > * { order: 1; }
+    #tool { order: 2; }
+    .print-hero__grid > div:first-child > .lede, .print-hero__grid > div:first-child > .aka { order: 3; }
+  }
+  .lede { font-family: var(--font-body); font-size: var(--text-lg); line-height: 1.6; color: var(--fg-muted); margin-top: var(--space-4); }
+  .aka { font-family: var(--font-ui); font-size: 0.8125rem; color: var(--fg-subtle); margin-top: var(--space-4); }
+
+  .prose-wrap { max-width: 820px; }
+  .prose-wrap h2 { margin: var(--space-8) 0 var(--space-4); }
+  .prose-wrap h2:first-child { margin-top: 0; }
+  .prose-wrap p, .prose-wrap li { font-family: var(--font-body); font-size: 1.0625rem; line-height: 1.65; color: var(--fg); }
+  .prose-wrap ul, .prose-wrap ol { padding-left: 1.25rem; display: grid; gap: 0.4rem; }
+  .prose-wrap a { color: var(--accent); font-weight: 600; }
+
+  .materials { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-3); }
+  .material { background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-5); }
+  .material h3 { font-size: 1rem; margin-bottom: var(--space-2); }
+  .material p { font-size: 0.9375rem !important; color: var(--fg-muted) !important; margin: 0; }
+
+  .settings { list-style: none; padding: 0 !important; }
+  .disclaimer { margin-top: var(--space-7); font-size: 0.875rem !important; color: var(--fg-muted) !important; }
+
+  .other-links { list-style: none; padding: 0; margin: var(--space-4) 0 0; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .other-links a {
+    display: inline-block;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--fg);
+    background: var(--bg-elev);
+  }
+  .other-links a:hover { border-color: var(--accent); text-decoration: none; }
+</style>

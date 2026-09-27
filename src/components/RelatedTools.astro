@@ -1,24 +1,30 @@
 ---
 import { tools } from '~/data/site';
+import { url } from '~/lib/url';
 
 export interface Props {
   currentSlug: string;
   limit?: number;
 }
 const { currentSlug, limit = 4 } = Astro.props;
-const related = tools.filter((t) => t.slug !== currentSlug).slice(0, limit);
+const current = tools.find((t) => t.slug === currentSlug);
+// Same-category tools first, then the rest — keeps the link graph topical.
+const related = [
+  ...tools.filter((t) => t.slug !== currentSlug && t.category === current?.category),
+  ...tools.filter((t) => t.slug !== currentSlug && t.category !== current?.category),
+].slice(0, limit);
 ---
 
 <section class="related-tools section section--tight" aria-labelledby="related-tools-heading">
   <div class="container">
     <header class="related-tools__head">
       <h2 id="related-tools-heading">Other tools you might need</h2>
-      <a href={'/tools/'} class="related-tools__all">All tools →</a>
+      <a href={url('/tools/')} class="related-tools__all">All tools →</a>
     </header>
     <div class="grid grid--2">
       {related.map((t) => (
-        <a href={`/tools/${t.slug}/`} class="card related-card">
-          <h3>{t.shortName}</h3>
+        <a href={url(`/tools/${t.slug}/`)} class="card related-card">
+          <h3>{t.name}</h3>
           <p>{t.description}</p>
         </a>
       ))}

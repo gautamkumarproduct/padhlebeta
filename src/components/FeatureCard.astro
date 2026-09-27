@@ -1,16 +1,17 @@
 ---
 import ToolIcon from './ToolIcon.astro';
+import { url } from '~/lib/url';
 
 export interface Props {
   href: string;
   title: string;
   description: string;
-  iconType?: 'dark-to-light' | 'merge' | 'compress' | 'image-to-pdf' | 'extract-pages';
+  iconType?: string;
 }
 const { href, title, description, iconType } = Astro.props;
 ---
 
-<a class="card feature-card" href={href}>
+<a class="card feature-card" href={url(href)}>
   {iconType && (
     <span class="card__icon" aria-hidden="true">
       <ToolIcon name={iconType} size={22} />

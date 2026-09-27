@@ -3,14 +3,16 @@ import BaseLayout from '~/layouts/BaseLayout.astro';
 import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import FeatureCard from '~/components/FeatureCard.astro';
 import FAQ from '~/components/FAQ.astro';
-import { site, tools } from '~/data/site';
+import { site, tools, getTool } from '~/data/site';
+import ToolShell from '~/components/ToolShell.astro';
+import { url, absUrl } from '~/lib/url';
 
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
   name: 'Free NEET Notes PDF Tools · ' + site.name,
   description: 'Print coaching PDFs for NEET without wasting ink. Free browser-based tools for Biology, Physics, and Chemistry notes.',
-  url: site.siteUrl + site.basePath + '/neet-notes-pdf/',
+  url: absUrl('/neet-notes-pdf/'),
 };
 
 const faq = [
@@ -34,7 +36,8 @@ const faq = [
 ---
 
 <BaseLayout
-  title="Free NEET Notes PDF Tools"
+  title="NEET Notes PDF – Print Black Notes as White A4 (Free)"
+  rawTitle
   description="Print NEET coaching notes cheaply. Convert dark slides to ink-saving light PDFs, merge chapters, compress for sharing — all free, all in your browser."
   jsonLd={jsonLd}
 >
@@ -51,6 +54,12 @@ const faq = [
           save ink and stay organised without uploading a single file.
         </p>
       </header>
+
+      <div class="exam-tool" id="tool">
+        <h2>Convert NEET notes from black to white (A4)</h2>
+        <ToolShell tool={getTool('dark-to-light')!} defaults={{ perSheet: '2' }} runLabel="Convert to white PDF" />
+      </div>
+
 
       <div class="grid grid--3">
         {tools.map((t) => (
@@ -105,6 +114,8 @@ const faq = [
 </BaseLayout>
 
 <style>
+  .exam-tool { max-width: 760px; margin: 0 auto var(--space-8); }
+  .exam-tool h2 { font-size: 1.375rem; margin-bottom: var(--space-4); text-align: center; }
   .page-head {
     max-width: 720px;
     margin: 0 auto var(--space-7);

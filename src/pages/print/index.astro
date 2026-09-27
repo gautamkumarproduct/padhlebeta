@@ -1,0 +1,61 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import { platforms } from '~/data/platforms';
+import { url, absUrl } from '~/lib/url';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'How to print coaching notes without wasting ink',
+  url: absUrl('/print/'),
+  mainEntity: {
+    '@type': 'ItemList',
+    itemListElement: platforms.map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: `How to print ${p.fullName} notes`,
+      url: absUrl(`/print/${p.slug}/`),
+    })),
+  },
+};
+---
+
+<BaseLayout
+  title="How to Print Coaching Notes (PW, Unacademy, Allen) Cheaply"
+  rawTitle
+  description="Step-by-step guides to print PW, Unacademy, Vedantu, ALLEN, Aakash and other coaching notes without wasting ink — with a free converter on every page."
+  jsonLd={jsonLd}
+>
+  <section class="section">
+    <div class="container">
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Print guides' }]} />
+      <header class="head">
+        <span class="eyebrow">Print guides</span>
+        <h1>Print your coaching notes without burning ink.</h1>
+        <p>Pick where your notes come from. Each guide has the converter built in, with settings tuned for that platform’s PDFs.</p>
+      </header>
+      <ul class="plist" role="list">
+        {platforms.map((p) => (
+          <li>
+            <a href={url(`/print/${p.slug}/`)} class="card">
+              <span class="tag">{p.exams.slice(0, 3).join(' · ')}</span>
+              <h2>{p.fullName}</h2>
+              <p>{p.intro.split('. ')[0]}.</p>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .head { max-width: 720px; margin: 0 auto var(--space-7); text-align: center; }
+  .head p { font-family: var(--font-body); font-size: 1.125rem; color: var(--fg-muted); margin-top: var(--space-3); }
+  .plist { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4); }
+  .plist a { display: block; height: 100%; color: inherit; }
+  .plist a:hover { text-decoration: none; }
+  .plist h2 { font-size: 1.25rem; margin: var(--space-3) 0 var(--space-2); }
+  .plist p { font-family: var(--font-body); color: var(--fg-muted); font-size: 0.9375rem; line-height: 1.55; }
+</style>

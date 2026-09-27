@@ -7,6 +7,12 @@ import ToolIcon from '~/components/ToolIcon.astro';
 import PrivacyDiagram from '~/components/PrivacyDiagram.astro';
 import { site, tools, type Tool } from '~/data/site';
 import { getCollection } from 'astro:content';
+import ToolShell from '~/components/ToolShell.astro';
+import HomeSeo from '~/components/HomeSeo.astro';
+import { getTool } from '~/data/site';
+import { url, absUrl } from '~/lib/url';
+
+const converter = getTool('dark-to-light')!;
 
 const posts = (await getCollection('blog', ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
@@ -14,28 +20,36 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft))
 
 const homeFaq = [
   {
+    q: 'How do I convert black background notes to a white PDF?',
+    a: 'Choose your PDF in the converter at the top of this page and click “Convert to white PDF”. Dark pages are turned into white pages with dark text, fitted to A4, and the new PDF downloads automatically. It takes a few seconds and works on phones too.',
+  },
+  {
+    q: 'How do I print PW notes without wasting ink?',
+    a: 'Convert the class-notes PDF to white here first, then print the converted file. Choose 2 slides per A4 sheet to also halve the paper. See the step-by-step PW guide for recommended settings.',
+  },
+  {
+    q: 'Will the converted notes be A4 size?',
+    a: 'Yes. By default every page is fitted and centred on A4 (portrait or landscape, whichever makes your pages biggest), so it prints at 100% without cropping. You can also keep the original page size.',
+  },
+  {
+    q: 'Can I print 2 or 4 slides on one page?',
+    a: 'Yes — pick 2, 4 or 6 slides per A4 sheet in the converter options. For white PDFs that do not need converting, use the Pages per Sheet tool.',
+  },
+  {
     q: 'Is Padhle Beta really free?',
-    a: 'Yes — completely free, no signup, no watermarks, no hidden limits. We will never charge for the core tools. (We may add an optional tip jar in future to keep the project alive.)',
+    a: 'Yes — completely free, no signup, no watermarks, no page limits.',
   },
   {
     q: 'Do my files get uploaded to a server?',
-    a: 'Never. Every tool runs in your browser using pdf-lib. Your PDFs are processed locally on your device. Open DevTools and watch the Network tab — you will see zero uploads.',
+    a: 'Never. Every tool runs in your browser. Your PDFs are processed on your own device — you can even turn off the internet after the page loads.',
   },
   {
     q: 'Will this work on my phone?',
-    a: 'Yes. The site is mobile-first and the tools work on modern mobile browsers including Chrome on Android and Safari on iOS.',
+    a: 'Yes. It works in Chrome on Android and Safari on iPhone. Very large PDFs (300+ pages) are faster on a laptop.',
   },
   {
-    q: 'Do I need to install anything?',
-    a: 'No installation, no extension. Open the tool page, drop your file, download the result. That is it.',
-  },
-  {
-    q: 'What file formats are supported?',
-    a: 'PDF in, PDF out for most tools. The image-to-PDF tool accepts JPG, PNG, and HEIC (iPhone) and outputs PDF.',
-  },
-  {
-    q: 'How is this different from other PDF tools?',
-    a: 'Three things: (1) it is built specifically for Indian students printing coaching notes, (2) every tool is genuinely free with no signup walls, and (3) there is no file upload — your notes stay on your device.',
+    q: 'How is this different from other dark-to-light converters?',
+    a: 'Auto mode only inverts dark pages (so white question pages stay white), a clean-up pass removes grey haze for a truly white background, output is A4 by default, and you get 13 other free PDF tools — with no sign-in and no uploads.',
   },
 ];
 
@@ -43,8 +57,8 @@ const orgJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: site.name,
-  url: site.siteUrl + site.basePath,
-  logo: site.siteUrl + site.basePath + '/favicon.svg',
+  url: absUrl('/'),
+  logo: absUrl('/icons/icon-512.png'),
   sameAs: [`https://github.com/${site.github.org}/${site.github.repo}`],
 };
 
@@ -52,7 +66,7 @@ const webAppJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: site.name,
-  url: site.siteUrl + site.basePath,
+  url: absUrl('/'),
   applicationCategory: 'UtilitiesApplication',
   operatingSystem: 'Any (browser-based)',
   description: site.description,
@@ -60,19 +74,14 @@ const webAppJsonLd = {
   featureList: tools.map((t) => t.name),
 };
 
-const breadcrumb = {
-  '@context': 'https://schema.org',
-  '@type': 'BreadcrumbList',
-  itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Home', item: site.siteUrl + site.basePath + '/' },
-  ],
-};
 ---
 
 <BaseLayout
-  title={site.name}
-  description={site.description}
-  jsonLd={[orgJsonLd, webAppJsonLd, breadcrumb]}
+  title="Convert Black Notes to White PDF – Print A4 Free | Padhle Beta"
+  rawTitle
+  description="Convert dark/black-background coaching notes (PW, Unacademy, Allen) to white, A4 printable PDF in seconds. Save up to 60% ink. Free, no signup, no upload."
+  ogImage="/og/home.png"
+  jsonLd={[orgJsonLd, webAppJsonLd]}
 >
   {/* HERO */}
   <section class="hero">
@@ -81,27 +90,24 @@ const breadcrumb = {
 
     <div class="container hero__grid">
       <div class="hero__copy">
-        <span class="eyebrow fade-up">Free forever · No signup · 100% in-browser</span>
+        <span class="eyebrow fade-up">Free forever · No signup · Nothing uploaded</span>
         <h1 class="fade-up fade-up--1">
-          Print coaching notes<br />
-          <span class="hero__highlight">without burning ink.</span>
+          Black notes to white PDF,<br />
+          <span class="hero__highlight">A4 &amp; ready to print.</span>
         </h1>
         <p class="hero__lede fade-up fade-up--2">
-          Convert dark lecture slides to ink-saving printables, merge chapters,
-          compress big files, and more — entirely in your browser.
-          Files never leave your device.
+          Convert dark-background coaching notes from PW, Unacademy, ALLEN, Vedantu and
+          any other platform into clean black-on-white, A4 printable pages. Save up to 60%
+          ink, fit 2–6 slides per sheet, and keep your files on your own device.
         </p>
-        <div class="hero__ctas fade-up fade-up--3">
-          <a href={site.basePath + '/tools/dark-to-light/'} class="btn btn--primary btn--lg">
-            Convert dark PDF →
-          </a>
-          <a href={site.basePath + '/tools/'} class="btn btn--ghost btn--lg">
-            Browse all tools
-          </a>
-        </div>
+        <ul class="hero__points fade-up fade-up--3" role="list">
+          <li>✓ Auto-detects dark pages — white pages stay as they are</li>
+          <li>✓ Fitted to A4, portrait or landscape, with clean margins</li>
+          <li>✓ Removes grey haze so the background prints pure white</li>
+        </ul>
         <div class="hero__stats fade-up fade-up--4">
           <div>
-            <span class="hero__stat-num" data-count="5">5</span>
+            <span class="hero__stat-num">{tools.length}</span>
             <span class="hero__stat-label">PDF tools</span>
           </div>
           <div>
@@ -115,57 +121,23 @@ const breadcrumb = {
         </div>
       </div>
 
-      <div class="hero__visual fade-up fade-up--2" aria-hidden="true">
-        <div class="hero__demo">
-          <div class="hero__demo-tab">
-            <span></span><span></span><span></span>
-            <span class="hero__demo-tab-label">padhlebeta.in</span>
-          </div>
-          <div class="hero__demo-body">
-            <div class="hero__demo-before">
-              <div class="hero__demo-slide">
-                <div class="hero__demo-slide-bar"></div>
-                <div class="hero__demo-slide-line" style="width: 70%"></div>
-                <div class="hero__demo-slide-line" style="width: 85%"></div>
-                <div class="hero__demo-slide-line" style="width: 60%"></div>
-                <div class="hero__demo-slide-line" style="width: 75%"></div>
-              </div>
-              <span class="hero__demo-tag">Dark slide</span>
-            </div>
-            <div class="hero__demo-arrow">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </div>
-            <div class="hero__demo-after">
-              <div class="hero__demo-slide hero__demo-slide--light">
-                <div class="hero__demo-slide-bar"></div>
-                <div class="hero__demo-slide-line" style="width: 70%"></div>
-                <div class="hero__demo-slide-line" style="width: 85%"></div>
-                <div class="hero__demo-slide-line" style="width: 60%"></div>
-                <div class="hero__demo-slide-line" style="width: 75%"></div>
-              </div>
-              <span class="hero__demo-tag hero__demo-tag--accent">Light, printable</span>
-            </div>
-          </div>
-          <div class="hero__demo-footer">
-            <span class="hero__demo-save">
-              <span class="hero__demo-save-dot"></span>
-              Saved ~₹720 in ink this year
-            </span>
-          </div>
-        </div>
+      <div class="hero__tool fade-up fade-up--2" id="convert">
+        <ToolShell tool={converter} runLabel="Convert to white PDF" />
       </div>
     </div>
   </section>
+
+  <HomeSeo />
 
   {/* TOOL CARDS */}
   <section class="section">
     <div class="container">
       <header class="section-head reveal">
-        <span class="eyebrow">All tools</span>
-        <h2>Everything you need<br/>to handle coaching PDFs.</h2>
+        <span class="eyebrow">More free PDF tools</span>
+        <h2>Everything else you need<br/>to print coaching notes.</h2>
         <p class="section-head__lede">
-          Five focused tools. Each one is a one-shot fix for a real student problem.
-          Pick what you need, get the file back in seconds.
+          {tools.length} focused tools — pages per sheet, merge, split, organise, crop, compress and more.
+          All free, all in your browser.
         </p>
       </header>
       <div class="grid grid--3">
@@ -194,7 +166,7 @@ const breadcrumb = {
         <li class="step">
           <span class="step__num">01</span>
           <h3>Pick a tool</h3>
-          <p>Choose from the five free tools above. Each one solves a single, specific problem with coaching notes.</p>
+          <p>Choose from the free tools above. Each one solves a single, specific problem with coaching notes.</p>
         </li>
         <li class="step">
           <span class="step__num">02</span>
@@ -374,7 +346,7 @@ const breadcrumb = {
 <style>
   .hero {
     position: relative;
-    padding-block: clamp(5rem, 10vw, 9rem);
+    padding-block: clamp(2.5rem, 8vw, 7rem);
     overflow: hidden;
     isolation: isolate;
   }
@@ -383,10 +355,17 @@ const breadcrumb = {
     display: grid;
     grid-template-columns: 1.1fr 1fr;
     gap: clamp(2rem, 5vw, 5rem);
-    align-items: center;
+    align-items: start;
     position: relative;
   }
-  @media (max-width: 960px) { .hero__grid { grid-template-columns: 1fr; } }
+  @media (max-width: 960px) {
+    .hero__grid { grid-template-columns: 1fr; gap: var(--space-5); }
+    /* Phones/tablets: put the converter right under the headline. */
+    .hero__copy { display: contents; }
+    .hero__copy > * { order: 1; }
+    .hero__tool { order: 2; }
+    .hero__copy > .hero__lede, .hero__copy > .hero__points, .hero__copy > .hero__stats { order: 3; }
+  }
 
   .hero__highlight {
     background: linear-gradient(135deg, var(--saffron-500) 0%, var(--saffron-700) 100%);
@@ -432,6 +411,9 @@ const breadcrumb = {
   }
 
   /* Hero visual — browser-tab demo */
+  .hero__grid > * { min-width: 0; }
+  .hero__tool { position: relative; z-index: 1; }
+  .hero__points { list-style: none; padding: 0; margin: var(--space-5) 0 0; display: grid; gap: 0.5rem; font-family: var(--font-ui); font-size: 0.9375rem; font-weight: 600; color: var(--fg); }
   .hero__visual { display: flex; justify-content: center; }
   .hero__demo {
     width: 100%;

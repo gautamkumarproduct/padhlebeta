@@ -1,0 +1,309 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import FAQ from '~/components/FAQ.astro';
+import { absUrl, url } from '~/lib/url';
+
+const faq = [
+  { q: 'What is the Pomodoro technique?', a: 'Study in focused blocks (usually 25 minutes), then take a short break (5 minutes). After four blocks, take a longer break (15–30 minutes). It keeps concentration high over long study days.' },
+  { q: 'What timer settings work best for JEE and NEET study?', a: 'Many aspirants use 50 minutes of study and 10 minutes of break for problem-solving, and 25/5 for theory revision. Pick a preset and adjust until it feels sustainable.' },
+  { q: 'Does the timer keep running if I switch tabs?', a: 'Yes. It tracks real clock time, so it stays accurate in the background and plays a chime when a block ends.' },
+  { q: 'Are my tasks saved?', a: 'Your task list and settings are saved in this browser only. Nothing is sent to any server.' },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Pomodoro Focus Timer for Students',
+  url: absUrl('/focus-timer/'),
+  applicationCategory: 'EducationalApplication',
+  operatingSystem: 'Any (web browser)',
+  isAccessibleForFree: true,
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+};
+---
+
+<BaseLayout
+  title="Pomodoro Timer for Students – Free Online Study Timer"
+  rawTitle
+  description="Free online Pomodoro focus timer for JEE, NEET and board exam study. 25/5 and 50/10 presets, custom durations, task list, chime alerts. No signup."
+  ogImage="/og/focus-timer.png"
+  jsonLd={jsonLd}
+>
+  <section class="section">
+    <div class="container narrow">
+      <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Focus timer' }]} />
+      <header class="head">
+        <span class="eyebrow">Pomodoro · Free</span>
+        <h1>Focus timer for long study days</h1>
+        <p>Study in focused blocks, rest on schedule. Built for JEE, NEET and board prep.</p>
+      </header>
+
+      <div class="timer" data-timer>
+        <div class="timer__modes" role="tablist" aria-label="Timer mode">
+          <button type="button" role="tab" data-mode="focus" aria-selected="true">Focus</button>
+          <button type="button" role="tab" data-mode="short" aria-selected="false">Short break</button>
+          <button type="button" role="tab" data-mode="long" aria-selected="false">Long break</button>
+        </div>
+        <div class="timer__clock" data-clock aria-live="off">25:00</div>
+        <p class="timer__round" data-round>Round 1 of 4</p>
+        <div class="timer__controls">
+          <button type="button" class="btn btn--primary btn--lg" data-start>Start</button>
+          <button type="button" class="btn btn--ghost btn--lg" data-reset>Reset</button>
+          <button type="button" class="btn btn--ghost btn--lg" data-skip>Skip</button>
+        </div>
+
+        <details class="timer__settings">
+          <summary>Settings</summary>
+          <div class="timer__presets">
+            <button type="button" class="btn btn--ghost" data-preset="25,5,15">25 / 5</button>
+            <button type="button" class="btn btn--ghost" data-preset="50,10,30">50 / 10</button>
+            <button type="button" class="btn btn--ghost" data-preset="90,15,30">90 / 15</button>
+          </div>
+          <div class="timer__fields">
+            <label>Focus (min) <input type="number" min="1" max="180" data-set="focus" /></label>
+            <label>Short break (min) <input type="number" min="1" max="60" data-set="short" /></label>
+            <label>Long break (min) <input type="number" min="1" max="90" data-set="long" /></label>
+            <label>Rounds before long break <input type="number" min="1" max="12" data-set="rounds" /></label>
+          </div>
+        </details>
+      </div>
+
+      <div class="tasks">
+        <h2>Today’s tasks</h2>
+        <form class="tasks__add" data-task-form>
+          <label class="sr-only" for="task-input">New task</label>
+          <input id="task-input" type="text" placeholder="e.g. Rotational motion — 20 PYQs" maxlength="120" required />
+          <button class="btn btn--primary" type="submit">Add</button>
+        </form>
+        <ul class="tasks__list" role="list" data-task-list></ul>
+      </div>
+
+      <div class="prose tips">
+        <h2>How to use a Pomodoro timer for exam prep</h2>
+        <p>Pick one task before you press Start — “Solve 20 PYQs from Rotation” beats “Study Physics”. Keep your phone in another room during focus blocks. Use breaks to stand up and drink water, not to scroll.</p>
+        <p>Studying from printed notes? <a href={url('/')}>Convert dark coaching notes to white A4 PDFs</a> first — paper notes mean fewer screen distractions.</p>
+      </div>
+    </div>
+  </section>
+
+  <FAQ items={faq} id="timer-faq" />
+</BaseLayout>
+
+<script>
+  type Mode = 'focus' | 'short' | 'long';
+  type Settings = { focus: number; short: number; long: number; rounds: number };
+  const KEY = 'pb-timer-settings';
+  const TASKS = 'pb-timer-tasks';
+
+  const load = <T,>(k: string, fallback: T): T => {
+    try { return JSON.parse(localStorage.getItem(k) ?? '') ?? fallback; } catch { return fallback; }
+  };
+  const save = (k: string, v: unknown) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+  const root = document.querySelector<HTMLElement>('[data-timer]')!;
+  const clock = root.querySelector<HTMLElement>('[data-clock]')!;
+  const roundEl = root.querySelector<HTMLElement>('[data-round]')!;
+  const startBtn = root.querySelector<HTMLButtonElement>('[data-start]')!;
+  const modeBtns = root.querySelectorAll<HTMLButtonElement>('[data-mode]');
+  const fields = root.querySelectorAll<HTMLInputElement>('[data-set]');
+
+  let settings: Settings = { focus: 25, short: 5, long: 15, rounds: 4, ...load<Partial<Settings>>(KEY, {}) };
+  let mode: Mode = 'focus';
+  let round = 1;
+  let remaining = settings.focus * 60;
+  let endAt: number | null = null;
+  let tick: number | undefined;
+
+  const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+
+  const pageTitle = document.title;
+  function render() {
+    clock.textContent = fmt(remaining);
+    // Live countdown in the tab only while running; keep the real title otherwise.
+    document.title = endAt ? `${fmt(remaining)} · ${mode === 'focus' ? 'Focus' : 'Break'} – Padhle Beta` : pageTitle;
+    roundEl.textContent = mode === 'focus' ? `Round ${round} of ${settings.rounds}` : mode === 'short' ? 'Short break' : 'Long break — well done';
+    modeBtns.forEach((b) => b.setAttribute('aria-selected', String(b.dataset.mode === mode)));
+    startBtn.textContent = endAt ? 'Pause' : 'Start';
+    root.dataset.mode = mode;
+  }
+
+  function chime() {
+    try {
+      const ctx = new AudioContext();
+      [0, 0.25, 0.5].forEach((t, i) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.frequency.value = [660, 880, 990][i];
+        g.gain.setValueAtTime(0.25, ctx.currentTime + t);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.4);
+        o.connect(g).connect(ctx.destination);
+        o.start(ctx.currentTime + t);
+        o.stop(ctx.currentTime + t + 0.45);
+      });
+    } catch {}
+  }
+
+  function setMode(m: Mode) {
+    mode = m;
+    remaining = settings[m] * 60;
+    stop();
+    render();
+  }
+
+  function stop() {
+    endAt = null;
+    window.clearInterval(tick);
+  }
+
+  function next() {
+    chime();
+    if (mode === 'focus') {
+      if (round >= settings.rounds) { setMode('long'); }
+      else { setMode('short'); }
+    } else {
+      if (mode === 'long') round = 1; else round++;
+      setMode('focus');
+    }
+  }
+
+  function start() {
+    endAt = Date.now() + remaining * 1000;
+    tick = window.setInterval(() => {
+      remaining = Math.max(0, Math.round((endAt! - Date.now()) / 1000));
+      if (remaining === 0) next(); else render();
+    }, 250);
+    render();
+  }
+
+  startBtn.addEventListener('click', () => (endAt ? (stop(), render()) : start()));
+  root.querySelector('[data-reset]')!.addEventListener('click', () => setMode(mode));
+  root.querySelector('[data-skip]')!.addEventListener('click', next);
+  modeBtns.forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode as Mode)));
+
+  function syncFields() { fields.forEach((f) => (f.value = String(settings[f.dataset.set as keyof Settings]))); }
+  fields.forEach((f) => f.addEventListener('change', () => {
+    const v = Math.max(1, Math.round(Number(f.value) || 1));
+    settings = { ...settings, [f.dataset.set!]: v };
+    save(KEY, settings);
+    if (!endAt) setMode(mode);
+  }));
+  root.querySelectorAll<HTMLButtonElement>('[data-preset]').forEach((b) => b.addEventListener('click', () => {
+    const [focus, short, long] = b.dataset.preset!.split(',').map(Number);
+    settings = { ...settings, focus, short, long };
+    save(KEY, settings);
+    syncFields();
+    setMode(mode);
+  }));
+
+  // Tasks
+  type Task = { text: string; done: boolean };
+  let tasks = load<Task[]>(TASKS, []);
+  const list = document.querySelector<HTMLUListElement>('[data-task-list]')!;
+  const form = document.querySelector<HTMLFormElement>('[data-task-form]')!;
+  function renderTasks() {
+    list.replaceChildren(...tasks.map((t, i) => {
+      const li = document.createElement('li');
+      li.className = t.done ? 'is-done' : '';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = t.done;
+      cb.setAttribute('aria-label', t.text);
+      cb.addEventListener('change', () => { t.done = cb.checked; save(TASKS, tasks); renderTasks(); });
+      const span = document.createElement('span');
+      span.textContent = t.text;
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.textContent = '✕';
+      del.setAttribute('aria-label', `Delete ${t.text}`);
+      del.addEventListener('click', () => { tasks.splice(i, 1); save(TASKS, tasks); renderTasks(); });
+      li.append(cb, span, del);
+      return li;
+    }));
+  }
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = form.querySelector('input')!;
+    const text = input.value.trim();
+    if (!text) return;
+    tasks.push({ text, done: false });
+    save(TASKS, tasks);
+    input.value = '';
+    renderTasks();
+  });
+
+  syncFields();
+  renderTasks();
+  setMode('focus');
+</script>
+
+<style>
+  .narrow { max-width: 760px; }
+  .head { text-align: center; margin-bottom: var(--space-7); }
+  .head p { font-family: var(--font-body); font-size: 1.125rem; color: var(--fg-muted); margin-top: var(--space-3); }
+
+  .timer {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-7) var(--space-5);
+    text-align: center;
+  }
+  .timer__modes { display: inline-flex; gap: 4px; background: var(--bg-soft); padding: 4px; border-radius: 999px; flex-wrap: wrap; justify-content: center; }
+  .timer__modes button {
+    border: 0;
+    background: transparent;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--fg-muted);
+    cursor: pointer;
+  }
+  .timer__modes button[aria-selected='true'] { background: var(--accent); color: var(--accent-fg); }
+  .timer__clock {
+    font-family: var(--font-ui);
+    font-weight: 800;
+    font-size: clamp(4rem, 18vw, 8rem);
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+    color: var(--fg);
+    margin: var(--space-5) 0 0;
+    line-height: 1;
+  }
+  .timer[data-mode='short'] .timer__clock, .timer[data-mode='long'] .timer__clock { color: var(--green-600); }
+  .timer__round { font-family: var(--font-ui); color: var(--fg-muted); margin: var(--space-3) 0 var(--space-5); }
+  .timer__controls { display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap; }
+  .timer__settings { margin-top: var(--space-6); text-align: left; }
+  .timer__settings summary { cursor: pointer; font-family: var(--font-ui); font-weight: 600; text-align: center; }
+  .timer__presets { display: flex; gap: var(--space-2); justify-content: center; margin: var(--space-4) 0; flex-wrap: wrap; }
+  .timer__fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-3); }
+  .timer__fields label { display: grid; gap: 0.3rem; font-family: var(--font-ui); font-size: 0.8125rem; font-weight: 600; color: var(--fg-muted); }
+  .timer__fields input, .tasks__add input {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    padding: 0.55rem 0.75rem;
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: 0.9375rem;
+    color: var(--fg);
+    min-width: 0;
+  }
+
+  .tasks { margin-top: var(--space-8); }
+  .tasks h2 { margin-bottom: var(--space-4); }
+  .tasks__add { display: flex; gap: var(--space-2); }
+  .tasks__add input { flex: 1; }
+  .tasks__list { list-style: none; padding: 0; margin: var(--space-4) 0 0; display: grid; gap: var(--space-2); }
+  .tasks__list :global(li) {
+    display: flex; align-items: center; gap: var(--space-3);
+    background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 0.6rem 0.8rem; font-family: var(--font-ui);
+  }
+  .tasks__list :global(li span) { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .tasks__list :global(li.is-done span) { text-decoration: line-through; color: var(--fg-muted); }
+  .tasks__list :global(li input) { width: 18px; height: 18px; accent-color: var(--accent); }
+  .tasks__list :global(li button) { border: 0; background: transparent; color: var(--fg-muted); cursor: pointer; font-size: 0.875rem; }
+  .tips { margin-top: var(--space-8); }
+</style>

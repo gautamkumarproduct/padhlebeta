@@ -1,5 +1,7 @@
 ---
 import { site, tools } from '~/data/site';
+import { platforms } from '~/data/platforms';
+import { intents } from '~/data/intents';
 const year = new Date().getFullYear();
 ---
 
@@ -14,7 +16,7 @@ const year = new Date().getFullYear();
         </svg>
         <strong>padhlebeta</strong>
       </div>
-      <p>Free PDF tools for Indian students. Print coaching notes without burning ink.</p>
+      <p>Convert black coaching notes to white, A4 printable PDFs — plus free PDF tools for Indian students.</p>
       <p class="site-footer__small">Files never leave your device. 100% browser-based. No accounts.</p>
     </div>
 
@@ -28,12 +30,26 @@ const year = new Date().getFullYear();
     </div>
 
     <div class="site-footer__col">
+      <h4>Print guides</h4>
+      <ul role="list">
+        {platforms.slice(0, 8).map((p) => (
+          <li><a href={`${site.basePath}/print/${p.slug}/`}>{p.slug.endsWith('-notes') ? `${p.name} notes` : p.name}</a></li>
+        ))}
+        {intents.slice(0, 4).map((i) => (
+          <li><a href={`${site.basePath}/${i.slug}/`}>{i.linkText}</a></li>
+        ))}
+        <li><a href={`${site.basePath}/print/`}>All guides →</a></li>
+      </ul>
+    </div>
+
+    <div class="site-footer__col">
       <h4>Resources</h4>
       <ul role="list">
+        <li><a href={`${site.basePath}/focus-timer/`}>Focus timer</a></li>
         <li><a href={`${site.basePath}/blog/`}>Blog</a></li>
         <li><a href={`${site.basePath}/about/`}>About</a></li>
         <li><a href={`${site.basePath}/contact/`}>Contact</a></li>
-        <li><a href="/rss.xml">RSS</a></li>
+        <li><a href={`${site.basePath}/rss.xml`}>RSS</a></li>
       </ul>
     </div>
 
@@ -49,7 +65,7 @@ const year = new Date().getFullYear();
 
   <div class="container site-footer__bottom">
     <span>© {year} {site.name}. Made for students, by students.</span>
-    <span>v0.1 · Open source</span>
+    <span>Not affiliated with any coaching platform · Open source</span>
   </div>
 </footer>
 
@@ -72,7 +88,7 @@ const year = new Date().getFullYear();
   }
   .site-footer__inner {
     display: grid;
-    grid-template-columns: 1.6fr repeat(3, 1fr);
+    grid-template-columns: 1.4fr repeat(4, 1fr);
     gap: var(--space-7);
     align-items: start;
   }

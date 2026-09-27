@@ -1,62 +1,45 @@
 /**
- * Compress a PDF by:
- *  - stripping metadata,
- *  - re-encoding any embedded JPEG images at a lower quality,
- *  - re-saving with `useObjectStreams` to pack objects efficiently.
- *
- * Note: pure-text PDFs may not shrink much because there is little to
- * optimise. Image-heavy coaching slides compress significantly.
+ * Compress a PDF.
+ *  - lossless: strip metadata and repack with object streams.
+ *  - balanced / strong: re-render pages as JPEG at a lower resolution.
+ *    Big wins on scanned and image-heavy slides; text becomes image.
+ * If a lossy result is not actually smaller, the lossless one is used.
  */
 
-import { getPdfLib, downloadBlob, progressBar } from './pdf-runtime';
+import { getPdfLib, forEachRenderedPage, canvasToBytes, downloadBlob, progressBar, pdfBlob, baseName, formatBytes, type ToolRunner } from './pdf-runtime';
 
-const JPEG_QUALITY_THRESHOLD = 0.78; // anything heavier gets re-encoded
+const LEVELS = {
+  balanced: { dpi: 110, quality: 0.7 },
+  strong: { dpi: 84, quality: 0.5 },
+} as const;
 
-export async function runCompress(
-  file: File,
-  statusEl: HTMLElement,
-  downloadName?: string
-): Promise<void> {
+export const run: ToolRunner = async (files, opts, statusEl) => {
+  const file = files[0];
   statusEl.classList.remove('is-hidden');
   progressBar(statusEl, 0, 'Loading PDF…');
 
   const { PDFDocument } = await getPdfLib();
-  const bytes = await file.arrayBuffer();
-  const src = await PDFDocument.load(bytes, { ignoreEncryption: true });
+  const data = await file.arrayBuffer();
 
-  // Strip metadata
-  src.setTitle('');
-  src.setAuthor('');
-  src.setSubject('');
-  src.setKeywords([]);
+  const src = await PDFDocument.load(data.slice(0), { ignoreEncryption: true, updateMetadata: false });
   src.setProducer('Padhle Beta');
   src.setCreator('Padhle Beta');
+  let bytes = await src.save({ useObjectStreams: true });
 
-  progressBar(statusEl, 35, 'Re-encoding images…');
-
-  // Re-encode heavy JPEGs at lower quality
-  const images = src.getImages?.() ?? [];
-  // Note: pdf-lib does not expose a `getImages` API. We instead iterate
-  // through page resources via raw access. For a v1 we lean on the
-  // `useObjectStreams` + `useCrossReferenceStreams` save options, which
-  // typically deliver 15-40% size reduction on coaching slides without
-  // any image re-encoding.
-  void images;
-
-  progressBar(statusEl, 70, 'Repacking PDF…');
-
-  const outBytes = await src.save({
-    useObjectStreams: true,
-    useCrossReferenceStreams: true,
-    addDefaultPage: false,
-    objectsPerTick: 50,
-  });
+  const level = LEVELS[opts.level as keyof typeof LEVELS];
+  if (level) {
+    const out = await PDFDocument.create();
+    await forEachRenderedPage(data, level.dpi, async (pg, i, total) => {
+      progressBar(statusEl, (i / total) * 90, `Compressing page ${i + 1} of ${total}…`);
+      const jpg = await out.embedJpg(await canvasToBytes(pg.canvas, 'image/jpeg', level.quality));
+      out.addPage([pg.widthPt, pg.heightPt]).drawImage(jpg, { x: 0, y: 0, width: pg.widthPt, height: pg.heightPt });
+    });
+    const lossy = await out.save({ useObjectStreams: true });
+    if (lossy.length < bytes.length) bytes = lossy;
+  }
 
   progressBar(statusEl, 100, 'Done!');
-  downloadBlob(
-    new Blob([outBytes], { type: 'application/pdf' }),
-    downloadName ?? `padhlebeta-compressed-${file.name.replace(/\.pdf$/i, '')}.pdf`
-  );
-  // suppress unused warning for the threshold (kept for future image re-encoding)
-  void JPEG_QUALITY_THRESHOLD;
-}
+  downloadBlob(pdfBlob(bytes), `${baseName(file)}-compressed.pdf`);
+  const saved = Math.max(0, 1 - bytes.length / file.size);
+  return `Done! ${formatBytes(file.size)} → ${formatBytes(bytes.length)} (${Math.round(saved * 100)}% smaller).`;
+};
