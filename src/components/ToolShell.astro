@@ -14,19 +14,38 @@ export interface Props {
   /** Override option defaults, e.g. { perSheet: '2' } on a landing page. */
   defaults?: Record<string, string | number | boolean>;
   runLabel?: string;
+  /** Run as soon as a file is chosen; options become an optional "settings" drawer. */
+  instant?: boolean;
+  /** Headline inside the drop zone (instant mode). */
+  dropTitle?: string;
 }
-const { tool, defaults = {}, runLabel } = Astro.props;
+const { tool, defaults = {}, runLabel, instant = false, dropTitle } = Astro.props;
 const accept = tool.accept === 'image' ? 'image/jpeg,image/png,image/webp,image/gif,image/bmp' : 'application/pdf,.pdf';
 const id = `tool-${tool.slug}`;
 const noun = tool.accept === 'image' ? 'images' : tool.multiple ? 'PDFs' : 'PDF';
 const valueOf = (name: string, fallback: unknown) => (name in defaults ? defaults[name] : fallback);
 ---
 
-<form class="tool-shell" data-tool={tool.slug} data-multiple={tool.multiple ? 'true' : 'false'} data-custom-ui={tool.customUi ? 'true' : 'false'}>
+<form class:list={['tool-shell', { 'tool-shell--instant': instant }]} data-tool={tool.slug} data-multiple={tool.multiple ? 'true' : 'false'} data-custom-ui={tool.customUi ? 'true' : 'false'} data-instant={instant ? 'true' : 'false'}>
   <div class="dropzone" data-drop>
     <input type="file" id={`${id}-file`} class="sr-only" accept={accept} multiple={tool.multiple} data-file-input />
+    {instant && (
+      <svg class="dropzone__icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 18v-6M9 14l3-3 3 3"/></svg>
+    )}
+    {instant && dropTitle && <p class="dropzone__title">{dropTitle}</p>}
     <label for={`${id}-file`} class="dropzone__button">Choose {noun}</label>
     <p>or drop {tool.multiple ? 'them' : 'it'} here · stays on your device</p>
+  </div>
+
+  <div class="tool-shell__result is-hidden" data-result role="status">
+    <div class="tool-shell__result-text">
+      <strong>✓ Your PDF is ready</strong>
+      <span data-result-msg>It has been downloaded.</span>
+    </div>
+    <div class="tool-shell__result-actions">
+      <button type="button" class="btn btn--primary" data-again>Download again</button>
+      <button type="button" class="btn btn--ghost" data-another>Convert another</button>
+    </div>
   </div>
 
   <ol class="filelist is-hidden" role="list" data-filelist></ol>
@@ -63,7 +82,7 @@ const valueOf = (name: string, fallback: unknown) => (name in defaults ? default
     };
     const basic = tool.options.filter((o) => !o.advanced);
     const advanced = tool.options.filter((o) => o.advanced);
-    return (
+    const fieldset = (
       <fieldset class="tool-shell__options">
         <legend class="sr-only">Options</legend>
         {basic.map(renderOpt)}
@@ -75,9 +94,18 @@ const valueOf = (name: string, fallback: unknown) => (name in defaults ? default
         )}
       </fieldset>
     );
+    return instant ? (
+      <details class="settings">
+        <summary>
+          <span>Print settings</span>
+          <span class="settings__hint">A4 · optional</span>
+        </summary>
+        {fieldset}
+      </details>
+    ) : fieldset;
   })()}
 
-  <div class="tool-shell__actions">
+  <div class:list={['tool-shell__actions', { 'is-hidden': instant }]} data-actions>
     <button type="submit" class="btn btn--primary btn--lg" data-run>{runLabel ?? `Run: ${tool.shortName}`}</button>
     <button type="reset" class="btn btn--ghost" data-reset>Reset</button>
   </div>
@@ -109,6 +137,25 @@ const valueOf = (name: string, fallback: unknown) => (name in defaults ? default
     const statusText = form.querySelector<HTMLElement>('[data-progress-text]')!;
     const errEl = form.querySelector<HTMLElement>('[data-error]')!;
     const runBtn = form.querySelector<HTMLButtonElement>('[data-run]')!;
+    const instant = form.dataset.instant === 'true';
+    const actions = form.querySelector<HTMLElement>('[data-actions]')!;
+    const result = form.querySelector<HTMLElement>('[data-result]')!;
+    const resultMsg = form.querySelector<HTMLElement>('[data-result-msg]')!;
+    const drop0 = form.querySelector<HTMLElement>('[data-drop]')!;
+    let last: { blob: Blob; filename: string } | null = null;
+
+    form.querySelector('[data-again]')!.addEventListener('click', () => {
+      if (!last) return;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(last.blob);
+      a.download = last.filename;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    });
+    form.querySelector('[data-another]')!.addEventListener('click', () => {
+      form.reset();
+      input.click();
+    });
 
     let files: File[] = [];
     let getPlan: (() => unknown) | null = null;
@@ -152,6 +199,13 @@ const valueOf = (name: string, fallback: unknown) => (name in defaults ? default
       clearError();
       files = multiple ? [...files, ...incoming] : incoming.slice(0, 1);
       renderList();
+      result.classList.add('is-hidden');
+      if (instant && files.length) {
+        actions.classList.remove('is-hidden');
+        runBtn.textContent = 'Convert again with these settings';
+        form.requestSubmit();
+        return;
+      }
       if (customUi && custom && files[0]) {
         custom.classList.remove('is-hidden');
         try {
@@ -177,6 +231,10 @@ const valueOf = (name: string, fallback: unknown) => (name in defaults ? default
 
     form.addEventListener('reset', () => {
       files = [];
+      last = null;
+      result.classList.add('is-hidden');
+      drop0.classList.remove('is-hidden');
+      if (instant) actions.classList.add('is-hidden');
       getPlan = null;
       renderList();
       custom?.classList.add('is-hidden');
@@ -197,10 +255,19 @@ const valueOf = (name: string, fallback: unknown) => (name in defaults ? default
       if (getPlan) opts.plan = JSON.stringify(getPlan());
 
       runBtn.disabled = true;
+      result.classList.add('is-hidden');
+      const onDownload = (e: Event) => { last = (e as CustomEvent).detail; };
+      window.addEventListener('pb:download', onDownload);
       try {
         const { run } = await runners[tool]();
         const message = await run(files, opts, status);
         if (message) statusText.textContent = message;
+        if (last) {
+          resultMsg.textContent = `${last.filename} has been downloaded. Open it and print at 100% scale.`;
+          result.classList.remove('is-hidden');
+          status.classList.add('is-hidden');
+          if (instant) drop0.classList.add('is-hidden');
+        }
         window.dispatchEvent(new CustomEvent('pb:tool-run', { detail: { tool } }));
       } catch (err: any) {
         const msg = String(err?.message ?? '');
@@ -211,6 +278,7 @@ const valueOf = (name: string, fallback: unknown) => (name in defaults ? default
         );
         status.classList.add('is-hidden');
       } finally {
+        window.removeEventListener('pb:download', onDownload);
         runBtn.disabled = false;
       }
     });
@@ -400,6 +468,27 @@ const valueOf = (name: string, fallback: unknown) => (name in defaults ? default
   .tool-shell__custom :global(.organizer__loading) { font-family: var(--font-ui); color: var(--fg-muted); }
 
   .tool-shell__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+
+  /* Instant mode: big friendly drop zone, settings tucked away */
+  .tool-shell--instant .dropzone { padding: var(--space-9) var(--space-5); border-width: 2.5px; border-color: color-mix(in srgb, var(--accent) 45%, var(--border-strong)); background: color-mix(in srgb, var(--accent) 5%, var(--bg-elev)); cursor: pointer; transition: transform 150ms ease, background 150ms ease; }
+  .tool-shell--instant .dropzone:hover { background: color-mix(in srgb, var(--accent) 9%, var(--bg-elev)); }
+  .tool-shell--instant .dropzone--active { transform: scale(1.01); }
+  .dropzone__icon { color: var(--accent); margin: 0 auto var(--space-3); display: block; }
+  .dropzone__title { font-family: var(--font-ui) !important; font-size: 1.25rem !important; font-weight: 800; color: var(--fg) !important; margin: 0 0 var(--space-4) !important; letter-spacing: -0.01em; }
+  .tool-shell--instant .dropzone__button { font-size: 1.125rem; padding: 0.95rem 2.2rem; box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 35%, transparent); }
+
+  .settings { border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-soft); }
+  .settings > summary { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); padding: 0.75rem 1rem; cursor: pointer; font-family: var(--font-ui); font-weight: 700; font-size: 0.9375rem; color: var(--fg); list-style: none; }
+  .settings > summary::-webkit-details-marker { display: none; }
+  .settings > summary::after { content: '▾'; color: var(--fg-muted); }
+  .settings[open] > summary::after { content: '▴'; }
+  .settings__hint { margin-left: auto; font-weight: 500; font-size: 0.8125rem; color: var(--fg-muted); }
+  .settings .tool-shell__options { border: 0; border-top: 1px solid var(--border); border-radius: 0 0 var(--radius) var(--radius); }
+
+  .tool-shell__result { display: grid; gap: var(--space-4); padding: var(--space-5); border-radius: var(--radius-lg); background: color-mix(in srgb, var(--green-600) 10%, var(--bg-elev)); border: 1px solid color-mix(in srgb, var(--green-600) 35%, transparent); }
+  .tool-shell__result-text strong { display: block; font-family: var(--font-ui); font-size: 1.125rem; color: var(--fg); }
+  .tool-shell__result-text span { display: block; font-family: var(--font-ui); font-size: 0.9375rem; color: var(--fg-muted); margin-top: 0.25rem; overflow-wrap: anywhere; }
+  .tool-shell__result-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
   .tool-shell__actions [data-run]:disabled { opacity: 0.6; cursor: progress; }
 
   .tool-shell__status {

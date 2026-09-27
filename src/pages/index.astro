@@ -2,8 +2,6 @@
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import FeatureCard from '~/components/FeatureCard.astro';
 import FAQ from '~/components/FAQ.astro';
-import ToolIcon from '~/components/ToolIcon.astro';
-import PrivacyDiagram from '~/components/PrivacyDiagram.astro';
 import { site, tools, type Tool } from '~/data/site';
 import { getCollection } from 'astro:content';
 import ToolShell from '~/components/ToolShell.astro';
@@ -82,678 +80,297 @@ const webAppJsonLd = {
   ogImage="/og/home.png"
   jsonLd={[orgJsonLd, webAppJsonLd]}
 >
-  {/* HERO */}
-  <section class="hero">
-    <div class="container hero__grid">
-      <div class="hero__copy">
-        <p class="hero__badge fade-up">
-          <span class="hero__badge-dot" aria-hidden="true"></span>
-          Free for every student · No signup
-        </p>
-        <h1 class="hero__title fade-up fade-up--1">
-          Black notes to white PDF,
-          <span class="hero__accent">A4 &amp; ready to print.</span>
-        </h1>
-        <p class="hero__lede fade-up fade-up--2">
-          Choose the dark-background PDF from PW, Unacademy, ALLEN or any coaching app.
-          In a few seconds you get clean black-on-white A4 pages — ready for your printer or the Xerox shop.
-        </p>
+  {/* HERO — one job: drop a PDF, get a printable one */}
+  <section class="hero" id="convert">
+    <div class="container hero__inner">
+      <p class="pill">
+        <span class="pill__dot" aria-hidden="true"></span>
+        100% free · No signup · Works on your phone
+      </p>
+      <h1 class="hero__title">
+        Black notes to white PDF.
+        <span class="hero__accent">A4 &amp; ready to print.</span>
+      </h1>
+      <p class="hero__sub">
+        Drop your PW, Unacademy or ALLEN notes. Every black page turns white, fits A4, and downloads in seconds.
+      </p>
 
-        <figure class="compare fade-up fade-up--3" aria-label="Example: a dark lecture slide converted to a white A4 page">
-          <div class="compare__item">
-            <div class="compare__dark" aria-hidden="true">
-              <span class="compare__h"></span>
-              <span class="compare__l compare__l--y" style="width:78%"></span>
-              <span class="compare__l" style="width:64%"></span>
-              <span class="compare__l compare__l--p" style="width:70%"></span>
-              <span class="compare__l" style="width:52%"></span>
-            </div>
-            <figcaption>Your coaching PDF</figcaption>
-          </div>
-          <svg class="compare__arrow" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          <div class="compare__item">
-            <div class="compare__a4" aria-hidden="true">
-              <div class="compare__slide">
-                <span class="compare__h"></span>
-                <span class="compare__l compare__l--y" style="width:78%"></span>
-                <span class="compare__l" style="width:64%"></span>
-                <span class="compare__l compare__l--p" style="width:70%"></span>
-                <span class="compare__l" style="width:52%"></span>
-              </div>
-              <div class="compare__slide">
-                <span class="compare__h"></span>
-                <span class="compare__l" style="width:70%"></span>
-                <span class="compare__l compare__l--y" style="width:58%"></span>
-                <span class="compare__l" style="width:74%"></span>
-              </div>
-            </div>
-            <figcaption>White A4, 2 slides per page</figcaption>
-          </div>
-        </figure>
-
-        <ul class="trust fade-up fade-up--4" role="list">
-          <li>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-            <div><strong>Stays on your device</strong><span>Converted in your browser. Nothing is uploaded.</span></div>
-          </li>
-          <li>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg>
-            <div><strong>Prints like normal notes</strong><span>Pure white background, sharp text, A4 margins.</span></div>
-          </li>
-          <li>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-            <div><strong>No catch</strong><span>No login, no watermark, no page limit.</span></div>
-          </li>
-        </ul>
+      <div class="hero__tool">
+        <ToolShell tool={converter} instant dropTitle="Drop your dark notes PDF here" runLabel="Convert again" />
       </div>
 
-      <div class="hero__tool fade-up fade-up--2" id="convert">
-        <div class="converter">
-          <div class="converter__head">
-            <h2 class="converter__title">Convert your notes</h2>
-            <ol class="converter__steps" role="list">
-              <li><span>1</span>Choose PDF</li>
-              <li><span>2</span>Convert</li>
-              <li><span>3</span>Print</li>
-            </ol>
+      <ul class="assure" role="list">
+        <li><span aria-hidden="true">🔒</span> Never uploaded — stays on your device</li>
+        <li><span aria-hidden="true">🖨️</span> A4, prints like normal notes</li>
+        <li><span aria-hidden="true">⚡</span> Ready in seconds</li>
+      </ul>
+    </div>
+  </section>
+
+  {/* BEFORE / AFTER */}
+  <section class="section compare-section">
+    <div class="container">
+      <header class="center-head">
+        <span class="eyebrow">See the difference</span>
+        <h2>Same notes. A fraction of the ink.</h2>
+        <p>Drag the slider. This is exactly what the converter does to your pages.</p>
+      </header>
+
+      <div class="ba" data-ba style="--pos: 50%">
+        <div class="ba__layer ba__layer--after" aria-hidden="true">
+          <div class="board">
+            <div class="board__title">Rotational Motion</div>
+            <div class="board__row"><span class="y">τ = I α</span><span class="p">L = I ω</span></div>
+            <div class="board__line">Moment of inertia (ring): <span class="y">I = MR²</span></div>
+            <div class="board__line">Disc: <span class="y">I = ½ MR²</span> &nbsp; Rod (centre): <span class="y">I = ML²/12</span></div>
+            <svg class="board__fig" viewBox="0 0 120 80" aria-hidden="true"><circle cx="60" cy="40" r="28" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M60 40 L88 40" stroke="#ffd43b" stroke-width="2.5"/><path d="M30 18 A36 36 0 0 1 90 18" fill="none" stroke="#ff8cc6" stroke-width="2.5"/><path d="M90 18 l-8 -1 m8 1 l-3 7" stroke="#ff8cc6" stroke-width="2.5" fill="none"/></svg>
+            <div class="board__note p">★ If τ<sub>ext</sub> = 0 → L is conserved</div>
           </div>
-          <ToolShell tool={converter} runLabel="Convert to white PDF" />
         </div>
-        <p class="hero__works">Works with notes from PW · Unacademy · ALLEN · Vedantu · Aakash · any dark PDF</p>
+        <div class="ba__layer ba__layer--before" aria-hidden="true">
+          <div class="board">
+            <div class="board__title">Rotational Motion</div>
+            <div class="board__row"><span class="y">τ = I α</span><span class="p">L = I ω</span></div>
+            <div class="board__line">Moment of inertia (ring): <span class="y">I = MR²</span></div>
+            <div class="board__line">Disc: <span class="y">I = ½ MR²</span> &nbsp; Rod (centre): <span class="y">I = ML²/12</span></div>
+            <svg class="board__fig" viewBox="0 0 120 80" aria-hidden="true"><circle cx="60" cy="40" r="28" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M60 40 L88 40" stroke="#ffd43b" stroke-width="2.5"/><path d="M30 18 A36 36 0 0 1 90 18" fill="none" stroke="#ff8cc6" stroke-width="2.5"/><path d="M90 18 l-8 -1 m8 1 l-3 7" stroke="#ff8cc6" stroke-width="2.5" fill="none"/></svg>
+            <div class="board__note p">★ If τ<sub>ext</sub> = 0 → L is conserved</div>
+          </div>
+        </div>
+        <span class="ba__tag ba__tag--l">Before · coaching PDF</span>
+        <span class="ba__tag ba__tag--r">After · print-ready</span>
+        <div class="ba__handle" aria-hidden="true"><span>⟷</span></div>
+        <input class="ba__range" type="range" min="0" max="100" value="50" aria-label="Compare before and after" data-ba-range />
       </div>
+    </div>
+  </section>
+
+  {/* 3 STEPS */}
+  <section class="section section--soft">
+    <div class="container">
+      <header class="center-head">
+        <span class="eyebrow">How it works</span>
+        <h2>Three steps. No learning curve.</h2>
+      </header>
+      <ol class="steps3" role="list">
+        <li>
+          <span class="steps3__n">1</span>
+          <h3>Download your notes</h3>
+          <p>Save the notes PDF from your coaching app or website to your phone or laptop.</p>
+        </li>
+        <li>
+          <span class="steps3__n">2</span>
+          <h3>Drop it above</h3>
+          <p>Black pages become white with dark writing. White pages stay as they are.</p>
+        </li>
+        <li>
+          <span class="steps3__n">3</span>
+          <h3>Print</h3>
+          <p>Print at home or send to the Xerox shop. Ask for A4 at 100% scale.</p>
+        </li>
+      </ol>
+      <p class="center-cta"><a href="#convert" class="btn btn--primary btn--lg">Convert my notes — it’s free</a></p>
     </div>
   </section>
 
   <HomeSeo />
 
-  {/* TOOL CARDS */}
+  {/* MORE TOOLS */}
   <section class="section">
     <div class="container">
-      <header class="section-head reveal">
-        <span class="eyebrow">More free PDF tools</span>
-        <h2>Everything else you need<br/>to print coaching notes.</h2>
-        <p class="section-head__lede">
-          {tools.length} focused tools — pages per sheet, merge, split, organise, crop, compress and more.
-          All free, all in your browser.
-        </p>
+      <header class="center-head">
+        <span class="eyebrow">Also free</span>
+        <h2>Other tools for your notes</h2>
       </header>
-      <div class="grid grid--3">
-        {tools.map((t: Tool, i: number) => (
-          <div class={`reveal reveal--${(i % 5) + 1}`}>
-            <FeatureCard
-              href={`${site.basePath}/tools/${t.slug}/`}
-              title={t.name}
-              description={t.description}
-              iconType={t.slug}
-            />
-          </div>
+      <ul class="toolchips" role="list">
+        {tools.filter((t) => t.slug !== 'dark-to-light').map((t) => (
+          <li>
+            <a href={url(`/tools/${t.slug}/`)}>
+              <strong>{t.name}</strong>
+              <span>{t.description}</span>
+            </a>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   </section>
 
-  {/* HOW IT WORKS */}
-  <section class="section section--soft">
-    <div class="container">
-      <header class="section-head reveal">
-        <span class="eyebrow">How it works</span>
-        <h2>From dark slides to printed notes<br/>in under a minute.</h2>
-      </header>
-      <ol class="steps reveal" role="list">
-        <li class="step">
-          <span class="step__num">01</span>
-          <h3>Choose your PDF</h3>
-          <p>Download the notes PDF from your coaching app, then choose it above. Phones and laptops both work.</p>
-        </li>
-        <li class="step">
-          <span class="step__num">02</span>
-          <h3>We make it print-ready</h3>
-          <p>Dark pages become white with dark text. Pages that are already white are left alone. Everything is fitted to A4.</p>
-        </li>
-        <li class="step">
-          <span class="step__num">03</span>
-          <h3>Print or share</h3>
-          <p>The new PDF downloads straight away. Print it at home, or send it to the Xerox shop at 100% scale.</p>
-        </li>
-      </ol>
-    </div>
-  </section>
-
-  {/* PRIVACY PROMISE */}
-  <section class="section privacy-section">
-    <div class="container privacy">
-      <div class="reveal">
-        <span class="eyebrow">Privacy first</span>
-        <h2>Your notes never leave your browser.</h2>
-        <p class="privacy__lede">
-          Padhle Beta is built around a single privacy promise: every PDF you process stays on your device.
-          Open your browser's DevTools, switch to the Network tab, and run any tool. You will see zero uploads.
-        </p>
-        <ul role="list" class="privacy__list">
-          <li><strong>No accounts.</strong> No email, no Google sign-in, no phone number.</li>
-          <li><strong>No analytics on your files.</strong> We never see what you upload — we cannot, by design.</li>
-          <li><strong>No ads.</strong> No third-party trackers, no retargeting pixels, no nonsense.</li>
-          <li><strong>Open source.</strong> Every line of code lives on GitHub. Audit it yourself.</li>
-        </ul>
-        <a href={`${site.basePath}/privacy/`} class="btn btn--ghost">Read the privacy policy →</a>
-      </div>
-      <div class="privacy__visual reveal">
-        <PrivacyDiagram />
-      </div>
-    </div>
-  </section>
-
-  {/* WHY PADHLE BETA */}
-  <section class="section">
-    <div class="container">
-      <header class="section-head reveal">
-        <span class="eyebrow">Why Padhle Beta</span>
-        <h2>Built for Indian students,<br/>not generic PDF users.</h2>
-      </header>
-
-      <div class="comparison reveal">
-        <div class="comparison__col">
-          <h3>Other PDF tools</h3>
-          <ul role="list">
-            <li>Upload your file to a server</li>
-            <li>Force a signup before download</li>
-            <li>Stamp your file with a watermark</li>
-            <li>Slow, ad-cluttered interface</li>
-            <li>Made for office workers in 2014</li>
-          </ul>
-        </div>
-        <div class="comparison__col comparison__col--us">
-          <h3>Padhle Beta</h3>
-          <ul role="list">
-            <li>Everything runs in your browser. Zero uploads.</li>
-            <li>No signup, ever. Open and use.</li>
-            <li>No watermark, no branding, no nonsense</li>
-            <li>Fast, mobile-first, clean UI</li>
-            <li>Made for NEET/JEE students printing coaching notes</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  {/* BLOG TEASER */}
-  <section class="section section--soft">
-    <div class="container">
-      <header class="section-head section-head--row reveal">
-        <div>
-          <span class="eyebrow">From the blog</span>
-          <h2>Tips, guides, and study strategies.</h2>
-        </div>
-        <a href={`${site.basePath}/blog/`} class="btn btn--ghost">All posts →</a>
-      </header>
-      <div class="grid grid--3">
-        {posts.map((post, i) => (
-          <a class={`card blog-card reveal reveal--${i + 1}`} href={`${site.basePath}/blog/${post.id}/`}>
-            <span class="tag">{post.data.category}</span>
-            <h3>{post.data.title}</h3>
-            <p>{post.data.description}</p>
-            <span class="blog-card__meta">
-              <time datetime={post.data.pubDate.toISOString()}>
-                {post.data.pubDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-              </time>
-              <span>· 5 min read</span>
-            </span>
-          </a>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  {/* HOME FAQ */}
   <FAQ items={homeFaq} id="home-faq" />
-
-  {/* NEWSLETTER + DONATE */}
-  <section class="section cta-section">
-    <div class="atmos-blob atmos-blob--1" aria-hidden="true"></div>
-    <div class="atmos-blob atmos-blob--2" aria-hidden="true"></div>
-    <div class="container cta">
-      <div class="reveal">
-        <h2>Like the tools?<br/>Help us keep them free.</h2>
-        <p>
-          Padhle Beta is built and hosted on a student budget. If these tools saved you ink or money,
-          consider chipping in for server time or just sharing the site with a friend.
-        </p>
-      </div>
-      <div class="cta__actions reveal">
-        <a href={`${site.basePath}/contact/`} class="btn btn--primary btn--lg">Share feedback</a>
-        <a href={`https://github.com/${site.github.org}/${site.github.repo}`} class="btn btn--ghost btn--lg" rel="noopener">★ Star on GitHub</a>
-      </div>
-    </div>
-  </section>
 </BaseLayout>
 
 <script>
-  // Scroll-triggered reveal — uses IntersectionObserver, runs once.
-  const reveals = document.querySelectorAll<HTMLElement>('.reveal');
-  if ('IntersectionObserver' in window) {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          io.unobserve(entry.target);
-        }
-      });
-    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.05 });
-    reveals.forEach((el) => io.observe(el));
-  } else {
-    // Fallback for ancient browsers
-    reveals.forEach((el) => el.classList.add('is-visible'));
-  }
+  document.querySelectorAll<HTMLElement>('[data-ba]').forEach((ba) => {
+    const range = ba.querySelector<HTMLInputElement>('[data-ba-range]')!;
+    const set = () => ba.style.setProperty('--pos', `${range.value}%`);
+    range.addEventListener('input', set);
+    // Gentle hint animation the first time it scrolls into view.
+    const io = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      io.disconnect();
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const frames = [50, 70, 30, 50];
+      let i = 0;
+      const step = () => { if (i >= frames.length) return; range.value = String(frames[i++]); set(); setTimeout(step, 450); };
+      setTimeout(step, 300);
+    }, { threshold: 0.6 });
+    io.observe(ba);
+  });
 </script>
 
 <style>
+  /* ---------- Hero ---------- */
   .hero {
-    position: relative;
-    padding-block: clamp(2rem, 6vw, 5rem) clamp(3rem, 7vw, 6rem);
+    padding-block: clamp(2.25rem, 6vw, 4.5rem) clamp(2.5rem, 6vw, 4.5rem);
     background:
-      radial-gradient(60% 50% at 85% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%),
+      radial-gradient(50% 60% at 15% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%),
+      radial-gradient(45% 55% at 90% 10%, color-mix(in srgb, #3b82f6 12%, transparent), transparent 70%),
       var(--bg);
     border-bottom: 1px solid var(--border);
   }
-  .hero__grid {
-    display: grid;
-    grid-template-columns: 1.05fr 1fr;
-    gap: clamp(2rem, 5vw, 4.5rem);
-    align-items: start;
+  .hero__inner { max-width: 780px; text-align: center; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    margin: 0 0 var(--space-5); padding: 0.4rem 0.9rem;
+    border: 1px solid var(--border); border-radius: 999px; background: var(--bg-elev);
+    font-family: var(--font-ui); font-size: 0.8125rem; font-weight: 700; color: var(--fg-muted);
+    box-shadow: var(--shadow-xs);
   }
-  .hero__grid > * { min-width: 0; }
-  @media (max-width: 960px) {
-    .hero__grid { grid-template-columns: 1fr; gap: var(--space-5); }
-    /* Phones/tablets: converter right under the headline. */
-    .hero__copy { display: contents; }
-    .hero__copy > * { order: 1; }
-    .hero__tool { order: 2; }
-    .hero__copy > .hero__lede, .hero__copy > .compare, .hero__copy > .trust { order: 3; }
-  }
-
-  .hero__badge {
-    display: inline-flex;
-    justify-self: start;
-    align-items: center;
-    gap: 0.5rem;
-    margin: 0 0 var(--space-5);
-    padding: 0.35rem 0.8rem;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--bg-elev);
-    font-family: var(--font-ui);
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--fg-muted);
-  }
-  .hero__badge-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green-600); box-shadow: 0 0 0 3px color-mix(in srgb, var(--green-600) 20%, transparent); }
-
+  .pill__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-600); box-shadow: 0 0 0 3px color-mix(in srgb, var(--green-600) 22%, transparent); }
   .hero__title {
-    font-size: clamp(2.25rem, 4.6vw, 3.75rem);
-    line-height: 1.05;
-    letter-spacing: -0.035em;
+    font-size: clamp(2.2rem, 5.4vw, 4rem);
+    line-height: 1.04;
+    letter-spacing: -0.04em;
     margin: 0;
     text-wrap: balance;
   }
-  .hero__accent { display: block; color: var(--accent); }
-
-  .hero__lede {
-    font-family: var(--font-ui);
-    font-size: 1.125rem;
-    line-height: 1.6;
-    color: var(--fg-muted);
-    max-width: 34rem;
-    margin: var(--space-5) 0 0;
-  }
-
-  /* Before → after preview */
-  .compare {
-    display: flex;
-    align-items: center;
-    gap: var(--space-4);
-    margin: var(--space-7) 0 0;
-    padding: var(--space-5);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    background: var(--bg-soft);
-    max-width: 34rem;
-  }
-  .compare__item { flex: 1; display: grid; gap: 0.6rem; justify-items: center; margin: 0; }
-  .compare__item figcaption { font-family: var(--font-ui); font-size: 0.8125rem; font-weight: 600; color: var(--fg-muted); text-align: center; }
-  .compare__arrow { color: var(--accent); flex-shrink: 0; }
-  .compare__dark {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    background: #0d0f14;
-    border-radius: 6px;
-    padding: 10% 9%;
-    display: grid;
-    align-content: start;
-    gap: 7%;
-    box-shadow: var(--shadow-sm);
-  }
-  .compare__a4 {
-    height: 100%;
-    width: 62%;
-    aspect-ratio: 210 / 297;
-    background: #fff;
-    border-radius: 3px;
-    padding: 7% 8%;
-    display: grid;
-    gap: 6%;
-    align-content: start;
-    box-shadow: var(--shadow);
-    border: 1px solid #e7e5e0;
-  }
-  .compare__slide {
-    aspect-ratio: 16 / 9;
-    border: 1px solid #d9d7d2;
-    padding: 8% 9%;
-    display: grid;
-    align-content: start;
-    gap: 9%;
-  }
-  .compare__h, .compare__l { display: block; height: 5px; border-radius: 3px; }
-  .compare__h { width: 45%; height: 7px; background: #f5f5f4; }
-  .compare__l { background: #cbd5e1; }
-  .compare__l--y { background: #fcd34d; }
-  .compare__l--p { background: #f9a8d4; }
-  .compare__slide .compare__h { background: #111; height: 4px; }
-  .compare__slide .compare__l { background: #334155; height: 3px; }
-  .compare__slide .compare__l--y { background: #3b5bdb; }
-  .compare__slide .compare__l--p { background: #0f8a4a; }
-
-  /* Trust points */
-  .trust { list-style: none; padding: 0; margin: var(--space-7) 0 0; display: grid; gap: var(--space-4); max-width: 34rem; }
-  .trust li { display: grid; grid-template-columns: auto 1fr; gap: var(--space-3); align-items: start; }
-  .trust svg { color: var(--accent); margin-top: 2px; }
-  .trust strong { display: block; font-family: var(--font-ui); font-size: 0.9375rem; color: var(--fg); }
-  .trust span { display: block; font-family: var(--font-ui); font-size: 0.875rem; color: var(--fg-muted); margin-top: 1px; }
-
-  /* Converter card */
-  .converter {
-    background: var(--bg-elev);
-    border: 1px solid var(--border);
-    border-radius: calc(var(--radius-lg) + 4px);
-    box-shadow: var(--shadow-lg);
-    overflow: hidden;
-  }
-  .converter__head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-    flex-wrap: wrap;
-    padding: var(--space-4) var(--space-6);
-    border-bottom: 1px solid var(--border);
-  }
-  .converter__title { font-size: 1.0625rem; margin: 0; letter-spacing: -0.01em; }
-  .converter__steps { list-style: none; margin: 0; padding: 0; display: flex; gap: var(--space-4); font-family: var(--font-ui); font-size: 0.8125rem; font-weight: 600; color: var(--fg-muted); }
-  .converter__steps li { display: inline-flex; align-items: center; gap: 0.4rem; }
-  .converter__steps span {
-    width: 20px; height: 20px; border-radius: 50%;
-    display: inline-grid; place-items: center;
-    background: var(--accent-soft); color: var(--saffron-700);
-    font-size: 0.75rem; font-weight: 800;
-  }
-  :global(html[data-theme='dark']) .converter__steps span { color: var(--saffron-400); }
-  /* The shell is already a card; flatten it inside ours. */
-  .converter :global(.tool-shell) { border: 0; border-radius: 0; background: transparent; }
-  @media (max-width: 600px) {
-    .converter__head { padding: var(--space-4); }
-    .converter__steps { gap: var(--space-3); }
-  }
-  .hero__works { margin: var(--space-4) 0 0; text-align: center; font-family: var(--font-ui); font-size: 0.8125rem; color: var(--fg-muted); }
-
-  /* Section heads */
-  .section-head {
-    max-width: 760px;
-    margin: 0 auto var(--space-9);
-    text-align: center;
-  }
-  .section-head--row {
-    max-width: none;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    text-align: left;
-    gap: var(--space-5);
-    margin-bottom: var(--space-7);
-  }
-  .section-head__lede {
-    font-family: var(--font-body);
-    font-size: var(--text-lg);
-    color: var(--fg-muted);
-    margin-top: var(--space-4);
-    line-height: 1.55;
-  }
-  .section--soft { background: var(--bg-soft); }
-
-  /* Steps */
-  .steps {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-5);
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  @media (max-width: 800px) { .steps { grid-template-columns: 1fr; } }
-  .step {
-    background: var(--bg-elev);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-    padding: var(--space-7);
-    position: relative;
-    transition: border-color 200ms var(--ease-out), transform 200ms var(--ease-out);
-  }
-  .step:hover {
-    border-color: var(--border-strong);
-    transform: translateY(-2px);
-  }
-  .step__num {
-    display: inline-block;
-    font-family: var(--font-ui);
-    font-weight: 800;
-    font-size: 0.8125rem;
+  .hero__accent {
+    display: block;
     color: var(--accent);
-    background: var(--accent-soft);
-    padding: 5px 12px;
-    border-radius: 999px;
-    margin-bottom: var(--space-4);
-    letter-spacing: 0.06em;
   }
-  .step h3 { margin-bottom: var(--space-3); font-size: 1.5rem; }
-  .step p {
-    color: var(--fg-muted);
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    line-height: 1.65;
-  }
-
-  /* Privacy */
-  .privacy {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-9);
-    align-items: center;
-  }
-  @media (max-width: 900px) { .privacy { grid-template-columns: 1fr; gap: var(--space-7); } }
-
-  .privacy__lede {
-    font-family: var(--font-body);
-    font-size: var(--text-lg);
-    line-height: 1.65;
-    color: var(--fg-muted);
-    margin-block: var(--space-5) var(--space-6);
-  }
-  .privacy__list {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 var(--space-6);
-    display: grid;
-    gap: var(--space-3);
-  }
-  .privacy__list li {
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    color: var(--fg);
-    padding-left: 2rem;
-    position: relative;
+  .hero__sub {
+    font-family: var(--font-ui);
+    font-size: clamp(1.0625rem, 1.6vw, 1.25rem);
     line-height: 1.55;
+    color: var(--fg-muted);
+    max-width: 36rem;
+    margin: var(--space-5) auto 0;
+    text-wrap: balance;
   }
-  .privacy__list li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0.4em;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--green-600);
-    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
-    background-size: 11px;
-    background-position: center;
-    background-repeat: no-repeat;
-  }
-  .privacy__list strong { color: var(--fg); font-weight: 600; }
-
-  .privacy__visual {
+  .hero__tool {
+    margin-top: var(--space-7);
+    text-align: left;
     background: var(--bg-elev);
     border: 1px solid var(--border);
-    border-radius: var(--radius-2xl);
-    padding: var(--space-7) var(--space-5);
-    box-shadow: var(--shadow);
+    border-radius: 22px;
+    box-shadow: var(--shadow-xl);
+    padding: 6px;
+  }
+  .hero__tool :global(.tool-shell) { border: 0; background: transparent; }
+  .assure {
+    list-style: none; padding: 0; margin: var(--space-5) 0 0;
+    display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2) var(--space-5);
+    font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--fg-muted);
   }
 
-  /* Comparison */
-  .comparison {
+  /* ---------- Shared ---------- */
+  .center-head { text-align: center; max-width: 640px; margin: 0 auto var(--space-7); }
+  .center-head h2 { margin-top: var(--space-2); }
+  .center-head p { font-family: var(--font-ui); color: var(--fg-muted); margin-top: var(--space-3); }
+  .center-cta { text-align: center; margin-top: var(--space-7); }
+
+  /* ---------- Before / after ---------- */
+  .ba {
+    position: relative;
+    max-width: 860px;
+    margin: 0 auto;
+    aspect-ratio: 16 / 9;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--border);
+    user-select: none;
+  }
+  .ba__layer { position: absolute; inset: 0; }
+  .ba__layer--before { background: #0b0d12; color: #f5f5f4; clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
+  /* The "after" layer is literally the dark board inverted — same as the tool. */
+  .ba__layer--after { background: #000; color: #f5f5f4; filter: invert(1); }
+  .board {
+    height: 100%;
+    padding: 5% 6%;
+    font-family: 'Caveat', 'Segoe Print', 'Bradley Hand', cursive;
+    font-size: clamp(1rem, 2.9vw, 1.85rem);
+    line-height: 1.25;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-5);
-  }
-  @media (max-width: 720px) { .comparison { grid-template-columns: 1fr; } }
-  .comparison__col {
-    background: var(--bg-elev);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-    padding: var(--space-7);
-  }
-  .comparison__col--us {
-    border-color: var(--accent);
-    background:
-      linear-gradient(135deg, var(--bg-elev), var(--accent-soft));
-    box-shadow: var(--shadow-lg);
+    align-content: start;
+    gap: 2.2%;
     position: relative;
   }
-  .comparison__col--us::before {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    border-radius: var(--radius-xl);
-    padding: 1px;
-    background: linear-gradient(135deg, var(--accent), var(--saffron-700));
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
+  .board__title { font-size: 1.5em; font-weight: 700; text-decoration: underline; text-decoration-color: #ffd43b; text-underline-offset: 0.18em; }
+  .board__row { display: flex; gap: 12%; font-size: 1.25em; }
+  .board .y { color: #ffd43b; }
+  .board .p { color: #ff8cc6; }
+  .board__fig { position: absolute; right: 6%; top: 12%; width: 22%; color: #f5f5f4; }
+  .board__note { margin-top: 2%; }
+  .ba__tag {
+    position: absolute; top: 12px;
+    padding: 0.3rem 0.7rem; border-radius: 999px;
+    font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700;
+    background: rgba(0, 0, 0, 0.55); color: #fff; backdrop-filter: blur(6px);
     pointer-events: none;
   }
-  .comparison__col h3 {
-    margin-bottom: var(--space-5);
-    font-size: 1.25rem;
+  .ba__tag--l { left: 12px; }
+  .ba__tag--r { right: 12px; background: var(--accent); }
+  .ba__handle {
+    position: absolute; top: 0; bottom: 0; left: var(--pos);
+    width: 3px; margin-left: -1.5px; background: #fff;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.15);
+    pointer-events: none;
   }
-  .comparison__col--us h3 { color: var(--saffron-700); }
-  .comparison__col ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    gap: var(--space-4);
+  .ba__handle span {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 42px; height: 42px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: #fff; color: #111; font-size: 1.1rem; font-weight: 800;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
   }
-  .comparison__col li {
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    line-height: 1.55;
-    padding-left: 1.75rem;
-    position: relative;
-    color: var(--fg);
+  .ba__range {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    margin: 0; opacity: 0; cursor: ew-resize;
   }
-  .comparison__col li::before {
-    content: '×';
-    position: absolute;
-    left: 0;
-    top: 0;
-    color: var(--fg-subtle);
-    font-weight: 600;
-    font-size: 1.25rem;
-    line-height: 1;
-  }
-  .comparison__col--us li::before {
-    content: '✓';
-    color: var(--green-600);
-    font-weight: 700;
-  }
+  .ba__range:focus-visible + * { outline: none; }
+  .ba:focus-within { outline: 3px solid var(--accent); outline-offset: 3px; }
 
-  /* Blog cards */
-  .blog-card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    color: inherit;
+  /* ---------- Steps ---------- */
+  .steps3 {
+    list-style: none; padding: 0; margin: 0;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-5);
   }
-  .blog-card h3 { font-size: 1.25rem; line-height: 1.25; }
-  .blog-card p { font-size: 0.9375rem; line-height: 1.55; flex-grow: 1; }
-  .blog-card__meta {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-family: var(--font-ui);
-    font-size: 0.8125rem;
-    color: var(--fg-subtle);
-    margin-top: auto;
+  @media (max-width: 760px) { .steps3 { grid-template-columns: 1fr; } }
+  .steps3 li {
+    background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: var(--space-6); box-shadow: var(--shadow-sm);
   }
+  .steps3__n {
+    display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 12px;
+    background: var(--accent); color: #fff; font-family: var(--font-ui); font-weight: 800; font-size: 1.125rem;
+    margin-bottom: var(--space-4);
+  }
+  .steps3 h3 { font-size: 1.1875rem; margin-bottom: var(--space-2); }
+  .steps3 p { font-family: var(--font-ui); font-size: 0.9375rem; line-height: 1.6; color: var(--fg-muted); margin: 0; }
 
-  /* CTA */
-  .cta-section {
-    position: relative;
-    overflow: hidden;
-    isolation: isolate;
-    background: var(--ink-950);
-    color: var(--paper-100);
+  /* ---------- Tools ---------- */
+  .toolchips {
+    list-style: none; padding: 0; margin: 0;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: var(--space-3);
   }
-  .cta-section .atmos-blob--1 { background: radial-gradient(circle, rgba(255, 107, 26, 0.35), transparent 70%); }
-  .cta-section .atmos-blob--2 { background: radial-gradient(circle, rgba(30, 58, 138, 0.3), transparent 70%); }
-  .cta {
-    position: relative;
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: var(--space-7);
-    align-items: center;
+  .toolchips a {
+    display: block; height: 100%;
+    padding: var(--space-4) var(--space-5);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--bg-elev); color: inherit;
+    transition: border-color 120ms ease, transform 120ms ease;
   }
-  @media (max-width: 800px) { .cta { grid-template-columns: 1fr; } }
-  .cta h2 { color: var(--paper-100); }
-  .cta p {
-    font-family: var(--font-body);
-    font-size: var(--text-lg);
-    color: var(--ink-300);
-    margin-top: var(--space-4);
-    max-width: 540px;
-    line-height: 1.55;
-  }
-  .cta__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-    justify-content: flex-end;
-  }
-  @media (max-width: 800px) { .cta__actions { justify-content: flex-start; } }
-  .cta .btn--ghost {
-    color: var(--paper-100);
-    border-color: var(--ink-600);
-    background: rgba(255, 255, 255, 0.04);
-  }
-  .cta .btn--ghost:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: var(--ink-500);
-  }
+  .toolchips a:hover { border-color: var(--accent); text-decoration: none; transform: translateY(-2px); }
+  .toolchips strong { display: block; font-family: var(--font-ui); font-size: 0.9875rem; color: var(--fg); }
+  .toolchips span { display: block; font-family: var(--font-ui); font-size: 0.8125rem; color: var(--fg-muted); margin-top: 0.25rem; line-height: 1.45; }
 </style>

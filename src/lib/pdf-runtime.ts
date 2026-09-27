@@ -32,6 +32,8 @@ export async function getPdfLib(): Promise<PdfLib> {
 }
 
 export function downloadBlob(blob: Blob, filename: string) {
+  // Let the UI offer "Download again" without re-running the tool.
+  window.dispatchEvent(new CustomEvent('pb:download', { detail: { blob, filename } }));
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
