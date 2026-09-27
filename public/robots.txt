@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://gautamkumarproduct.github.io/padhlebeta/sitemap-index.xml
+Sitemap: https://padhlebeta.live/sitemap-index.xml

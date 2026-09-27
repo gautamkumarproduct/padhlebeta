@@ -2,25 +2,25 @@
   "name": "Padhle Beta – Black Notes to White PDF",
   "short_name": "Padhle Beta",
   "description": "Convert dark coaching notes to white, A4 printable PDFs. Free PDF tools for students.",
-  "start_url": "/padhlebeta/",
-  "scope": "/padhlebeta/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#FAF7F2",
   "theme_color": "#0F172A",
   "lang": "en-IN",
   "icons": [
     {
-      "src": "/padhlebeta/icons/icon-192.png",
+      "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/padhlebeta/icons/icon-512.png",
+      "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     },
     {
-      "src": "/padhlebeta/icons/icon-maskable-512.png",
+      "src": "/icons/icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

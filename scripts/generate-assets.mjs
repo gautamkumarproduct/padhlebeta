@@ -21,7 +21,7 @@ await sharp({ create: { width: 512, height: 512, channels: 4, background: '#0F17
   .png()
   .toFile(fileURLToPath(new URL('icons/icon-maskable-512.png', pub)));
 
-const base = process.env.BASE_PATH ?? '/padhlebeta';
+const base = process.env.BASE_PATH ?? '/';
 const prefix = base.replace(/\/$/, '');
 await writeFile(
   new URL('manifest.webmanifest', pub),

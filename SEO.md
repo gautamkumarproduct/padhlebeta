@@ -115,7 +115,7 @@ After launch, set up:
 ## Things still TODO before launch
 
 - [ ] Replace placeholder `site.contactEmail` with a real address
-- [ ] Decide on final domain (currently `gautamkumarproduct.github.io/padhlebeta`)
+- [x] Final domain: `padhlebeta.live`
 - [ ] If using custom domain: update `site.siteUrl` in `src/data/site.ts`, add `public/CNAME`
 - [ ] Generate a real OG image (currently an SVG; PNG/JPG renders better on some platforms)
 - [ ] Add Open Graph variants per page type (tool page OG should mention the tool)

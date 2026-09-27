@@ -1,12 +1,12 @@
 /**
  * Base-path-aware URL helpers. Every internal link goes through `url()` so the
- * site works both at a sub-path (github.io/padhlebeta) and at a domain root.
+ * site works both at a domain root (padhlebeta.live) and under a sub-path.
  */
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
 const SITE = (import.meta.env.SITE ?? '').replace(/\/$/, '');
 
-/** Root-relative path including the base, e.g. url('/tools/') → '/padhlebeta/tools/'. */
+/** Root-relative path including the base, e.g. with BASE_PATH=/padhlebeta, url('/tools/') → '/padhlebeta/tools/'. */
 export function url(path = '/'): string {
   if (/^(https?:|mailto:|#)/.test(path)) return path;
   const p = path.startsWith('/') ? path : '/' + path;

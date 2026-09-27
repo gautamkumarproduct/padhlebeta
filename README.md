@@ -31,7 +31,7 @@ Requires Node 20+.
 
 ```bash
 npm install
-npm run dev       # http://localhost:4321/padhlebeta
+npm run dev       # http://localhost:4321/
 npm run build     # → ./dist
 npm run preview   # serve the production build
 ```
@@ -41,12 +41,9 @@ npm run preview   # serve the production build
 This repo is configured to auto-deploy on push to `main`.
 
 1. Push to GitHub: `git push origin main`
-2. GitHub Actions builds and deploys to `https://gautamkumarproduct.github.io/padhlebeta/`
-3. To attach a custom domain (e.g. `padhlebeta.in`):
-   - Add a `CNAME` file in `public/` containing the domain
-   - In `.github/workflows/deploy.yml`, set `SITE_URL=https://padhlebeta.in` and `BASE_PATH=/` on the build step
-   - Update `public/robots.txt`, then run `BASE_PATH=/ node scripts/generate-assets.mjs` (manifest paths)
-   - Point your DNS to GitHub Pages and enable "Enforce HTTPS" in repo Settings → Pages
+2. GitHub Actions builds and deploys to `https://padhlebeta.live/` (custom domain via `public/CNAME`)
+3. DNS: apex A records → GitHub Pages IPs (185.199.108–111.153), `www` CNAME → `gautamkumarproduct.github.io`
+4. Changing domain: edit `public/CNAME`, `public/robots.txt` and the `SITE` default in `astro.config.mjs`
 
 Search Console / Bing verification: set `PUBLIC_GOOGLE_SITE_VERIFICATION` / `PUBLIC_BING_SITE_VERIFICATION` as env vars on the build step.
 
@@ -104,7 +101,7 @@ That's it. The post will appear on `/blog/`, in the RSS feed, and in the homepag
 ## Configuration
 
 - **Site URL:** `src/data/site.ts` → `site.siteUrl`. Update when you attach a custom domain.
-- **Base path:** `astro.config.mjs` → `base: '/padhlebeta'`. Change this if you rename the repo.
+- **Domain / base path:** `astro.config.mjs` (`SITE_URL` / `BASE_PATH` env vars, default `https://padhlebeta.live` at `/`).
 - **Analytics:** None by default. Add Plausible or Umami scripts to `BaseLayout.astro` if needed.
 
 ## Privacy
