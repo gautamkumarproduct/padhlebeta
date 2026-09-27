@@ -41,7 +41,7 @@ const faq = [
   description="Print NEET coaching notes cheaply. Convert dark slides to ink-saving light PDFs, merge chapters, compress for sharing — all free, all in your browser."
   jsonLd={jsonLd}
 >
-  <section class="section">
+  <section class="section page-hero">
     <div class="container">
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'NEET Notes PDF' }]} />
 
@@ -57,7 +57,7 @@ const faq = [
 
       <div class="exam-tool" id="tool">
         <h2>Convert NEET notes from black to white (A4)</h2>
-        <ToolShell tool={getTool('dark-to-light')!} defaults={{ perSheet: '2' }} runLabel="Convert to white PDF" />
+        <div class="tool-card"><ToolShell tool={getTool('dark-to-light')!} instant dropTitle="Drop your notes PDF here" defaults={{ perSheet: '2' }} runLabel="Convert again" /></div>
       </div>
 
 

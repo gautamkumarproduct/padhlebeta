@@ -8,6 +8,7 @@
  * .tool-shell on the page and lazy-loads the matching runner.
  */
 import type { Tool } from '~/data/site';
+import { url } from '~/lib/url';
 
 export interface Props {
   tool: Tool;
@@ -24,6 +25,8 @@ const accept = tool.accept === 'image' ? 'image/jpeg,image/png,image/webp,image/
 const id = `tool-${tool.slug}`;
 const noun = tool.accept === 'image' ? 'images' : tool.multiple ? 'PDFs' : 'PDF';
 const valueOf = (name: string, fallback: unknown) => (name in defaults ? defaults[name] : fallback);
+// Tools that accept a single PDF can be demoed with the bundled dark sample.
+const sampleUrl = ['dark-to-light', 'grayscale-pdf', 'pages-per-sheet'].includes(tool.slug) ? url('/sample-dark-notes.pdf') : '';
 ---
 
 <form class:list={['tool-shell', { 'tool-shell--instant': instant }]} data-tool={tool.slug} data-multiple={tool.multiple ? 'true' : 'false'} data-custom-ui={tool.customUi ? 'true' : 'false'} data-instant={instant ? 'true' : 'false'}>
@@ -35,6 +38,9 @@ const valueOf = (name: string, fallback: unknown) => (name in defaults ? default
     {instant && dropTitle && <p class="dropzone__title">{dropTitle}</p>}
     <label for={`${id}-file`} class="dropzone__button">Choose {noun}</label>
     <p>or drop {tool.multiple ? 'them' : 'it'} here · stays on your device</p>
+    {sampleUrl && (
+      <button type="button" class="dropzone__sample" data-sample={sampleUrl}>No PDF handy? <u>Try a sample</u> →</button>
+    )}
   </div>
 
   <div class="tool-shell__result is-hidden" data-result role="status">
@@ -152,6 +158,20 @@ const valueOf = (name: string, fallback: unknown) => (name in defaults ? default
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     });
+    form.querySelector<HTMLButtonElement>('[data-sample]')?.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const btn = e.currentTarget as HTMLButtonElement;
+      btn.disabled = true;
+      try {
+        const res = await fetch(btn.dataset.sample!);
+        await setFiles([new File([await res.blob()], 'sample-dark-notes.pdf', { type: 'application/pdf' })]);
+        if (!instant) form.requestSubmit();
+      } catch {
+        showError('Could not load the sample. Check your connection and try again.');
+      } finally {
+        btn.disabled = false;
+      }
+    });
     form.querySelector('[data-another]')!.addEventListener('click', () => {
       form.reset();
       input.click();
@@ -195,8 +215,21 @@ const valueOf = (name: string, fallback: unknown) => (name in defaults ? default
       );
     }
 
+    const wantsImage = input.accept.startsWith('image/');
+    const isRightType = (f: File) =>
+      wantsImage ? /^image\//.test(f.type) || /\.(jpe?g|png|webp|gif|bmp)$/i.test(f.name) : f.type === 'application/pdf' || /\.pdf$/i.test(f.name);
+
     async function setFiles(incoming: File[]) {
       clearError();
+      const bad = incoming.filter((f) => !isRightType(f));
+      incoming = incoming.filter(isRightType);
+      if (bad.length && !incoming.length) {
+        showError(wantsImage
+          ? `“${bad[0].name}” isn’t an image. Choose JPG, PNG or WebP photos.`
+          : `“${bad[0].name}” isn’t a PDF. Choose a .pdf file — if your notes are photos, use Image to PDF first.`);
+        return;
+      }
+      if (bad.length) showError(`Skipped ${bad.length} file${bad.length > 1 ? 's' : ''} that ${bad.length > 1 ? 'aren’t' : 'isn’t'} the right type.`);
       files = multiple ? [...files, ...incoming] : incoming.slice(0, 1);
       renderList();
       result.classList.add('is-hidden');
@@ -273,9 +306,14 @@ const valueOf = (name: string, fallback: unknown) => (name in defaults ? default
         const msg = String(err?.message ?? '');
         showError(
           /password|encrypt/i.test(msg)
-            ? 'This PDF is password-protected. Remove the password first, then try again.'
-            : msg || 'Something went wrong. Try again or use a different file.'
+            ? 'This PDF is password-protected. Open it, save a copy without the password, then try again.'
+            : /invalid pdf|no pdf header|failed to parse pdf|xref|unexpected (eof|end)/i.test(msg)
+              ? 'This file looks damaged or isn’t a real PDF. Try downloading it again from your coaching app.'
+              : /out of memory|allocation failed|array buffer allocation/i.test(msg)
+                ? 'Your device ran out of memory on this big file. Choose “Draft” quality under Print settings, or split the PDF first.'
+                : msg || 'Something went wrong. Try again or use a different file.'
         );
+        if (instant) drop0.classList.remove('is-hidden');
         status.classList.add('is-hidden');
       } finally {
         window.removeEventListener('pb:download', onDownload);
@@ -473,6 +511,13 @@ const valueOf = (name: string, fallback: unknown) => (name in defaults ? default
   .tool-shell--instant .dropzone { padding: var(--space-9) var(--space-5); border-width: 2.5px; border-color: color-mix(in srgb, var(--accent) 45%, var(--border-strong)); background: color-mix(in srgb, var(--accent) 5%, var(--bg-elev)); cursor: pointer; transition: transform 150ms ease, background 150ms ease; }
   .tool-shell--instant .dropzone:hover { background: color-mix(in srgb, var(--accent) 9%, var(--bg-elev)); }
   .tool-shell--instant .dropzone--active { transform: scale(1.01); }
+  .dropzone__sample {
+    margin-top: var(--space-4);
+    border: 0; background: none; cursor: pointer;
+    font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--accent);
+  }
+  .dropzone__sample:hover u { text-decoration-thickness: 2px; }
+  .dropzone__sample:disabled { opacity: 0.6; cursor: progress; }
   .dropzone__icon { color: var(--accent); margin: 0 auto var(--space-3); display: block; }
   .dropzone__title { font-family: var(--font-ui) !important; font-size: 1.25rem !important; font-weight: 800; color: var(--fg) !important; margin: 0 0 var(--space-4) !important; letter-spacing: -0.01em; }
   .tool-shell--instant .dropzone__button { font-size: 1.125rem; padding: 0.95rem 2.2rem; box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 35%, transparent); }
@@ -485,6 +530,17 @@ const valueOf = (name: string, fallback: unknown) => (name in defaults ? default
   .settings__hint { margin-left: auto; font-weight: 500; font-size: 0.8125rem; color: var(--fg-muted); }
   .settings .tool-shell__options { border: 0; border-top: 1px solid var(--border); border-radius: 0 0 var(--radius) var(--radius); }
 
+  @media (prefers-reduced-motion: no-preference) {
+    .dropzone__icon { animation: pb-float 2.8s ease-in-out infinite; }
+    .tool-shell--instant .dropzone__button { animation: pb-breathe 2.6s ease-in-out infinite; }
+    .tool-shell__progress-bar {
+      background-image: linear-gradient(90deg, var(--accent), var(--saffron-700)), repeating-linear-gradient(45deg, rgba(255,255,255,0.25) 0 10px, transparent 10px 20px);
+      background-blend-mode: overlay;
+      background-size: auto, 40px 40px;
+      animation: pb-stripes 800ms linear infinite;
+    }
+    .tool-shell__result:not(.is-hidden) { animation: pb-pop 420ms var(--ease-out) both; }
+  }
   .tool-shell__result { display: grid; gap: var(--space-4); padding: var(--space-5); border-radius: var(--radius-lg); background: color-mix(in srgb, var(--green-600) 10%, var(--bg-elev)); border: 1px solid color-mix(in srgb, var(--green-600) 35%, transparent); }
   .tool-shell__result-text strong { display: block; font-family: var(--font-ui); font-size: 1.125rem; color: var(--fg); }
   .tool-shell__result-text span { display: block; font-family: var(--font-ui); font-size: 0.9375rem; color: var(--fg-muted); margin-top: 0.25rem; overflow-wrap: anywhere; }

@@ -114,5 +114,40 @@ const fonts = 'https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&fami
       <slot />
     </main>
     <Footer />
+    <script>
+      // Auto scroll-reveal: fades content in as it enters the viewport, on every page.
+      // Only elements that start below the fold are hidden, so nothing flashes.
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reduce && 'IntersectionObserver' in window) {
+        const sel = [
+          'main > section:not(:first-child) :is(h2, .eyebrow, .ba, .steps3 > li, .toolchips > li, .faq details, .card, .material, .plist > li, .guide-links > li, .step, .tool-benefits, .tool-aside__card, table, .chips, .other-links, .settings, .home-seo p)',
+          'main .prose > *',
+          'main .body > *',
+          'main .prose-wrap > *',
+        ].join(',');
+        const fold = innerHeight * 0.92;
+        const picked = new Set<Element>();
+        document.querySelectorAll<HTMLElement>(sel).forEach((el) => {
+          if (el.getBoundingClientRect().top < fold) return;
+          for (const p of picked) if (p.contains(el)) return;
+          picked.add(el);
+        });
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach((e) => {
+            if (!e.isIntersecting) return;
+            e.target.classList.add('ar--in');
+            io.unobserve(e.target);
+          });
+        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+        picked.forEach((el) => {
+          const h = el as HTMLElement;
+          // Stagger siblings (cards in a grid, list items) for a cascading feel.
+          const idx = h.parentElement ? Array.prototype.indexOf.call(h.parentElement.children, h) : 0;
+          h.style.setProperty('--ar-delay', `${Math.min(idx, 6) * 70}ms`);
+          h.classList.add('ar');
+          io.observe(h);
+        });
+      }
+    </script>
   </body>
 </html>

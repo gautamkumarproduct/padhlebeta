@@ -41,5 +41,8 @@ export const run: ToolRunner = async (files, opts, statusEl) => {
   progressBar(statusEl, 100, 'Done!');
   downloadBlob(pdfBlob(bytes), `${baseName(file)}-compressed.pdf`);
   const saved = Math.max(0, 1 - bytes.length / file.size);
+  if (saved < 0.05) {
+    return `This PDF is already well optimised (${formatBytes(file.size)}). ${opts.level === 'strong' ? 'To go smaller, extract only the pages you need first.' : 'Try the “Strong” level, or extract only the pages you need.'}`;
+  }
   return `Done! ${formatBytes(file.size)} → ${formatBytes(bytes.length)} (${Math.round(saved * 100)}% smaller).`;
 };

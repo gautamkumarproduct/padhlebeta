@@ -85,3 +85,35 @@ for (const [name, [lines, sub]] of Object.entries(images)) {
   await sharp(Buffer.from(og(lines, sub))).png({ compressionLevel: 9 }).toFile(fileURLToPath(new URL(`og/${name}.png`, pub)));
 }
 console.log(`Generated ${Object.keys(images).length} OG images, icons and manifest.`);
+
+// Sample dark "board notes" PDF for the "Try a sample" button.
+{
+  const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib');
+  const doc = await PDFDocument.create();
+  doc.setTitle('Padhle Beta sample – dark board notes');
+  const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+  const reg = await doc.embedFont(StandardFonts.Helvetica);
+  const W = 960, H = 540;
+  const white = rgb(0.96, 0.96, 0.95), yellow = rgb(1, 0.83, 0.23), pink = rgb(1, 0.55, 0.78), cyan = rgb(0.4, 0.85, 1);
+  const pages = [
+    ['Rotational Motion', [['Torque = I x alpha', yellow], ['Angular momentum L = I x omega', pink], ['Ring: I = MR^2     Disc: I = MR^2 / 2', white], ['If external torque = 0, L is conserved', cyan]]],
+    ['Laws of Motion', [['F = ma', yellow], ['Friction: f <= mu N', pink], ['Impulse = change in momentum', white], ['Free-body diagram first, always!', cyan]]],
+    ['Chemical Bonding', [['Ionic: transfer of electrons', yellow], ['Covalent: sharing of electrons', pink], ['Bond order = (Nb - Na) / 2', white], ['Higher bond order = shorter bond', cyan]]],
+    ['Cell: The Unit of Life', [['Prokaryotes: no nuclear membrane', yellow], ['Mitochondria: powerhouse (ATP)', pink], ['Ribosomes: protein synthesis', white], ['70S in prokaryotes, 80S in eukaryotes', cyan]]],
+  ];
+  for (const [title, lines] of pages) {
+    const p = doc.addPage([W, H]);
+    p.drawRectangle({ x: 0, y: 0, width: W, height: H, color: rgb(0.05, 0.055, 0.07) });
+    p.drawText(title, { x: 60, y: 450, size: 44, font: bold, color: white });
+    p.drawRectangle({ x: 60, y: 436, width: bold.widthOfTextAtSize(title, 44), height: 4, color: yellow });
+    lines.forEach(([t, c], i) => p.drawText(t, { x: 70, y: 360 - i * 70, size: 30, font: i === 0 ? bold : reg, color: c }));
+    p.drawText('padhlebeta sample', { x: 800, y: 24, size: 12, font: reg, color: rgb(0.5, 0.5, 0.55) });
+  }
+  // One already-white page, to show Auto mode leaves it alone.
+  const q = doc.addPage([W, H]);
+  q.drawText('Practice Questions (already white)', { x: 60, y: 450, size: 36, font: bold, color: rgb(0.1, 0.1, 0.1) });
+  ['1. A disc of mass 2 kg and radius 0.5 m rotates at 10 rad/s. Find L.', '2. State the law of conservation of angular momentum.', '3. Why does an ice skater spin faster with arms folded?'].forEach((t, i) =>
+    q.drawText(t, { x: 70, y: 360 - i * 60, size: 22, font: reg, color: rgb(0.15, 0.15, 0.15) }));
+  await writeFile(new URL('sample-dark-notes.pdf', pub), await doc.save());
+  console.log('Generated sample-dark-notes.pdf');
+}

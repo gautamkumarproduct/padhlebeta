@@ -3,6 +3,7 @@ import BaseLayout from '~/layouts/BaseLayout.astro';
 import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import FAQ from '~/components/FAQ.astro';
 import ToolShell from '~/components/ToolShell.astro';
+import BeforeAfter from '~/components/BeforeAfter.astro';
 import { getTool, site } from '~/data/site';
 import { platforms, type Platform } from '~/data/platforms';
 import { url, absUrl } from '~/lib/url';
@@ -65,7 +66,7 @@ const others = platforms.filter((o) => o.slug !== p.slug);
 ---
 
 <BaseLayout title={title} rawTitle description={description} ogImage="/og/dark-to-light.png" jsonLd={[howToJsonLd, webPageJsonLd]}>
-  <section class="section print-hero">
+  <section class="section print-hero page-hero">
     <div class="container">
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Print guides', href: '/print/' }, { label: label }]} />
       <div class="print-hero__grid">
@@ -75,10 +76,21 @@ const others = platforms.filter((o) => o.slug !== p.slug);
           <p class="lede">{p.intro}</p>
           <p class="aka">Also searched as: {p.aliases.join(', ')}</p>
         </div>
-        <div id="tool">
-          <ToolShell tool={tool} defaults={{ perSheet: p.defaults.perSheet, grayscale: p.defaults.grayscale }} runLabel="Convert to light PDF" />
+        <div id="tool" class="tool-card">
+          <ToolShell tool={tool} instant dropTitle={`Drop your ${p.name} PDF here`} defaults={{ perSheet: p.defaults.perSheet, grayscale: p.defaults.grayscale }} runLabel="Convert again" />
         </div>
       </div>
+    </div>
+  </section>
+
+  <section class="section ba-section">
+    <div class="container">
+      <header class="center-head">
+        <span class="eyebrow">See the difference</span>
+        <h2>{p.name} notes, before and after</h2>
+        <p>Drag the slider — this is exactly what happens to your pages.</p>
+      </header>
+      <BeforeAfter />
     </div>
   </section>
 

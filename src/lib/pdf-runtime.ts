@@ -139,7 +139,13 @@ export async function forEachRenderedPage(
   for (let i = 0; i < list.length; i++) {
     const page = await doc.getPage(list[i]);
     const base = page.getViewport({ scale: 1 });
-    const viewport = page.getViewport({ scale: dpi / 72 });
+    // iOS Safari refuses canvases above ~16.7M pixels; cap the scale so
+    // huge pages or high DPI never produce a blank page.
+    const MAX_PIXELS = 14_000_000;
+    let scale = dpi / 72;
+    const area = base.width * base.height * scale * scale;
+    if (area > MAX_PIXELS) scale *= Math.sqrt(MAX_PIXELS / area);
+    const viewport = page.getViewport({ scale });
     canvas.width = Math.ceil(viewport.width);
     canvas.height = Math.ceil(viewport.height);
     ctx.fillStyle = '#ffffff';

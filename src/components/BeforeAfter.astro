@@ -1,0 +1,122 @@
+---
+/**
+ * Interactive before/after of dark board notes → print-ready page.
+ * The "after" layer is the same board with CSS invert(), which is what the
+ * converter does to real pages. Auto-sweeps until the visitor grabs it.
+ */
+---
+
+<div class="ba" data-ba style="--pos: 50%">
+  <div class="ba__layer ba__layer--after" aria-hidden="true">
+    <div class="board">
+      <div class="board__title">Rotational Motion</div>
+      <div class="board__row"><span class="y">τ = I α</span><span class="p">L = I ω</span></div>
+      <div class="board__line">Moment of inertia (ring): <span class="y">I = MR²</span></div>
+      <div class="board__line">Disc: <span class="y">I = ½ MR²</span> &nbsp; Rod (centre): <span class="y">I = ML²/12</span></div>
+      <svg class="board__fig" viewBox="0 0 120 80" aria-hidden="true"><circle cx="60" cy="40" r="28" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M60 40 L88 40" stroke="#ffd43b" stroke-width="2.5"/><path d="M30 18 A36 36 0 0 1 90 18" fill="none" stroke="#ff8cc6" stroke-width="2.5"/><path d="M90 18 l-8 -1 m8 1 l-3 7" stroke="#ff8cc6" stroke-width="2.5" fill="none"/></svg>
+      <div class="board__note p">★ If τ<sub>ext</sub> = 0 → L is conserved</div>
+    </div>
+  </div>
+  <div class="ba__layer ba__layer--before" aria-hidden="true">
+    <div class="board">
+      <div class="board__title">Rotational Motion</div>
+      <div class="board__row"><span class="y">τ = I α</span><span class="p">L = I ω</span></div>
+      <div class="board__line">Moment of inertia (ring): <span class="y">I = MR²</span></div>
+      <div class="board__line">Disc: <span class="y">I = ½ MR²</span> &nbsp; Rod (centre): <span class="y">I = ML²/12</span></div>
+      <svg class="board__fig" viewBox="0 0 120 80" aria-hidden="true"><circle cx="60" cy="40" r="28" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M60 40 L88 40" stroke="#ffd43b" stroke-width="2.5"/><path d="M30 18 A36 36 0 0 1 90 18" fill="none" stroke="#ff8cc6" stroke-width="2.5"/><path d="M90 18 l-8 -1 m8 1 l-3 7" stroke="#ff8cc6" stroke-width="2.5" fill="none"/></svg>
+      <div class="board__note p">★ If τ<sub>ext</sub> = 0 → L is conserved</div>
+    </div>
+  </div>
+  <span class="ba__tag ba__tag--l">Before · coaching PDF</span>
+  <span class="ba__tag ba__tag--r">After · print-ready</span>
+  <div class="ba__handle" aria-hidden="true"><span>⟷</span></div>
+  <input class="ba__range" type="range" min="0" max="100" value="50" aria-label="Compare before and after" data-ba-range />
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-ba]').forEach((ba) => {
+    const range = ba.querySelector<HTMLInputElement>('[data-ba-range]')!;
+    const set = () => ba.style.setProperty('--pos', `${range.value}%`);
+    range.addEventListener('input', set);
+    // Auto-sweep while visible, until the visitor grabs the slider.
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let raf = 0, t0 = 0, touched = false;
+    const loop = (t: number) => {
+      if (!t0) t0 = t;
+      const v = 50 + 38 * Math.sin((t - t0) / 1400);
+      range.value = String(v);
+      set();
+      raf = requestAnimationFrame(loop);
+    };
+    const stop = () => { touched = true; cancelAnimationFrame(raf); };
+    ['pointerdown', 'keydown', 'touchstart'].forEach((ev) => range.addEventListener(ev, stop, { passive: true }));
+    new IntersectionObserver(([e]) => {
+      if (touched) return;
+      if (e.isIntersecting) { t0 = 0; raf = requestAnimationFrame(loop); } else cancelAnimationFrame(raf);
+    }, { threshold: 0.3 }).observe(ba);
+  });
+</script>
+
+<style>
+  /* ---------- Before / after ---------- */
+  .ba {
+    position: relative;
+    max-width: 860px;
+    margin: 0 auto;
+    aspect-ratio: 16 / 9;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--border);
+    user-select: none;
+  }
+  .ba__layer { position: absolute; inset: 0; }
+  .ba__layer--before { background: #0b0d12; color: #f5f5f4; clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
+  /* The "after" layer is literally the dark board inverted — same as the tool. */
+  .ba__layer--after { background: #000; color: #f5f5f4; filter: invert(1); }
+  .board {
+    height: 100%;
+    padding: 5% 6%;
+    font-family: 'Caveat', 'Segoe Print', 'Bradley Hand', cursive;
+    font-size: clamp(1rem, 2.9vw, 1.85rem);
+    line-height: 1.25;
+    display: grid;
+    align-content: start;
+    gap: 2.2%;
+    position: relative;
+  }
+  .board__title { font-size: 1.5em; font-weight: 700; text-decoration: underline; text-decoration-color: #ffd43b; text-underline-offset: 0.18em; }
+  .board__row { display: flex; gap: 12%; font-size: 1.25em; }
+  .board .y { color: #ffd43b; }
+  .board .p { color: #ff8cc6; }
+  .board__fig { position: absolute; right: 6%; top: 12%; width: 22%; color: #f5f5f4; }
+  .board__note { margin-top: 2%; }
+  .ba__tag {
+    position: absolute; top: 12px;
+    padding: 0.3rem 0.7rem; border-radius: 999px;
+    font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700;
+    background: rgba(0, 0, 0, 0.55); color: #fff; backdrop-filter: blur(6px);
+    pointer-events: none;
+  }
+  .ba__tag--l { left: 12px; }
+  .ba__tag--r { right: 12px; background: var(--accent); }
+  .ba__handle {
+    position: absolute; top: 0; bottom: 0; left: var(--pos);
+    width: 3px; margin-left: -1.5px; background: #fff;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.15);
+    pointer-events: none;
+  }
+  .ba__handle span {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 42px; height: 42px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: #fff; color: #111; font-size: 1.1rem; font-weight: 800;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  }
+  .ba__range {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    margin: 0; opacity: 0; cursor: ew-resize;
+  }
+  .ba__range:focus-visible + * { outline: none; }
+  .ba:focus-within { outline: 3px solid var(--accent); outline-offset: 3px; }
+</style>

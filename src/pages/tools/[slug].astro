@@ -5,6 +5,7 @@ import FAQ from '~/components/FAQ.astro';
 import RelatedTools from '~/components/RelatedTools.astro';
 import ToolShell from '~/components/ToolShell.astro';
 import ToolIcon from '~/components/ToolIcon.astro';
+import BeforeAfter from '~/components/BeforeAfter.astro';
 import { site, tools } from '~/data/site';
 import { platforms } from '~/data/platforms';
 import { url, absUrl } from '~/lib/url';
@@ -63,7 +64,7 @@ const guides = tool.category === 'print' ? platforms.slice(0, 8) : [];
   ogImage={`/og/${tool.slug}.png`}
   jsonLd={[howToJsonLd, softwareJsonLd]}
 >
-  <section class="section tool-hero">
+  <section class="section tool-hero page-hero">
     <div class="container">
       <Breadcrumbs items={[
         { label: 'Home', href: '/' },
@@ -81,12 +82,25 @@ const guides = tool.category === 'print' ? platforms.slice(0, 8) : [];
           <p class="tool-hero__lede">{tool.longDescription}</p>
         </div>
 
-        <div id="tool">
-          <ToolShell tool={tool} />
+        <div id="tool" class="tool-card">
+          <ToolShell tool={tool} instant={tool.slug === 'dark-to-light'} dropTitle="Drop your dark PDF here" runLabel={tool.slug === 'dark-to-light' ? 'Convert again' : undefined} />
         </div>
       </div>
     </div>
   </section>
+
+  {tool.slug === 'dark-to-light' && (
+  <section class="section ba-section">
+      <div class="container">
+        <header class="center-head">
+          <span class="eyebrow">See the difference</span>
+          <h2>Black board notes → clean white pages</h2>
+          <p>Drag the slider — this is exactly what happens to your pages.</p>
+        </header>
+        <BeforeAfter />
+      </div>
+    </section>
+  )}
 
   <section class="section">
     <div class="container">
@@ -192,7 +206,7 @@ const guides = tool.category === 'print' ? platforms.slice(0, 8) : [];
     .tool-hero__copy > * { order: 1; }
     #tool { order: 2; }
     .tool-hero__copy > .tool-hero__lede { order: 3; }
-    .tool-hero__icon { display: none; }
+    .tool-hero__copy > .tool-hero__icon { display: none; }
   }
 
   .tool-hero__icon {

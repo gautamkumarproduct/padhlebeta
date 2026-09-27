@@ -618,3 +618,60 @@ a.sr-only:focus {
   border-radius: var(--radius);
   z-index: 100;
 }
+
+/* =========================================================
+   Motion system
+   - Page hero content eases in on load (CSS only).
+   - Below-the-fold content reveals on scroll (BaseLayout script adds .ar).
+   - Everything is disabled for prefers-reduced-motion.
+   --------------------------------------------------------- */
+main > section:first-child .container > * {
+  animation: pb-fade-up 700ms var(--ease-out) both;
+}
+main > section:first-child .container > :nth-child(2) { animation-delay: 70ms; }
+main > section:first-child .container > :nth-child(3) { animation-delay: 140ms; }
+main > section:first-child .container > :nth-child(4) { animation-delay: 210ms; }
+main > section:first-child .container > :nth-child(5) { animation-delay: 280ms; }
+main > section:first-child .container > :nth-child(n + 6) { animation-delay: 350ms; }
+
+.ar {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out);
+  transition-delay: var(--ar-delay, 0ms);
+}
+.ar.ar--in { opacity: 1; transform: none; }
+
+@keyframes pb-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes pb-ping { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--green-600) 55%, transparent); } 80%, 100% { box-shadow: 0 0 0 9px transparent; } }
+@keyframes pb-breathe { 0%, 100% { box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 30%, transparent); } 50% { box-shadow: 0 10px 34px color-mix(in srgb, var(--accent) 55%, transparent); } }
+@keyframes pb-stripes { to { background-position: 40px 0; } }
+@keyframes pb-pop { 0% { opacity: 0; transform: scale(0.96) translateY(6px); } 100% { opacity: 1; transform: none; } }
+@keyframes pb-draw { to { stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  main > section:first-child .container > * { animation: none; }
+  .ar { opacity: 1; transform: none; transition: none; }
+}
+
+/* Shared page hero + floating tool card (matches the homepage) */
+.page-hero {
+  background:
+    radial-gradient(50% 60% at 10% 0%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%),
+    radial-gradient(45% 55% at 95% 5%, color-mix(in srgb, #3b82f6 10%, transparent), transparent 70%),
+    var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.tool-card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  box-shadow: var(--shadow-xl);
+  padding: 6px;
+}
+.tool-card .tool-shell { border: 0; background: transparent; }
+.ba-section .center-head { text-align: center; max-width: 640px; margin: 0 auto var(--space-7); }
+.ba-section .center-head p { font-family: var(--font-ui); color: var(--fg-muted); margin-top: var(--space-3); }
+
+/* Labels never stretch when their parent becomes a grid (mobile display: contents layouts). */
+.eyebrow { justify-self: start; }

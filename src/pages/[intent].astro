@@ -3,6 +3,7 @@ import BaseLayout from '~/layouts/BaseLayout.astro';
 import Breadcrumbs from '~/components/Breadcrumbs.astro';
 import FAQ from '~/components/FAQ.astro';
 import ToolShell from '~/components/ToolShell.astro';
+import BeforeAfter from '~/components/BeforeAfter.astro';
 import { getTool, site } from '~/data/site';
 import { intents, type Intent } from '~/data/intents';
 import { platforms } from '~/data/platforms';
@@ -33,7 +34,7 @@ const related = intents.filter((o) => o.slug !== it.slug && o.lang === it.lang).
 ---
 
 <BaseLayout title={it.title} rawTitle description={it.description} lang={it.lang} ogImage="/og/dark-to-light.png" jsonLd={jsonLd}>
-  <section class="section">
+  <section class="section page-hero">
     <div class="container">
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: it.linkText }]} />
       <div class="intent-grid">
@@ -42,10 +43,21 @@ const related = intents.filter((o) => o.slug !== it.slug && o.lang === it.lang).
           <h1>{it.h1}</h1>
           <p class="lede">{it.intro}</p>
         </div>
-        <div id="tool">
-          <ToolShell tool={tool} defaults={it.defaults} runLabel={hi ? 'White PDF banayein' : 'Convert to white PDF'} />
+        <div id="tool" class="tool-card">
+          <ToolShell tool={tool} instant dropTitle={hi ? 'Apni PDF yahan daalein' : 'Drop your dark PDF here'} defaults={it.defaults} runLabel={hi ? 'Dobara convert karein' : 'Convert again'} />
         </div>
       </div>
+    </div>
+  </section>
+
+  <section class="section ba-section">
+    <div class="container">
+      <header class="center-head">
+        <span class="eyebrow">See the difference</span>
+        <h2>{hi ? "Pehle aur baad me" : "Before and after"}</h2>
+        <p>Drag the slider — this is exactly what happens to your pages.</p>
+      </header>
+      <BeforeAfter />
     </div>
   </section>
 

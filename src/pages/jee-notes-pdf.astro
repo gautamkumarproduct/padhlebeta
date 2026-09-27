@@ -37,7 +37,7 @@ const faq = [
   description="Print JEE Main and Advanced coaching PDFs cheaply. Convert dark slides to light, merge chapters, compress for sharing. Free, browser-based, no upload."
   jsonLd={jsonLd}
 >
-  <section class="section">
+  <section class="section page-hero">
     <div class="container">
       <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'JEE Notes PDF' }]} />
 
@@ -52,7 +52,7 @@ const faq = [
 
       <div class="exam-tool" id="tool">
         <h2>Convert JEE notes from black to white (A4)</h2>
-        <ToolShell tool={getTool('dark-to-light')!} defaults={{ perSheet: '2' }} runLabel="Convert to white PDF" />
+        <div class="tool-card"><ToolShell tool={getTool('dark-to-light')!} instant dropTitle="Drop your notes PDF here" defaults={{ perSheet: '2' }} runLabel="Convert again" /></div>
       </div>
 
 
