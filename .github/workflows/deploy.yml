@@ -33,6 +33,11 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          # Leave these repo variables unset to build for https://padhlebeta.live.
+          # Set them (e.g. https://gautamkumarproduct.github.io + /padhlebeta) to serve from github.io.
+          SITE_URL: ${{ vars.SITE_URL }}
+          BASE_PATH: ${{ vars.BASE_PATH }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

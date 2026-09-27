@@ -4,8 +4,9 @@ import mdx from '@astrojs/mdx';
 
 // Deploy target. Override with env vars to serve from a sub-path instead, e.g.
 //   SITE_URL=https://gautamkumarproduct.github.io BASE_PATH=/padhlebeta npm run build
-const SITE = process.env.SITE_URL ?? 'https://padhlebeta.live';
-const BASE = process.env.BASE_PATH ?? '/';
+// `||` so empty CI variables fall back to the defaults.
+const SITE = process.env.SITE_URL || 'https://padhlebeta.live';
+const BASE = process.env.BASE_PATH || '/';
 const BASE_PREFIX = BASE.replace(/\/$/, '');
 
 /** Prefix root-relative links in Markdown content with the base path. */
