@@ -2,10 +2,10 @@
 # Padhle Beta — one-shot deploy script
 #
 # Run this from /Users/gautam/Documents/claude/padhlebeta after:
-#   1. gh auth refresh -h github.com -u gautamkumarproduct
-#   2. Created the empty repo at github.com/gautamkumarproduct/padhlebeta
+#   1. gh auth refresh -h github.com -u gautamproduct
+#   2. Created the empty repo at github.com/gautamproduct/padhlebeta
 #      (Settings → Developer settings → Personal access tokens, or via gh:
-#       gh repo create gautamkumarproduct/padhlebeta --public --source=. --remote=origin)
+#       gh repo create gautamproduct/padhlebeta --public --source=. --remote=origin)
 #
 # What this does:
 #   - Inits git (if not already)
@@ -13,7 +13,7 @@
 #   - Creates initial commit
 #   - Sets origin
 #   - Pushes to main
-#   - GitHub Actions auto-deploys to https://gautamkumarproduct.github.io/padhlebeta/
+#   - GitHub Actions auto-deploys to https://gautamproduct.github.io/padhlebeta/
 
 set -euo pipefail
 
@@ -22,9 +22,9 @@ cd "$(dirname "$0")"
 # Padhle Beta — one-shot deploy script
 #
 # Run this from /Users/gautam/Documents/claude/padhlebeta after authenticating
-# gh CLI with the gautamkumarproduct account:
+# gh CLI with the gautamproduct account:
 #
-#   gh auth switch -u gautamkumarproduct
+#   gh auth switch -u gautamproduct
 #   gh auth refresh -h github.com
 #
 # What this does:
@@ -33,7 +33,7 @@ cd "$(dirname "$0")"
 #   - Creates initial commit
 #   - Sets origin
 #   - Pushes to main
-#   - GitHub Actions auto-deploys to https://gautamkumarproduct.github.io/padhlebeta/
+#   - GitHub Actions auto-deploys to https://gautamproduct.github.io/padhlebeta/
 
 # --- Init ---
 if [ -d .git ]; then
@@ -87,7 +87,7 @@ fi
 # --- Remote ---
 if ! git remote get-url origin >/dev/null 2>&1; then
   echo "→ Adding origin remote"
-  git remote add origin https://github.com/gautamkumarproduct/padhlebeta.git
+  git remote add origin https://github.com/gautamproduct/padhlebeta.git
 fi
 
 # --- Branch ---
@@ -101,7 +101,7 @@ echo ""
 echo "✅ Pushed!"
 echo ""
 echo "Next steps:"
-echo "  1. Visit https://github.com/gautamkumarproduct/padhlebeta/actions to watch the deploy"
+echo "  1. Visit https://github.com/gautamproduct/padhlebeta/actions to watch the deploy"
 echo "  2. Once it succeeds, your site is live at:"
-echo "     https://gautamkumarproduct.github.io/padhlebeta/"
+echo "     https://gautamproduct.github.io/padhlebeta/"
 echo "  3. Optional: attach a custom domain in repo Settings → Pages"

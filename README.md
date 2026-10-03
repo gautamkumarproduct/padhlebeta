@@ -42,7 +42,7 @@ This repo is configured to auto-deploy on push to `main`.
 
 1. Push to GitHub: `git push origin main`
 2. GitHub Actions builds and deploys to `https://padhlebeta.live/` (custom domain via `public/CNAME`)
-3. DNS: apex A records → GitHub Pages IPs (185.199.108–111.153), `www` CNAME → `gautamkumarproduct.github.io`
+3. DNS: apex A records → GitHub Pages IPs (185.199.108–111.153), `www` CNAME → `gautamproduct.github.io`
 4. Changing domain: edit `public/CNAME`, `public/robots.txt` and the `SITE` default in `astro.config.mjs`
 
 Search Console / Bing verification: set `PUBLIC_GOOGLE_SITE_VERIFICATION` / `PUBLIC_BING_SITE_VERIFICATION` as env vars on the build step.

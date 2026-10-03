@@ -3,7 +3,7 @@ import sitemap from '@astrojs/sitemap';
 import mdx from '@astrojs/mdx';
 
 // Deploy target. Override with env vars to serve from a sub-path instead, e.g.
-//   SITE_URL=https://gautamkumarproduct.github.io BASE_PATH=/padhlebeta npm run build
+//   SITE_URL=https://gautamproduct.github.io BASE_PATH=/padhlebeta npm run build
 // `||` so empty CI variables fall back to the defaults.
 const SITE = process.env.SITE_URL || 'https://padhlebeta.live';
 const BASE = process.env.BASE_PATH || '/';

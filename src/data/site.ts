@@ -15,7 +15,7 @@ export const site = {
   contactEmail: 'hello@padhlebeta.in',
   ogImage: '/og/default.png',
   github: {
-    org: 'gautamkumarproduct',
+    org: 'gautamproduct',
     repo: 'padhlebeta',
   },
 } as const;
